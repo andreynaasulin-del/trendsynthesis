@@ -231,42 +231,67 @@ export function ViralChat({
         setInputValue("");
         setIsTyping(true);
 
-        // Mock AI Response Simulation
-        setTimeout(() => {
-            const mockResponse = `I see. "${newMsg.content}" is a great topic. Here are 3 viral angles I've devised for you.
-      
-<options>[
-  {
-    "id": "1",
-    "title": "The Controversy Hook",
-    "hook_text": "Stop using [Common Tool] immediately.",
-    "description": "Trigger a debate by challenging a popular norm."
-  },
-  {
-    "id": "2",
-    "title": "The Value Stack",
-    "hook_text": "3 steps to master [Topic] in 24 hours.",
-    "description": "High-value promise with a clear timeline."
-  },
-  {
-    "id": "3",
-    "title": "The Secret Reveal",
-    "hook_text": "They don't want you to know this about [Topic].",
-    "description": "Create an 'us vs them' narrative to build trust."
-  }
-]</options>`;
+        try {
+            const response = await fetch("/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                // Send history excluding the last user message we just added (to avoid dupes if logic differs) 
+                // actually simplest is to send all messages including the new one
+                body: JSON.stringify({
+                    messages: messages.concat(newMsg).map(m => ({ role: m.role, content: m.content }))
+                })
+            });
 
+            if (!response.ok) throw new Error("API Request failed");
+            if (!response.body) throw new Error("No response body");
+
+            // Initial AI Message placeholder
+            const aiMsgId = (Date.now() + 1).toString();
             setMessages((prev) => [
                 ...prev,
                 {
-                    id: (Date.now() + 1).toString(),
+                    id: aiMsgId,
                     role: "ai",
-                    content: mockResponse,
+                    content: "",
                     timestamp: Date.now(),
                 },
             ]);
             setIsTyping(false);
-        }, 1500);
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let done = false;
+            let accumContent = "";
+
+            while (!done) {
+                const { value, done: doneReading } = await reader.read();
+                done = doneReading;
+                if (value) {
+                    const chunkValue = decoder.decode(value, { stream: true });
+                    accumContent += chunkValue;
+
+                    setMessages((prev) =>
+                        prev.map(m =>
+                            m.id === aiMsgId
+                                ? { ...m, content: accumContent }
+                                : m
+                        )
+                    );
+                }
+            }
+        } catch (error) {
+            console.error("Chat error:", error);
+            setIsTyping(false);
+            setMessages((prev) => [
+                ...prev,
+                {
+                    id: Date.now().toString(),
+                    role: "ai",
+                    content: "Connection lost. Please try again.",
+                    timestamp: Date.now(),
+                }
+            ]);
+        }
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {

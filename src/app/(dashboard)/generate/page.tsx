@@ -4,34 +4,12 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Sparkles, Loader2, Film, Zap, Clapperboard, Play } from "lucide-react";
-// ... imports
-
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import type { VideoStyle, GenerationProgress } from "@/types";
-
-const styles: { id: VideoStyle; label: string; icon: React.ElementType }[] = [
-  { id: "cinematic", label: "Cinematic", icon: Film },
-  { id: "dynamic", label: "Dynamic", icon: Zap },
-  { id: "minimal", label: "Minimal", icon: Clapperboard },
-];
-
-const languages = [
-  { code: "en", label: "English" },
-  { code: "ru", label: "Russian" },
-  { code: "es", label: "Spanish" },
-  { code: "de", label: "German" },
-  { code: "fr", label: "French" },
-  { code: "pt", label: "Portuguese" },
-  { code: "zh", label: "Chinese" },
-  { code: "ja", label: "Japanese" },
-  { code: "ko", label: "Korean" },
-  { code: "ar", label: "Arabic" },
-];
+import { ViralChat, StrategyOption } from "@/components/chat/ViralChat";
 
 const stages: Record<string, string> = {
   pending: "Preparing...",
@@ -44,18 +22,20 @@ const stages: Record<string, string> = {
 };
 
 export default function GeneratePage() {
-  const [topic, setTopic] = useState("");
-  const [style, setStyle] = useState<VideoStyle>("cinematic");
-  const [language, setLanguage] = useState("en");
   const [videoCount, setVideoCount] = useState(30);
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState<GenerationProgress | null>(null);
   const [generatedVideoUrl, setGeneratedVideoUrl] = useState<string | null>(null);
+  const [currentStrategy, setCurrentStrategy] = useState<StrategyOption | null>(null);
 
-  async function handleGenerate() {
-    if (!topic.trim()) return;
+  async function handleStrategySelect(strategy: StrategyOption) {
+    setCurrentStrategy(strategy);
+    handleGenerate(strategy);
+  }
+
+  async function handleGenerate(strategy: StrategyOption) {
     setIsGenerating(true);
-    setGeneratedVideoUrl(null); // Reset previous video
+    setGeneratedVideoUrl(null);
 
     // Simulate pipeline stages
     const stageList: GenerationProgress["stage"][] = [
@@ -86,7 +66,8 @@ export default function GeneratePage() {
           const response = await fetch("/api/ingest", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ query: topic })
+            // Use the hook text as the primary search query for stock footage
+            body: JSON.stringify({ query: strategy.hook_text })
           });
 
           if (response.ok) {
@@ -115,105 +96,28 @@ export default function GeneratePage() {
   function handleReset() {
     setIsGenerating(false);
     setProgress(null);
-    setTopic("");
+    setCurrentStrategy(null);
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
+    <div className="mx-auto max-w-4xl space-y-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Generate Videos</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Viral Dashboard</h1>
         <p className="mt-1 text-muted-foreground">
-          Enter a topic and get 30 unique viral videos
+          Brainstorm with AI, select a strategy, and generate content.
         </p>
       </div>
 
       <AnimatePresence mode="wait">
         {!isGenerating ? (
           <motion.div
-            key="input"
+            key="chat"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             className="space-y-6"
           >
-            {/* Topic input */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Topic / Niche</label>
-              <Input
-                placeholder='e.g. "Productivity tips for remote workers"'
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-                className="h-14 text-lg"
-              />
-            </div>
-
-            {/* Settings */}
-            <div className="flex flex-wrap items-center gap-6">
-              {/* Video count */}
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-muted-foreground">
-                  VIDEOS
-                </label>
-                <select
-                  value={videoCount}
-                  onChange={(e) => setVideoCount(Number(e.target.value))}
-                  className="rounded-md border border-input bg-background px-3 py-2 text-sm font-mono h-11 w-full sm:w-auto"
-                >
-                  <option value={1}>1</option>
-                  <option value={30}>30</option>
-                </select>
-              </div>
-
-              {/* Style */}
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-muted-foreground">
-                  STYLE
-                </label>
-                <div className="flex gap-2">
-                  {styles.map((s) => (
-                    <Button
-                      key={s.id}
-                      variant={style === s.id ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setStyle(s.id)}
-                      className="gap-1.5"
-                    >
-                      <s.icon className="h-3.5 w-3.5" />
-                      {s.label}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Language */}
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-muted-foreground">
-                  LANGUAGE
-                </label>
-                <select
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
-                  className="rounded-md border border-input bg-background px-3 py-2 text-sm h-11 w-full sm:w-auto"
-                >
-                  {languages.map((l) => (
-                    <option key={l.code} value={l.code}>
-                      {l.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Generate button */}
-            <Button
-              size="lg"
-              className="w-full gap-2 text-base"
-              onClick={handleGenerate}
-              disabled={!topic.trim()}
-            >
-              <Sparkles className="h-5 w-5" />
-              Generate {videoCount} Video{videoCount > 1 ? "s" : ""}
-            </Button>
+            <ViralChat onStrategySelect={handleStrategySelect} />
           </motion.div>
         ) : (
           <motion.div
@@ -223,10 +127,20 @@ export default function GeneratePage() {
             exit={{ opacity: 0, y: -20 }}
             className="space-y-6"
           >
-            {/* Current topic */}
-            <Card className="p-6">
-              <p className="text-sm text-muted-foreground">Generating for:</p>
-              <p className="mt-1 text-lg font-medium">&ldquo;{topic}&rdquo;</p>
+            {/* Current Strategy Info */}
+            <Card className="p-6 border-primary/20 bg-primary/5">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Executing Strategy:</p>
+                  <p className="mt-1 text-xl font-bold tracking-tight">{currentStrategy?.title}</p>
+                  <p className="font-mono text-sm text-primary mt-2">
+                    &quot;{currentStrategy?.hook_text}&quot;
+                  </p>
+                </div>
+                <Button variant="ghost" size="sm" onClick={handleReset} disabled={progress?.stage !== "completed"}>
+                  {progress?.stage === "completed" ? "New Project" : "Cancel"}
+                </Button>
+              </div>
             </Card>
 
             {/* Progress */}
@@ -299,8 +213,8 @@ export default function GeneratePage() {
                           <div className="h-full w-full bg-neutral-900 object-cover opacity-50" />
                         </div>
                       </DialogTrigger>
-                      <DialogContent className="border-none bg-black p-0 sm:max-w-sm">
-                        <DialogTitle className="sr-only">Video Player</DialogTitle>
+                      <DialogContent className="sm:max-w-md bg-transparent border-none shadow-none p-0">
+                        <DialogTitle className="sr-only">Viral Video Preview</DialogTitle>
                         <DialogDescription className="sr-only">Preview of the viral video</DialogDescription>
                         <div className="relative aspect-[9/16] w-full overflow-hidden rounded-lg bg-black">
                           <video
@@ -318,16 +232,7 @@ export default function GeneratePage() {
                       </DialogContent>
                     </Dialog>
                   ))}
-                  {videoCount > 15 && (
-                    <div className="flex aspect-[9/16] items-center justify-center rounded-lg border border-dashed border-border">
-                      <span className="text-xs text-muted-foreground">+{videoCount - 15} more</span>
-                    </div>
-                  )}
                 </div>
-
-                <Button onClick={handleReset} variant="outline" className="w-full">
-                  Generate Another Batch
-                </Button>
               </motion.div>
             )}
           </motion.div>
