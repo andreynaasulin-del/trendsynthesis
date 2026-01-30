@@ -14,7 +14,7 @@ const navItems = [
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 
-export function Sidebar() {
+export function Sidebar({ className }: { className?: string }) {
   const pathname = usePathname();
 
   async function handleLogout() {
@@ -24,7 +24,7 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="glass-strong fixed left-0 top-0 z-40 flex h-screen w-64 flex-col border-r border-border">
+    <aside className={cn("glass-strong fixed left-0 top-0 z-40 flex h-screen w-64 flex-col border-r border-border", className)}>
       {/* Logo */}
       <div className="flex h-16 items-center px-6">
         <Link
