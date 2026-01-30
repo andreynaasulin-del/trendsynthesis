@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Zap, Skull, TrendingUp, Sparkles, User } from "lucide-react";
+import { Send, Zap, Skull, TrendingUp, Sparkles, User, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,26 +36,6 @@ const STRATEGY_ICONS = {
     default: Sparkles,
 };
 
-// --- Typewriter Effect Hook ---
-const useTypewriter = (text: string, speed = 30) => {
-    const [displayedText, setDisplayedText] = useState("");
-
-    useEffect(() => {
-        let i = 0;
-        const timer = setInterval(() => {
-            if (i < text.length) {
-                setDisplayedText((prev) => prev + text.charAt(i));
-                i++;
-            } else {
-                clearInterval(timer);
-            }
-        }, speed);
-        return () => clearInterval(timer);
-    }, [text, speed]);
-
-    return displayedText;
-};
-
 // --- Strategy Card Component ---
 const StrategyCard = ({
     option,
@@ -64,38 +44,41 @@ const StrategyCard = ({
     option: StrategyOption;
     onSelect: (s: StrategyOption) => void
 }) => {
-    // Determine icon based on title keywords (simple heuristics)
+    // Determine icon based on title keywords
     let Icon = STRATEGY_ICONS.default;
     const lowerTitle = option.title.toLowerCase();
 
-    // @ts-ignore
-    if (lowerTitle.includes("fear") || lowerTitle.includes("risk")) Icon = STRATEGY_ICONS.fear;
-    // @ts-ignore
-    else if (lowerTitle.includes("trend") || lowerTitle.includes("viral")) Icon = STRATEGY_ICONS.hype;
-    // @ts-ignore
-    else if (lowerTitle.includes("value") || lowerTitle.includes("hack")) Icon = STRATEGY_ICONS.value;
+    if (lowerTitle.includes("fear") || lowerTitle.includes("risk") || lowerTitle.includes("страх") || lowerTitle.includes("риск")) Icon = STRATEGY_ICONS.fear;
+    else if (lowerTitle.includes("trend") || lowerTitle.includes("viral") || lowerTitle.includes("тренд")) Icon = STRATEGY_ICONS.hype;
+    else if (lowerTitle.includes("value") || lowerTitle.includes("hack") || lowerTitle.includes("ценност")) Icon = STRATEGY_ICONS.value;
 
     return (
         <motion.div
-            whileHover={{ scale: 1.02, boxShadow: "0 0 20px rgba(16, 185, 129, 0.2)" }}
+            whileHover={{ scale: 1.02, y: -2 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => onSelect(option)}
-            className="group relative cursor-pointer overflow-hidden rounded-xl border border-border bg-black/40 p-4 transition-colors hover:border-primary/50"
+            className="group relative cursor-pointer overflow-hidden rounded-xl border border-white/10 bg-zinc-900/50 p-5 backdrop-blur-md transition-all hover:border-primary/50 hover:bg-zinc-900/80 hover:shadow-xl hover:shadow-primary/10"
         >
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
 
-            <div className="relative z-10 flex flex-col gap-3">
-                <div className="flex items-center justify-between">
-                    <h3 className="font-bold text-white group-hover:text-primary">{option.title}</h3>
-                    <Icon className="h-5 w-5 text-muted-foreground transition-colors group-hover:text-primary" />
+            <div className="relative z-10 flex flex-col gap-4">
+                <div className="flex items-center justify-between border-b border-white/5 pb-3">
+                    <h3 className="font-bold text-zinc-100 group-hover:text-primary transition-colors text-sm tracking-wide uppercase">{option.title}</h3>
+                    <div className="p-1.5 rounded-full bg-white/5 group-hover:bg-primary/20 transition-colors">
+                        <Icon className="h-4 w-4 text-zinc-400 group-hover:text-primary" />
+                    </div>
                 </div>
 
-                <p className="text-xs text-muted-foreground group-hover:text-white/80">
+                <p className="text-xs leading-relaxed text-zinc-400 group-hover:text-zinc-300">
                     {option.description}
                 </p>
 
-                <div className="mt-2 rounded bg-white/5 p-2 font-mono text-[10px] text-primary/80">
-                    &quot;{option.hook_text}&quot;
+                <div className="mt-auto pt-2">
+                    <div className="rounded-lg bg-black/40 border border-white/5 p-3">
+                        <p className="font-mono text-[10px] text-primary/90">
+                            &gt; CAPTION_HOOK: &quot;{option.hook_text}&quot;
+                        </p>
+                    </div>
                 </div>
             </div>
         </motion.div>
@@ -113,7 +96,6 @@ const MessageBubble = ({
     const isUser = message.role === "user";
 
     // The Shadow Parser logic
-    // Use [\s\S] to match newlines
     const optionsRegex = /<options>([\s\S]*?)<\/options>/;
     const match = message.content.match(optionsRegex);
 
@@ -129,8 +111,7 @@ const MessageBubble = ({
         }
     }
 
-    // Apply typewriter only to AI and only for the text part
-    // STREAMING FIX: The stream itself acts as a typewriter. Using a hook here causes re-render glitches.
+    // Use rawText directly to rely on stream visual effect
     const displayText = rawText;
 
     return (
@@ -138,29 +119,29 @@ const MessageBubble = ({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className={cn(
-                "flex w-full gap-3",
+                "flex w-full gap-4",
                 isUser ? "justify-end" : "justify-start"
             )}
         >
             {!isUser && (
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20">
-                    <Sparkles className="h-4 w-4 text-primary" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-800 border border-white/10 shadow-lg">
+                    <Sparkles className="h-5 w-5 text-primary animate-pulse" />
                 </div>
             )}
 
-            <div className={cn("max-w-[85%] space-y-4", isUser && "text-right")}>
+            <div className={cn("max-w-[85%] flex flex-col gap-4", isUser && "items-end")}>
                 {/* Text Content */}
                 {rawText && (
                     <div
                         className={cn(
-                            "rounded-2xl px-4 py-3 text-sm",
+                            "rounded-2xl px-6 py-4 text-sm leading-6 shadow-md backdrop-blur-sm",
                             isUser
-                                ? "bg-primary text-primary-foreground ml-auto inline-block text-left"
-                                : "bg-muted/50 font-mono text-foreground border border-border/50"
+                                ? "bg-primary text-primary-foreground rounded-br-none"
+                                : "bg-zinc-900/80 border border-white/10 text-zinc-200 rounded-bl-none font-mono"
                         )}
                     >
                         {displayText.split("\n").map((line, i) => (
-                            <p key={i} className="min-h-[1.5em]">{line}</p>
+                            <p key={i} className="min-h-[1em] mb-1 last:mb-0">{line}</p>
                         ))}
                     </div>
                 )}
@@ -170,8 +151,8 @@ const MessageBubble = ({
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        transition={{ delay: 1 }}
-                        className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
+                        transition={{ delay: 0.5 }}
+                        className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 w-full mt-2"
                     >
                         {strategies.map((strategy) => (
                             <StrategyCard
@@ -185,31 +166,52 @@ const MessageBubble = ({
             </div>
 
             {isUser && (
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
-                    <User className="h-4 w-4 text-muted-foreground" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-200 border border-white/10 shadow-lg">
+                    <User className="h-5 w-5 text-zinc-600" />
                 </div>
             )}
         </motion.div>
     );
 };
 
-// --- Construct of ViralChat ---
+// --- Visual & Functional Enhancements ---
 export function ViralChat({
-    initialMessage = "Ready to create viral content. Describe your niche.",
+    initialMessage,
     onStrategySelect,
     className
 }: ViralChatProps) {
+    const [language, setLanguage] = useState<"en" | "ru">("en");
+
+    // Dynamic Initial Greeting
+    const greeting = initialMessage || (language === "en"
+        ? "Ready to create viral content. Describe your niche."
+        : "Готов создать вирусный контент. Опишите вашу нишу.");
+
     const [messages, setMessages] = useState<Message[]>([
         {
             id: "init",
             role: "ai",
-            content: initialMessage,
+            content: greeting,
             timestamp: Date.now(),
         },
     ]);
     const [inputValue, setInputValue] = useState("");
     const scrollRef = useRef<HTMLDivElement>(null);
     const [isTyping, setIsTyping] = useState(false);
+
+    // Update greeting when language changes IF chat is empty or only has initial message
+    useEffect(() => {
+        if (messages.length <= 1 && messages[0].role === "ai") {
+            setMessages([{
+                id: "init",
+                role: "ai",
+                content: language === "en"
+                    ? "Ready to create viral content. Describe your niche."
+                    : "Готов создать вирусный контент. Опишите вашу нишу.",
+                timestamp: Date.now(),
+            }]);
+        }
+    }, [language]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Auto-scroll
     useEffect(() => {
@@ -236,9 +238,9 @@ export function ViralChat({
             const response = await fetch("/api/chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                // Send history excluding the last user message we just added (to avoid dupes if logic differs) 
-                // actually simplest is to send all messages including the new one
                 body: JSON.stringify({
+                    // Include language in the payload
+                    language: language,
                     messages: messages.concat(newMsg).map(m => ({
                         role: m.role === 'ai' ? 'assistant' : m.role,
                         content: m.content
@@ -316,22 +318,54 @@ export function ViralChat({
     };
 
     return (
-        <div className={cn("flex flex-col h-[600px] w-full max-w-4xl mx-auto border border-border bg-background rounded-xl overflow-hidden shadow-2xl", className)}>
-            {/* Header */}
-            <div className="flex items-center gap-3 border-b border-border bg-muted/30 px-6 py-4">
-                <div className="flex h-3 w-3">
-                    <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-green-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+        <div className={cn("flex flex-col h-[700px] w-full max-w-5xl mx-auto border border-white/10 bg-black/80 backdrop-blur-xl rounded-2xl overflow-hidden shadow-2xl shadow-primary/5 ring-1 ring-white/5", className)}>
+            {/* Header with Language Switcher */}
+            <div className="flex items-center justify-between border-b border-white/10 bg-zinc-900/50 px-6 py-4 backdrop-blur-md">
+                <div className="flex items-center gap-3">
+                    <div className="flex h-3 w-3">
+                        <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-green-500 opacity-50"></span>
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                    </div>
+                    <span className="font-mono text-sm font-bold tracking-widest text-zinc-400">
+                        VIRAL_CHAT_V2.0
+                    </span>
                 </div>
-                <span className="font-mono text-sm font-medium tracking-wider text-muted-foreground">
-                    VIRAL_CHAT_V1.0 // ONLINE
-                </span>
+
+                {/* Language Toggle */}
+                <div className="flex items-center gap-2 rounded-full border border-white/10 bg-black/40 p-1">
+                    <button
+                        onClick={() => setLanguage("en")}
+                        className={cn(
+                            "px-3 py-1 rounded-full text-xs font-medium transition-all",
+                            language === "en"
+                                ? "bg-primary text-primary-foreground shadow-sm"
+                                : "text-zinc-500 hover:text-zinc-300"
+                        )}
+                    >
+                        EN
+                    </button>
+                    <button
+                        onClick={() => setLanguage("ru")}
+                        className={cn(
+                            "px-3 py-1 rounded-full text-xs font-medium transition-all",
+                            language === "ru"
+                                ? "bg-primary text-primary-foreground shadow-sm"
+                                : "text-zinc-500 hover:text-zinc-300"
+                        )}
+                    >
+                        RU
+                    </button>
+                </div>
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-hidden relative bg-black/50">
-                <div className="h-full overflow-y-auto px-6 py-6" ref={scrollRef}>
-                    <div className="flex flex-col gap-6">
+            <div className="flex-1 overflow-hidden relative">
+                {/* Subtle Grid Background */}
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none"></div>
+                <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/0 to-black/20 pointer-events-none"></div>
+
+                <div className="h-full overflow-y-auto px-6 py-8 relative z-10 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent" ref={scrollRef}>
+                    <div className="flex flex-col gap-8">
                         <AnimatePresence initial={false}>
                             {messages.map((msg) => (
                                 <MessageBubble
@@ -342,42 +376,43 @@ export function ViralChat({
                             ))}
                         </AnimatePresence>
                         {isTyping && (
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                className="flex items-center gap-2 text-muted-foreground"
-                            >
-                                <div className="h-2 w-2 animate-bounce rounded-full bg-primary/50" style={{ animationDelay: "0s" }} />
-                                <div className="h-2 w-2 animate-bounce rounded-full bg-primary/50" style={{ animationDelay: "0.2s" }} />
-                                <div className="h-2 w-2 animate-bounce rounded-full bg-primary/50" style={{ animationDelay: "0.4s" }} />
-                            </motion.div>
+                            <div className="flex items-center gap-2 px-4 py-2">
+                                <span className="text-xs font-mono text-primary animate-pulse">
+                                    {language === "en" ? "ANALYZING_PATTERNS..." : "АНАЛИЗ_ТРЕНДОВ..."}
+                                </span>
+                            </div>
                         )}
                     </div>
                 </div>
             </div>
 
             {/* Input Area */}
-            <div className="border-t border-border bg-background p-4">
-                <div className="relative flex items-center gap-2">
+            <div className="border-t border-white/10 bg-zinc-900/30 p-4 backdrop-blur-md">
+                <div className="relative flex items-center gap-3">
                     <Input
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        placeholder="Describe your video idea..."
-                        className="pr-12 bg-muted/50 border-border/50 focus-visible:ring-primary/50"
+                        placeholder={language === "en" ? "Describe your video idea..." : "Опишите идею видео..."}
+                        className="h-12 pl-4 pr-14 bg-black/40 border-white/10 text-zinc-200 placeholder:text-zinc-600 focus-visible:ring-primary/50 focus-visible:border-primary/50 rounded-xl"
                     />
                     <Button
                         size="icon"
                         onClick={handleSend}
                         disabled={!inputValue.trim() || isTyping}
-                        className="absolute right-1 h-8 w-8 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
+                        className="absolute right-2 h-8 w-8 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
                     >
                         <Send className="h-4 w-4" />
                     </Button>
                 </div>
-                <div className="mt-2 flex justify-between px-1">
-                    <span className="text-[10px] text-muted-foreground font-mono">AI-POWERED ANALYSIS</span>
-                    <span className="text-[10px] text-muted-foreground font-mono">PRESS ENTER TO SEND</span>
+                <div className="mt-2 flex justify-between px-2">
+                    <span className="text-[10px] text-zinc-600 font-mono flex items-center gap-1">
+                        <Globe className="h-3 w-3" />
+                        {language === "en" ? "GLOBAL_TRENDS_DB" : "БАЗА_ТРЕНДОВ"}
+                    </span>
+                    <span className="text-[10px] text-zinc-600 font-mono">
+                        {language === "en" ? "PRESS ENTER TO SEND" : "НАЖМИТЕ ENTER"}
+                    </span>
                 </div>
             </div>
         </div>

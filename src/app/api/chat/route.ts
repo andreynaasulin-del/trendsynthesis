@@ -42,15 +42,20 @@ Keep the JSON valid and minified or pretty-printed, but ensure it is strictly wi
 
 export async function POST(req: Request) {
     try {
-        const { messages } = await req.json();
+        const { messages, language = "en" } = await req.json();
 
         if (!messages || !Array.isArray(messages)) {
             return NextResponse.json({ error: "Invalid messages format" }, { status: 400 });
         }
 
+        // Language Override
+        const languageInstruction = language === "ru"
+            ? "\n\nCRITICAL INSTRUCTION: You MUST output the entire response (Analysis + JSON) in RUSSIAN language. Translate strategy titles and descriptions to Russian. Keep hook_text punchy in Russian."
+            : "";
+
         // Inject Persona
         const messagesWithPersona = [
-            { role: "system", content: SYSTEM_PROMPT },
+            { role: "system", content: SYSTEM_PROMPT + languageInstruction },
             ...messages
         ];
 
