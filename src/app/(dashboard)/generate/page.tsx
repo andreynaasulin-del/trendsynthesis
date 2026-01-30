@@ -1,8 +1,10 @@
+```javascript
 "use client";
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Loader2, Film, Zap, Clapperboard } from "lucide-react";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
+import { Sparkles, Loader2, Film, Zap, Clapperboard, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -243,10 +245,40 @@ export default function GeneratePage() {
                 </h3>
                 <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
                   {Array.from({ length: Math.min(videoCount, 15) }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="aspect-[9/16] rounded-lg bg-secondary animate-pulse"
-                    />
+                    <Dialog key={i}>
+                      <DialogTrigger asChild>
+                        <div className="group relative aspect-[9/16] cursor-pointer overflow-hidden rounded-lg border border-border bg-black transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/20">
+                          {/* Thumbnail / Placeholder */}
+                          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60" />
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 backdrop-blur-sm">
+                              <Play className="h-6 w-6 fill-primary text-primary" />
+                            </div>
+                          </div>
+                          
+                          {/* Text Overlay */}
+                          <div className="absolute bottom-2 left-2 right-2">
+                             <p className="truncate text-[10px] font-medium text-muted-foreground">
+                               Viral_Clip_{i + 1}.mp4
+                             </p>
+                          </div>
+                          
+                          {/* Fake Preview Image (Gradient) */}
+                          <div className="h-full w-full bg-neutral-900 object-cover opacity-50" />
+                        </div>
+                      </DialogTrigger>
+                      <DialogContent className="border-none bg-black p-0 sm:max-w-sm">
+                        <DialogTitle className="sr-only">Video Player</DialogTitle>
+                        <div className="relative aspect-[9/16] w-full overflow-hidden rounded-lg bg-black">
+                          <video
+                            src="https://cdn.coverr.co/videos/coverr-walking-in-a-city-at-night-vertical-4565/1080p.mp4"
+                            controls
+                            autoPlay
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   ))}
                   {videoCount > 15 && (
                     <div className="flex aspect-[9/16] items-center justify-center rounded-lg border border-dashed border-border">
