@@ -278,6 +278,7 @@ export default function GeneratePage() {
                       </DialogTrigger>
                       <DialogContent className="border-none bg-black p-0 sm:max-w-sm">
                         <DialogTitle className="sr-only">Video Player</DialogTitle>
+                        <DialogDescription className="sr-only">Preview of the viral video</DialogDescription>
                         <div className="relative aspect-[9/16] w-full overflow-hidden rounded-lg bg-black">
                           <video
                             src="https://videos.pexels.com/video-files/5532766/5532766-hd_1080_1920_30fps.mp4"
@@ -286,6 +287,7 @@ export default function GeneratePage() {
                             playsInline
                             loop
                             muted
+                            referrerPolicy="no-referrer"
                             className="h-full w-full object-cover"
                           />
                         </div>
