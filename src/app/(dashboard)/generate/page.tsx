@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Sparkles, Loader2, Film, Zap, Clapperboard, Play } from "lucide-react";
 // ... imports
 
@@ -287,6 +287,7 @@ export default function GeneratePage() {
                             playsInline
                             loop
                             muted
+                            // @ts-ignore
                             referrerPolicy="no-referrer"
                             className="h-full w-full object-cover"
                           />
