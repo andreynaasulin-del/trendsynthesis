@@ -130,7 +130,8 @@ const MessageBubble = ({
     }
 
     // Apply typewriter only to AI and only for the text part
-    const displayText = isUser ? rawText : useTypewriter(rawText, 15);
+    // STREAMING FIX: The stream itself acts as a typewriter. Using a hook here causes re-render glitches.
+    const displayText = rawText;
 
     return (
         <motion.div
