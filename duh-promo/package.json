@@ -1,0 +1,32 @@
+{
+  "name": "duh-promo",
+  "version": "1.0.0",
+  "description": "DUH DEVELOPER promotional video",
+  "main": "index.js",
+  "scripts": {
+    "start": "remotion studio",
+    "build": "remotion render DuhPromo out/duh_promo.mp4",
+    "render": "remotion render DuhPromo out/duh_promo.mp4"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@remotion/bundler": "^4.0.410",
+    "@remotion/cli": "^4.0.410",
+    "@remotion/google-fonts": "^4.0.410",
+    "@types/react": "^19.2.10",
+    "@types/react-dom": "^19.2.3",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "remotion": "^4.0.410",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.5.0",
+    "@react-three/postprocessing": "^3.0.4",
+    "@remotion/three": "^4.0.410",
+    "three": "^0.182.0"
+  }
+}

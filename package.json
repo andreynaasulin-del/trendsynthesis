@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.5.0",
+    "@react-three/postprocessing": "^3.0.4",
+    "@remotion/three": "^4.0.410",
+    "@types/three": "^0.182.0",
+    "gl-react": "^5.2.0",
+    "gl-react-dom": "^5.2.1",
+    "lamina": "^1.2.2",
+    "three": "^0.182.0"
+  }
+}
