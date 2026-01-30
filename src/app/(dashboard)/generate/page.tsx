@@ -44,6 +44,7 @@ export default function GeneratePage() {
   const [topic, setTopic] = useState("");
   const [style, setStyle] = useState<VideoStyle>("cinematic");
   const [language, setLanguage] = useState("en");
+  const [videoCount, setVideoCount] = useState(30);
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState<GenerationProgress | null>(null);
 
@@ -69,9 +70,9 @@ export default function GeneratePage() {
         stage,
         progress: Math.min(baseProgress + 20, 100),
         current_step: stages[stage],
-        scenarios_generated: stage === "generating_scenarios" || i > 1 ? 30 : 0,
-        videos_rendered: stage === "completed" ? 30 : stage === "rendering" ? 15 : 0,
-        total_videos: 30,
+        scenarios_generated: stage === "generating_scenarios" || i > 1 ? videoCount : 0,
+        videos_rendered: stage === "completed" ? videoCount : stage === "rendering" ? Math.floor(videoCount / 2) : 0,
+        total_videos: videoCount,
       });
 
       // Simulate API call time
@@ -127,9 +128,14 @@ export default function GeneratePage() {
                 <label className="text-xs font-medium text-muted-foreground">
                   VIDEOS
                 </label>
-                <Badge variant="secondary" className="text-lg font-mono px-4 py-1">
-                  30
-                </Badge>
+                <select
+                  value={videoCount}
+                  onChange={(e) => setVideoCount(Number(e.target.value))}
+                  className="rounded-md border border-input bg-background px-3 py-2 text-sm font-mono"
+                >
+                  <option value={1}>1</option>
+                  <option value={30}>30</option>
+                </select>
               </div>
 
               {/* Style */}
@@ -180,7 +186,7 @@ export default function GeneratePage() {
               disabled={!topic.trim()}
             >
               <Sparkles className="h-5 w-5" />
-              Generate 30 Videos
+              Generate {videoCount} Video{videoCount > 1 ? "s" : ""}
             </Button>
           </motion.div>
         ) : (
@@ -216,10 +222,10 @@ export default function GeneratePage() {
 
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>
-                  Scenarios: {progress?.scenarios_generated || 0}/30
+                  Scenarios: {progress?.scenarios_generated || 0}/{videoCount}
                 </span>
                 <span>
-                  Videos: {progress?.videos_rendered || 0}/30
+                  Videos: {progress?.videos_rendered || 0}/{videoCount}
                 </span>
               </div>
             </div>
@@ -233,18 +239,20 @@ export default function GeneratePage() {
                 className="space-y-4"
               >
                 <h3 className="text-lg font-semibold">
-                  30 Videos Generated
+                  {videoCount} Video{videoCount > 1 ? "s" : ""} Generated
                 </h3>
                 <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
-                  {Array.from({ length: 15 }).map((_, i) => (
+                  {Array.from({ length: Math.min(videoCount, 15) }).map((_, i) => (
                     <div
                       key={i}
                       className="aspect-[9/16] rounded-lg bg-secondary animate-pulse"
                     />
                   ))}
-                  <div className="flex aspect-[9/16] items-center justify-center rounded-lg border border-dashed border-border">
-                    <span className="text-xs text-muted-foreground">+15 more</span>
-                  </div>
+                  {videoCount > 15 && (
+                    <div className="flex aspect-[9/16] items-center justify-center rounded-lg border border-dashed border-border">
+                      <span className="text-xs text-muted-foreground">+{videoCount - 15} more</span>
+                    </div>
+                  )}
                 </div>
 
                 <Button onClick={handleReset} variant="outline" className="w-full">
