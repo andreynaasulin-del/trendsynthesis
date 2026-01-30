@@ -37,13 +37,12 @@ STRATEGY TYPES (Mix these):
 Keep the JSON valid and minified or pretty-printed, but ensure it is strictly within the tags. available options tags are <options> and </options>.
 `;
 
-export const runtime = "edge"; // Optional: Use Edge if preferred for speed, standard Node is fine too.
+// Outputting to default Node.js runtime for better stability with OpenAI SDK
+// export const runtime = "edge"; 
 
 export async function POST(req: Request) {
     try {
         const { messages } = await req.json();
-
-        // TODO: Check user credits/limits here
 
         if (!messages || !Array.isArray(messages)) {
             return NextResponse.json({ error: "Invalid messages format" }, { status: 400 });
@@ -55,12 +54,25 @@ export async function POST(req: Request) {
             ...messages
         ];
 
-        const response = await openai.chat.completions.create({
-            model: "gpt-4o", // Ensure model exists or fallback
-            messages: messagesWithPersona as any, // Type assertion as OpenAI types can be strict
-            temperature: 0.7,
-            stream: true,
-        });
+        let response;
+        try {
+            // First try: GPT-4o
+            response = await openai.chat.completions.create({
+                model: "gpt-4o",
+                messages: messagesWithPersona as any,
+                temperature: 0.7,
+                stream: true,
+            });
+        } catch (e: any) {
+            console.warn("[ViralChat] GPT-4o failed, falling back to GPT-4o-mini:", e.message);
+            // Fallback: GPT-4o-mini (Higher availability)
+            response = await openai.chat.completions.create({
+                model: "gpt-4o-mini",
+                messages: messagesWithPersona as any,
+                temperature: 0.7,
+                stream: true,
+            });
+        }
 
         // innovative stream approach compatible with edge
         const stream = new ReadableStream({

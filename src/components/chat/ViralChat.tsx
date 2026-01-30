@@ -243,9 +243,15 @@ export function ViralChat({
             });
 
             if (!response.ok) {
-                if (response.status === 401) throw new Error("API Key Invalid/Missing");
-                if (response.status === 500) throw new Error("OpenAI Service Error");
-                throw new Error("Network Error");
+                let errorMessage = "Network Error";
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.error || `Error ${response.status}`;
+                } catch {
+                    if (response.status === 401) errorMessage = "API Key Invalid/Missing";
+                    else if (response.status === 500) errorMessage = "OpenAI Service Error";
+                }
+                throw new Error(errorMessage);
             }
             if (!response.body) throw new Error("No response body");
 
