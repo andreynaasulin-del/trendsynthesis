@@ -280,9 +280,12 @@ export default function GeneratePage() {
                         <DialogTitle className="sr-only">Video Player</DialogTitle>
                         <div className="relative aspect-[9/16] w-full overflow-hidden rounded-lg bg-black">
                           <video
-                            src="https://cdn.coverr.co/videos/coverr-walking-in-a-city-at-night-vertical-4565/1080p.mp4"
+                            src="https://videos.pexels.com/video-files/5532766/5532766-hd_1080_1920_30fps.mp4"
                             controls
                             autoPlay
+                            playsInline
+                            loop
+                            muted
                             className="h-full w-full object-cover"
                           />
                         </div>
