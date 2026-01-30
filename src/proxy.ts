@@ -1,12 +1,19 @@
 // ============================================
-// TRENDSYNTHESIS — Next.js Middleware
+// TRENDSYNTHESIS — Next.js Proxy (formerly Middleware)
 // ============================================
 
-import { type NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
-export async function middleware(request: NextRequest) {
-  return await updateSession(request);
+export async function proxy(request: NextRequest) {
+  try {
+    return await updateSession(request);
+  } catch (err) {
+    console.error("CRITICAL: Proxy/Middleware Crash:", err);
+    // Return a dummy response to prevent Vercel 404 (Edge Function Crash)
+    // We let the page load; user might just be unauthenticated.
+    return NextResponse.next({ request });
+  }
 }
 
 export const config = {
