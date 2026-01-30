@@ -238,7 +238,10 @@ export function ViralChat({
                 // Send history excluding the last user message we just added (to avoid dupes if logic differs) 
                 // actually simplest is to send all messages including the new one
                 body: JSON.stringify({
-                    messages: messages.concat(newMsg).map(m => ({ role: m.role, content: m.content }))
+                    messages: messages.concat(newMsg).map(m => ({
+                        role: m.role === 'ai' ? 'assistant' : m.role,
+                        content: m.content
+                    }))
                 })
             });
 
