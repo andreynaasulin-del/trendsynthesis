@@ -6,17 +6,6 @@ import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/
 import { Sparkles, Loader2, Film, Zap, Clapperboard, Play } from "lucide-react";
 // ... imports
 
-// ... inside GeneratePage
-className = "rounded-md border border-input bg-background px-3 py-2 text-sm font-mono h-10 md:h-9"
-
-  // ... inside result grid
-  < div className = {
-    cn(
-                  "grid gap-3",
-      videoCount === 1
-    ? "flex justify-center"
-    : "grid-cols-2 sm:grid-cols-3 md:grid-cols-5"
-                )}>
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
