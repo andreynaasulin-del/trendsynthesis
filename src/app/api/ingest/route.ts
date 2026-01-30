@@ -20,26 +20,28 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Query is required" }, { status: 400 });
         }
 
-        console.log(`[Ingest] Starting search for: ${query}`);
+        console.log(`[Ingest] Starting montage search for: ${query}`);
 
         // 1. Pexels Discovery
-        let videoUrl = "";
+        let videoUrls: string[] = [];
         let provider = "pexels";
 
         if (PEXELS_API_KEY) {
             try {
+                // Fetch 4 videos for a montage
                 const pexelsResponse = await fetch(
-                    `https://api.pexels.com/videos/search?query=${encodeURIComponent(query)}&orientation=portrait&size=medium&per_page=1`,
+                    `https://api.pexels.com/videos/search?query=${encodeURIComponent(query)}&orientation=portrait&size=medium&per_page=4`,
                     { headers: { Authorization: PEXELS_API_KEY } }
                 );
 
                 if (pexelsResponse.ok) {
                     const pexelsData = await pexelsResponse.json();
                     if (pexelsData.videos?.length > 0) {
-                        const videoFiles = pexelsData.videos[0].video_files;
-                        const bestVideo = videoFiles.find((f: any) => f.height === 1920 && f.width === 1080) || videoFiles[0];
-                        videoUrl = bestVideo.link;
-                        console.log(`[Ingest] Found Pexels asset: ${videoUrl}`);
+                        videoUrls = pexelsData.videos.map((video: any) => {
+                            const bestFile = video.video_files.find((f: any) => f.height === 1920 && f.width === 1080) || video.video_files[0];
+                            return bestFile.link;
+                        });
+                        console.log(`[Ingest] Found ${videoUrls.length} Pexels assets.`);
                     }
                 }
             } catch (e) {
@@ -47,70 +49,70 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        // Fallback to Coverr
-        if (!videoUrl) {
+        // Fallback to Coverr (Mix of URLs to simulate variety if Pexels fails)
+        if (videoUrls.length === 0) {
             console.log("[Ingest] Switching to Coverr fallback");
             provider = "coverr";
-            videoUrl = "https://cdn.coverr.co/videos/coverr-walking-in-a-city-at-night-vertical-4565/1080p.mp4";
+            videoUrls = [
+                "https://cdn.coverr.co/videos/coverr-walking-in-a-city-at-night-vertical-4565/1080p.mp4",
+                "https://cdn.coverr.co/videos/coverr-neon-signs-in-tokyo-night-4546/1080p.mp4",
+                "https://cdn.coverr.co/videos/coverr-traffic-at-night-vertical-4532/1080p.mp4",
+                "https://cdn.coverr.co/videos/coverr-man-working-on-laptop-at-night-4521/1080p.mp4"
+            ];
         }
 
-        // If we have no Supabase Admin, return direct link immediately (Fall-through mode)
+        // If no Supabase Admin, return direct links immediately (Fall-through mode)
         if (!supabaseAdmin) {
-            console.warn("[Ingest] SUPABASE_SERVICE_ROLE_KEY missing. Skipping secure storage.");
             return NextResponse.json({
                 success: true,
-                url: videoUrl,
+                assets: videoUrls,
                 source: provider,
                 note: "Storage skipped (Configuration missing)"
             });
         }
 
-        // 2. Memory Capture & 3. Supabase Upload
-        try {
-            console.log(`[Ingest] Capturing stream from ${provider}...`);
-            const mediaResponse = await fetch(videoUrl);
-            if (!mediaResponse.ok) throw new Error("Failed to fetch media stream");
+        // 2. Parallel Memory Capture & Upload
+        console.log(`[Ingest] Ingesting ${videoUrls.length} assets to secure storage...`);
 
-            const arrayBuffer = await mediaResponse.arrayBuffer();
-            const buffer = Buffer.from(arrayBuffer);
+        const uploadPromises = videoUrls.map(async (url) => {
+            try {
+                const mediaResponse = await fetch(url);
+                if (!mediaResponse.ok) return url; // Fallback to source if fetch fails
 
-            const fileId = uuidv4();
-            const fileName = `${fileId}.mp4`;
+                const arrayBuffer = await mediaResponse.arrayBuffer();
+                const buffer = Buffer.from(arrayBuffer);
+                const fileId = uuidv4();
+                const fileName = `${fileId}.mp4`;
 
-            const { error: uploadError } = await supabaseAdmin.storage
-                .from(RAW_VIDEOS_BUCKET)
-                .upload(fileName, buffer, {
-                    contentType: "video/mp4",
-                    cacheControl: "3600",
-                    upsert: false,
-                });
+                const { error: uploadError } = await supabaseAdmin.storage
+                    .from(RAW_VIDEOS_BUCKET)
+                    .upload(fileName, buffer, {
+                        contentType: "video/mp4",
+                        cacheControl: "3600",
+                        upsert: false,
+                    });
 
-            if (uploadError) throw uploadError;
+                if (uploadError) throw uploadError;
 
-            const { data: publicUrlData } = supabaseAdmin.storage
-                .from(RAW_VIDEOS_BUCKET)
-                .getPublicUrl(fileName);
+                const { data } = supabaseAdmin.storage
+                    .from(RAW_VIDEOS_BUCKET)
+                    .getPublicUrl(fileName);
 
-            console.log(`[Ingest] Asset deployed to: ${publicUrlData.publicUrl}`);
+                return data.publicUrl;
+            } catch (err) {
+                console.error(`[Ingest] Failed to upload ${url}:`, err);
+                return url; // Fallback to original
+            }
+        });
 
-            return NextResponse.json({
-                success: true,
-                asset_id: fileId,
-                url: publicUrlData.publicUrl,
-                source: "trendsynthesis-secure-storage",
-                meta: { processed_at: new Date().toISOString() }
-            });
+        const secureAssets = await Promise.all(uploadPromises);
 
-        } catch (storageError) {
-            console.error("[Ingest] Storage Pipeline Failed (Returning direct link):", storageError);
-            // Fallback: Return the original direct link if storage fails
-            return NextResponse.json({
-                success: true,
-                url: videoUrl,
-                source: provider,
-                error: "Storage ingestion failed, served from source"
-            });
-        }
+        return NextResponse.json({
+            success: true,
+            assets: secureAssets,
+            source: "trendsynthesis-secure-storage",
+            meta: { count: secureAssets.length }
+        });
 
     } catch (error: any) {
         console.error("[Ingest] Critical Failure:", error);

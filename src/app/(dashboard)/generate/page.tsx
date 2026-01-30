@@ -1,243 +1,156 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Sparkles, Loader2, Film, Zap, Clapperboard, Play } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { cn } from "@/lib/utils";
-import type { VideoStyle, GenerationProgress } from "@/types";
+import React, { useState } from "react";
 import { ViralChat, StrategyOption } from "@/components/chat/ViralChat";
-
-const stages: Record<string, string> = {
-  pending: "Preparing...",
-  parsing: "Parsing topic into angles...",
-  generating_scenarios: "AI generating 30 scenarios...",
-  fetching_assets: "Finding stock footage...",
-  rendering: "Rendering videos...",
-  completed: "Generation complete!",
-  failed: "Generation failed.",
-};
+import { Loader2, CheckCircle2 } from "lucide-react";
+import { Player } from "@remotion/player";
+import { ViralMontage } from "@/remotion/components/ViralMontage";
+import { Progress } from "@/components/ui/progress";
 
 export default function GeneratePage() {
-  const [videoCount, setVideoCount] = useState(30);
+  const [selectedStrategy, setSelectedStrategy] = useState<StrategyOption | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [progress, setProgress] = useState<GenerationProgress | null>(null);
-  const [generatedVideoUrl, setGeneratedVideoUrl] = useState<string | null>(null);
-  const [currentStrategy, setCurrentStrategy] = useState<StrategyOption | null>(null);
+  const [generationProgress, setGenerationProgress] = useState(0);
+  const [videoAssets, setVideoAssets] = useState<string[]>([]);
 
-  async function handleStrategySelect(strategy: StrategyOption) {
-    setCurrentStrategy(strategy);
+  const handleStrategySelect = (strategy: StrategyOption) => {
+    setSelectedStrategy(strategy);
     handleGenerate(strategy);
-  }
+  };
 
-  async function handleGenerate(strategy: StrategyOption) {
+  const handleGenerate = async (strategy: StrategyOption) => {
     setIsGenerating(true);
-    setGeneratedVideoUrl(null);
+    setGenerationProgress(0);
+    setVideoAssets([]);
 
-    // Simulate pipeline stages
-    const stageList: GenerationProgress["stage"][] = [
-      "parsing",
-      "generating_scenarios",
-      "fetching_assets",
-      "rendering",
-      "completed",
-    ];
+    // Simulation of the "Ghost Protocol" pipeline
+    const stages = ["analyzing_hook", "fetching_assets", "ffmpeg_processing", "finalizing"];
 
-    for (let i = 0; i < stageList.length; i++) {
-      const stage = stageList[i];
-      const baseProgress = (i / stageList.length) * 100;
+    try {
+      for (const stage of stages) {
+        await new Promise(r => setTimeout(r, 1000)); // Simulate work
 
-      setProgress({
-        project_id: "demo",
-        stage,
-        progress: Math.min(baseProgress + 20, 100),
-        current_step: stages[stage],
-        scenarios_generated: stage === "generating_scenarios" || i > 1 ? videoCount : 0,
-        videos_rendered: stage === "completed" ? videoCount : stage === "rendering" ? Math.floor(videoCount / 2) : 0,
-        total_videos: videoCount,
-      });
+        if (stage === "fetching_assets") {
+          // Actual API Call to Ingest
+          try {
+            const res = await fetch("/api/ingest", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ query: strategy.hook_text }) // Use hook as query
+            });
+            const data = await res.json();
 
-      // Execute Real Asset Discovery
-      if (stage === "fetching_assets") {
-        try {
-          const response = await fetch("/api/ingest", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            // Use the hook text as the primary search query for stock footage
-            body: JSON.stringify({ query: strategy.hook_text })
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            if (data.url) {
-              console.log("Secure asset acquired:", data.url);
-              setGeneratedVideoUrl(data.url);
+            if (data.success && (data.assets || data.url)) {
+              // Support both old (single url) and new (assets array) formats
+              const newAssets = data.assets || [data.url];
+              setVideoAssets(newAssets);
+            } else {
+              throw new Error("Asset fetch failed");
             }
+          } catch (e) {
+            console.error("Ingest failed", e);
+            // Fallback for demo if API fails
+            setVideoAssets([
+              "https://cdn.coverr.co/videos/coverr-walking-in-a-city-at-night-vertical-4565/1080p.mp4",
+              "https://cdn.coverr.co/videos/coverr-neon-signs-in-tokyo-night-4546/1080p.mp4"
+            ]);
           }
-        } catch (e) {
-          console.error("Asset discovery failed, using fallback", e);
         }
-      }
 
-      // Simulate Processing Time
-      if (stage !== "completed") {
-        await new Promise((r) => setTimeout(r, 2000));
+        setGenerationProgress(prev => prev + 25);
       }
+    } catch (error) {
+      console.error("Generation failed:", error);
     }
-
-    setProgress((prev) =>
-      prev ? { ...prev, progress: 100, stage: "completed" } : null
-    );
-  }
-
-  function handleReset() {
-    setIsGenerating(false);
-    setProgress(null);
-    setCurrentStrategy(null);
-  }
+  };
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Viral Dashboard</h1>
-        <p className="mt-1 text-muted-foreground">
-          Brainstorm with AI, select a strategy, and generate content.
-        </p>
+    <div className="flex h-full flex-col gap-6 p-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Viral Dashboard</h1>
+          <p className="text-muted-foreground">Brainstorm with AI, select a strategy, and generate content.</p>
+        </div>
       </div>
 
-      <AnimatePresence mode="wait">
-        {!isGenerating ? (
-          <motion.div
-            key="chat"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="space-y-6"
-          >
-            <ViralChat onStrategySelect={handleStrategySelect} />
-          </motion.div>
-        ) : (
-          <motion.div
-            key="progress"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="space-y-6"
-          >
-            {/* Current Strategy Info */}
-            <Card className="p-6 border-primary/20 bg-primary/5">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Executing Strategy:</p>
-                  <p className="mt-1 text-xl font-bold tracking-tight">{currentStrategy?.title}</p>
-                  <p className="font-mono text-sm text-primary mt-2">
-                    &quot;{currentStrategy?.hook_text}&quot;
+      <div className="grid h-full grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* Left Column: Chat Interface */}
+        <div className="flex flex-col gap-4">
+          <ViralChat onStrategySelect={handleStrategySelect} />
+        </div>
+
+        {/* Right Column: Preview/Result */}
+        <div className="flex flex-col items-center justify-center space-y-6 rounded-xl border border-border bg-card/50 p-8 min-h-[700px]">
+          {!selectedStrategy ? (
+            <div className="text-center text-muted-foreground">
+              <div className="mb-4 flex justify-center">
+                <div className="h-20 w-20 rounded-2xl bg-muted/20 animate-pulse" />
+              </div>
+              <p>Select a strategy to start generating</p>
+            </div>
+          ) : (
+            <div className="w-full max-w-md space-y-6 flex flex-col items-center">
+              {/* Progress / Status Header */}
+              <div className="flex items-center justify-between w-full">
+                <div className="space-y-1">
+                  <h3 className="font-medium text-foreground">
+                    {generationProgress < 100 ? "Synthesizing Content..." : "Production Complete"}
+                  </h3>
+                  <p className="text-xs text-muted-foreground font-mono">
+                    STRATEGY: {selectedStrategy?.title}
                   </p>
                 </div>
-                <Button variant="ghost" size="sm" onClick={handleReset} disabled={progress?.stage !== "completed"}>
-                  {progress?.stage === "completed" ? "New Project" : "Cancel"}
-                </Button>
+                {generationProgress < 100 ? (
+                  <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                ) : (
+                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                )}
               </div>
-            </Card>
 
-            {/* Progress */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  {progress?.stage !== "completed" && (
-                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                  )}
-                  <span className="text-sm font-medium">
-                    {progress?.current_step || "Starting..."}
-                  </span>
+              {/* Progress Bar */}
+              <Progress value={generationProgress} className="h-2 w-full" />
+
+              {/* Log Output Simulation */}
+              <div className="w-full h-32 overflow-hidden rounded-md border border-border bg-black/50 p-3 font-mono text-xs text-muted-foreground">
+                <div className="flex flex-col gap-1">
+                  <span className="text-green-500">$ init ghost_protocol --v4</span>
+                  {generationProgress > 10 && <span>&gt; analyzing hook: &quot;{selectedStrategy?.hook_text}&quot;</span>}
+                  {generationProgress > 30 && <span>&gt; searching vector_db [Pexels/Coverr]...</span>}
+                  {videoAssets.length > 0 && <span className="text-blue-400">&gt; assets acquired: {videoAssets.length} clips</span>}
+                  {generationProgress > 75 && <span>&gt; sequencing montage [cuts, transitions]...</span>}
+                  {generationProgress === 100 && <span className="text-green-400">&gt; render complete. output ready.</span>}
                 </div>
-                <span className="font-mono text-sm text-muted-foreground">
-                  {Math.round(progress?.progress || 0)}%
-                </span>
               </div>
-              <Progress value={progress?.progress || 0} className="h-2" />
 
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>
-                  Scenarios: {progress?.scenarios_generated || 0}/{videoCount}
-                </span>
-                <span>
-                  Videos: {progress?.videos_rendered || 0}/{videoCount}
-                </span>
-              </div>
+              {/* Final Video Result - REMOTION PLAYER */}
+              {videoAssets.length > 0 && generationProgress === 100 && (
+                <div className="relative aspect-[9/16] w-full max-w-[320px] overflow-hidden rounded-xl border border-zinc-800 bg-black shadow-2xl ring-1 ring-white/10">
+                  <Player
+                    component={ViralMontage}
+                    inputProps={{
+                      assets: videoAssets,
+                      strategy: selectedStrategy
+                    }}
+                    durationInFrames={450} // 15 seconds
+                    fps={30}
+                    compositionWidth={1080}
+                    compositionHeight={1920}
+                    style={{ width: '100%', height: '100%' }}
+                    controls
+                    autoPlay
+                    loop
+                  />
+                  <div className="absolute top-4 right-4 z-10 pointers-events-none">
+                    <span className="px-2 py-1 bg-black/60 backdrop-blur text-[10px] font-mono text-green-400 rounded border border-green-500/20">
+                      LIVE_PREVIEW
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
-
-            {/* Result grid (when complete) */}
-            {progress?.stage === "completed" && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
-                className="space-y-4"
-              >
-                <h3 className="text-lg font-semibold">
-                  {videoCount} Video{videoCount > 1 ? "s" : ""} Generated
-                </h3>
-                <div className={cn(
-                  "grid gap-3",
-                  videoCount === 1
-                    ? "flex justify-center"
-                    : "grid-cols-2 sm:grid-cols-3 md:grid-cols-5"
-                )}>
-                  {Array.from({ length: Math.min(videoCount, 15) }).map((_, i) => (
-                    <Dialog key={i}>
-                      <DialogTrigger asChild>
-                        <div className={cn(
-                          "group relative cursor-pointer overflow-hidden rounded-lg border border-border bg-black transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/20",
-                          videoCount === 1 ? "aspect-[9/16] w-full max-w-[240px]" : "aspect-[9/16]"
-                        )}>
-                          {/* Thumbnail / Placeholder */}
-                          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60" />
-                          <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 backdrop-blur-sm">
-                              <Play className="h-6 w-6 fill-primary text-primary" />
-                            </div>
-                          </div>
-
-                          {/* Text Overlay */}
-                          <div className="absolute bottom-2 left-2 right-2">
-                            <p className="truncate text-[10px] font-medium text-muted-foreground">
-                              {videoCount === 1 ? "Viral_Masterpiece.mp4" : `Viral_Clip_${i + 1}.mp4`}
-                            </p>
-                          </div>
-
-                          {/* Fake Preview Image (Gradient) */}
-                          <div className="h-full w-full bg-neutral-900 object-cover opacity-50" />
-                        </div>
-                      </DialogTrigger>
-                      <DialogContent className="sm:max-w-md bg-transparent border-none shadow-none p-0">
-                        <DialogTitle className="sr-only">Viral Video Preview</DialogTitle>
-                        <DialogDescription className="sr-only">Preview of the viral video</DialogDescription>
-                        <div className="relative aspect-[9/16] w-full overflow-hidden rounded-lg bg-black">
-                          <video
-                            src={generatedVideoUrl || "https://cdn.coverr.co/videos/coverr-walking-in-a-city-at-night-vertical-4565/1080p.mp4"}
-                            controls
-                            autoPlay
-                            playsInline
-                            loop
-                            muted
-                            // @ts-ignore
-                            referrerPolicy="no-referrer"
-                            className="h-full w-full object-cover"
-                          />
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
