@@ -1,10 +1,22 @@
-```javascript
 "use client";
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
 import { Sparkles, Loader2, Film, Zap, Clapperboard, Play } from "lucide-react";
+// ... imports
+
+// ... inside GeneratePage
+className = "rounded-md border border-input bg-background px-3 py-2 text-sm font-mono h-10 md:h-9"
+
+  // ... inside result grid
+  < div className = {
+    cn(
+                  "grid gap-3",
+      videoCount === 1
+    ? "flex justify-center"
+    : "grid-cols-2 sm:grid-cols-3 md:grid-cols-5"
+                )}>
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -133,7 +145,7 @@ export default function GeneratePage() {
                 <select
                   value={videoCount}
                   onChange={(e) => setVideoCount(Number(e.target.value))}
-                  className="rounded-md border border-input bg-background px-3 py-2 text-sm font-mono"
+                  className="rounded-md border border-input bg-background px-3 py-2 text-sm font-mono h-11 w-full sm:w-auto"
                 >
                   <option value={1}>1</option>
                   <option value={30}>30</option>
@@ -169,7 +181,7 @@ export default function GeneratePage() {
                 <select
                   value={language}
                   onChange={(e) => setLanguage(e.target.value)}
-                  className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="rounded-md border border-input bg-background px-3 py-2 text-sm h-11 w-full sm:w-auto"
                 >
                   {languages.map((l) => (
                     <option key={l.code} value={l.code}>
@@ -245,9 +257,9 @@ export default function GeneratePage() {
                 </h3>
                 <div className={cn(
                   "grid gap-3",
-                  videoCount === 1 
-                    ? "flex justify-center" 
-                    : "grid-cols-3 sm:grid-cols-5"
+                  videoCount === 1
+                    ? "flex justify-center"
+                    : "grid-cols-2 sm:grid-cols-3 md:grid-cols-5"
                 )}>
                   {Array.from({ length: Math.min(videoCount, 15) }).map((_, i) => (
                     <Dialog key={i}>
@@ -263,14 +275,14 @@ export default function GeneratePage() {
                               <Play className="h-6 w-6 fill-primary text-primary" />
                             </div>
                           </div>
-                          
+
                           {/* Text Overlay */}
                           <div className="absolute bottom-2 left-2 right-2">
-                             <p className="truncate text-[10px] font-medium text-muted-foreground">
-                               {videoCount === 1 ? "Viral_Masterpiece.mp4" : `Viral_Clip_${ i + 1 }.mp4`}
-                             </p>
+                            <p className="truncate text-[10px] font-medium text-muted-foreground">
+                              {videoCount === 1 ? "Viral_Masterpiece.mp4" : `Viral_Clip_${i + 1}.mp4`}
+                            </p>
                           </div>
-                          
+
                           {/* Fake Preview Image (Gradient) */}
                           <div className="h-full w-full bg-neutral-900 object-cover opacity-50" />
                         </div>
