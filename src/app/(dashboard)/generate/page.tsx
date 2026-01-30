@@ -243,11 +243,19 @@ export default function GeneratePage() {
                 <h3 className="text-lg font-semibold">
                   {videoCount} Video{videoCount > 1 ? "s" : ""} Generated
                 </h3>
-                <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
+                <div className={cn(
+                  "grid gap-3",
+                  videoCount === 1 
+                    ? "flex justify-center" 
+                    : "grid-cols-3 sm:grid-cols-5"
+                )}>
                   {Array.from({ length: Math.min(videoCount, 15) }).map((_, i) => (
                     <Dialog key={i}>
                       <DialogTrigger asChild>
-                        <div className="group relative aspect-[9/16] cursor-pointer overflow-hidden rounded-lg border border-border bg-black transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/20">
+                        <div className={cn(
+                          "group relative cursor-pointer overflow-hidden rounded-lg border border-border bg-black transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/20",
+                          videoCount === 1 ? "aspect-[9/16] w-full max-w-[240px]" : "aspect-[9/16]"
+                        )}>
                           {/* Thumbnail / Placeholder */}
                           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60" />
                           <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
@@ -259,7 +267,7 @@ export default function GeneratePage() {
                           {/* Text Overlay */}
                           <div className="absolute bottom-2 left-2 right-2">
                              <p className="truncate text-[10px] font-medium text-muted-foreground">
-                               Viral_Clip_{i + 1}.mp4
+                               {videoCount === 1 ? "Viral_Masterpiece.mp4" : `Viral_Clip_${ i + 1 }.mp4`}
                              </p>
                           </div>
                           
