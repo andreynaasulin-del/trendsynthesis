@@ -242,7 +242,11 @@ export function ViralChat({
                 })
             });
 
-            if (!response.ok) throw new Error("API Request failed");
+            if (!response.ok) {
+                if (response.status === 401) throw new Error("API Key Invalid/Missing");
+                if (response.status === 500) throw new Error("OpenAI Service Error");
+                throw new Error("Network Error");
+            }
             if (!response.body) throw new Error("No response body");
 
             // Initial AI Message placeholder
@@ -279,7 +283,7 @@ export function ViralChat({
                     );
                 }
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Chat error:", error);
             setIsTyping(false);
             setMessages((prev) => [
@@ -287,7 +291,7 @@ export function ViralChat({
                 {
                     id: Date.now().toString(),
                     role: "ai",
-                    content: "Connection lost. Please try again.",
+                    content: `Error: ${error.message || "Connection lost. Please try again."}`,
                     timestamp: Date.now(),
                 }
             ]);
