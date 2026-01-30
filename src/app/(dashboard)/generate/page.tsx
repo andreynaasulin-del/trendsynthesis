@@ -50,10 +50,12 @@ export default function GeneratePage() {
   const [videoCount, setVideoCount] = useState(30);
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState<GenerationProgress | null>(null);
+  const [generatedVideoUrl, setGeneratedVideoUrl] = useState<string | null>(null);
 
   async function handleGenerate() {
     if (!topic.trim()) return;
     setIsGenerating(true);
+    setGeneratedVideoUrl(null); // Reset previous video
 
     // Simulate pipeline stages
     const stageList: GenerationProgress["stage"][] = [
@@ -78,7 +80,28 @@ export default function GeneratePage() {
         total_videos: videoCount,
       });
 
-      // Simulate API call time
+      // Execute Real Asset Discovery
+      if (stage === "fetching_assets") {
+        try {
+          const response = await fetch("/api/ingest", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query: topic })
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data.url) {
+              console.log("Secure asset acquired:", data.url);
+              setGeneratedVideoUrl(data.url);
+            }
+          }
+        } catch (e) {
+          console.error("Asset discovery failed, using fallback", e);
+        }
+      }
+
+      // Simulate Processing Time
       if (stage !== "completed") {
         await new Promise((r) => setTimeout(r, 2000));
       }
@@ -281,7 +304,7 @@ export default function GeneratePage() {
                         <DialogDescription className="sr-only">Preview of the viral video</DialogDescription>
                         <div className="relative aspect-[9/16] w-full overflow-hidden rounded-lg bg-black">
                           <video
-                            src="https://cdn.coverr.co/videos/coverr-walking-in-a-city-at-night-vertical-4565/1080p.mp4"
+                            src={generatedVideoUrl || "https://cdn.coverr.co/videos/coverr-walking-in-a-city-at-night-vertical-4565/1080p.mp4"}
                             controls
                             autoPlay
                             playsInline
