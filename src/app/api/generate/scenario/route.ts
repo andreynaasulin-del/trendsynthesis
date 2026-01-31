@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateScenarios } from "@/lib/openai/generate-scenarios";
 
+export const maxDuration = 60;
+
 export async function POST(request: NextRequest) {
   try {
     const { topic, videoCount = 30, language = "en" } = await request.json();

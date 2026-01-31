@@ -9,6 +9,9 @@ import { runGenerationPipeline } from "@/lib/pipeline";
 import { createProject, saveScenarios, createVideo, updateProjectStatus } from "@/lib/supabase/db";
 import type { VideoStyle } from "@/types";
 
+// Vercel Serverless Function Config
+export const maxDuration = 60; // 60 seconds (max for Hobby plan)
+
 interface GenerateVideoRequest {
     topic: string;
     video_count?: number;
