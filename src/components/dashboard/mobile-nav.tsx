@@ -4,16 +4,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Sparkles, FolderOpen, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const navItems = [
-    { label: "Home", href: "/dashboard", icon: LayoutDashboard },
-    { label: "Generate", href: "/generate", icon: Sparkles },
-    { label: "Projects", href: "/projects", icon: FolderOpen },
-    { label: "Settings", href: "/settings", icon: Settings },
-];
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 export function MobileNav() {
     const pathname = usePathname();
+    const { t } = useLanguage();
+
+    const navItems = [
+        { label: t("dashboard"), href: "/dashboard", icon: LayoutDashboard },
+        { label: t("generate"), href: "/generate", icon: Sparkles },
+        { label: t("projects"), href: "/projects", icon: FolderOpen },
+        { label: t("settings"), href: "/settings", icon: Settings },
+    ];
 
     return (
         <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around border-t border-border bg-background/80 px-2 backdrop-blur-lg md:hidden">

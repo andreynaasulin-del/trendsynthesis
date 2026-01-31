@@ -21,6 +21,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { StrategyOption } from "@/types";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 // Re-export for backward compatibility
 export type { StrategyOption };
@@ -419,20 +420,28 @@ export function ViralChat({
   onStrategySelect,
   className,
 }: ViralChatProps) {
-  const [language, setLanguage] = useState<"en" | "ru">("en");
+  const { language, setLanguage } = useLanguage();
 
   const greeting = initialMessage || (language === "en"
     ? "Ready to engineer viral content. What's your niche?"
     : "Готов создать вирусный контент. Какая у вас ниша?");
 
-  const [messages, setMessages] = useState<Message[]>([
-    {
+  const [messages, setMessages] = useState<Message[]>([]);
+  // Use a ref to track if component is mounted to avoid hydration mismatch with localStorage
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+    setMessages([{
       id: "init",
       role: "ai",
-      content: greeting,
+      content: language === "en"
+        ? "Ready to engineer viral content. What's your niche?"
+        : "Готов создать вирусный контент. Какая у вас ниша?",
       timestamp: Date.now(),
-    },
-  ]);
+    }]);
+  }, []);
+
   const [inputValue, setInputValue] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -441,7 +450,7 @@ export function ViralChat({
 
   // Update greeting on language change
   useEffect(() => {
-    if (messages.length <= 1 && messages[0].role === "ai") {
+    if (messages.length <= 1 && messages.find(m => m.role === "ai")) {
       setMessages([{
         id: "init",
         role: "ai",
@@ -451,7 +460,7 @@ export function ViralChat({
         timestamp: Date.now(),
       }]);
     }
-  }, [language]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [language]);
 
   // Auto-scroll
   useEffect(() => {
@@ -550,9 +559,10 @@ export function ViralChat({
     }
   };
 
+  if (!isMounted) return null; // Avoid hydration mismatch
+
   return (
     <>
-      {/* CSS Animations */}
       <style jsx global>{`
         @keyframes gradient-shift {
           0%, 100% { background-position: 0% 50%; }

@@ -6,16 +6,18 @@ import { LayoutDashboard, Sparkles, FolderOpen, Settings, LogOut } from "lucide-
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-
-const navItems = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Generate", href: "/generate", icon: Sparkles },
-  { label: "Projects", href: "/projects", icon: FolderOpen },
-  { label: "Settings", href: "/settings", icon: Settings },
-];
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 export function Sidebar({ className }: { className?: string }) {
   const pathname = usePathname();
+  const { t } = useLanguage();
+
+  const navItems = [
+    { label: t("dashboard"), href: "/dashboard", icon: LayoutDashboard },
+    { label: t("generate"), href: "/generate", icon: Sparkles },
+    { label: t("projects"), href: "/projects", icon: FolderOpen },
+    { label: t("settings"), href: "/settings", icon: Settings },
+  ];
 
   async function handleLogout() {
     const supabase = createClient();
@@ -67,7 +69,7 @@ export function Sidebar({ className }: { className?: string }) {
           onClick={handleLogout}
         >
           <LogOut className="h-4 w-4" />
-          Sign Out
+          {t("signOut")}
         </Button>
       </div>
     </aside>
