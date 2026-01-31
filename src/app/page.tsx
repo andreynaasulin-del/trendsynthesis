@@ -280,11 +280,15 @@ export default function LandingPage() {
             {demoState === 'done' && (
               <div className="mt-12 animate-in fade-in zoom-in-95 duration-500">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                  {[
+                  {(lang === 'en' ? [
                     { hook: "3 ERRORs that kill Agencies", views: "1.2M", color: "from-pink-500 to-rose-500" },
                     { hook: "No Clients? Do THIS", views: "850K", color: "from-violet-500 to-purple-500" },
                     { hook: "Secret Algorithm Hack", views: "2.4M", color: "from-blue-500 to-cyan-500" }
-                  ].map((video, n) => (
+                  ] : [
+                    { hook: "3 ОШИБКИ SMM-агентств", views: "1.2M", color: "from-pink-500 to-rose-500" },
+                    { hook: "Нет клиентов? Делай ЭТО", views: "850K", color: "from-violet-500 to-purple-500" },
+                    { hook: "Секретный Хак Алгоритмов", views: "2.4M", color: "from-blue-500 to-cyan-500" }
+                  ]).map((video, n) => (
                     <div key={n} className="aspect-[9/16] relative rounded-xl overflow-hidden group cursor-pointer border border-white/10 hover:border-white/30 transition-all hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/20">
                       {/* Gradient Mock Placeholder */}
                       <div className={`absolute inset-0 bg-gradient-to-br ${video.color} opacity-20 group-hover:opacity-30 transition-opacity`} />
