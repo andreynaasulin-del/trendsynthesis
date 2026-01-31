@@ -22,7 +22,7 @@ export function Pricing({ lang }: PricingProps) {
                     price: "$0",
                     desc: "For testing the algorithm.",
                     features: [
-                        "1 Project per month",
+                        "3 Projects per month",
                         "720p Render quality",
                         "Standard Templates",
                         "Watermarked Output"
@@ -35,7 +35,7 @@ export function Pricing({ lang }: PricingProps) {
                     price: "$29",
                     desc: "For consistent viral growth.",
                     features: [
-                        "10 Projects per month",
+                        "20 Projects per month",
                         "1080p HD Render",
                         "Premium Strategies (High Confidence)",
                         "No Watermark",
@@ -72,7 +72,7 @@ export function Pricing({ lang }: PricingProps) {
                     price: "0₽",
                     desc: "Для теста алгоритмов.",
                     features: [
-                        "1 Проект в месяц",
+                        "3 Проект в месяц",
                         "Качество 720p",
                         "Базовые шаблоны",
                         "Водяной знак"
@@ -85,7 +85,7 @@ export function Pricing({ lang }: PricingProps) {
                     price: "2900₽",
                     desc: "Для системного роста.",
                     features: [
-                        "10 Проектов в месяц",
+                        "20 Проектов в месяц",
                         "1080p HD Рендер",
                         "Премиум Стратегии",
                         "Без водяных знаков",
