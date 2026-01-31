@@ -25,7 +25,7 @@ export interface ViralMontageProps {
 const DEFAULT_STYLE: MontageStyle = {
   transition: "crossfade",
   kenBurns: true,
-  overlayOpacity: 0.6,
+  overlayOpacity: 0.4,
   textPosition: "bottom",
   progressBar: true,
   watermark: true,
@@ -142,19 +142,19 @@ const ColorGradeFilter: React.FC<{
 
   const overlays: Record<string, React.CSSProperties> = {
     cinematic: {
-      background: "linear-gradient(to bottom, rgba(0,0,30,0.15), rgba(0,0,0,0.1))",
+      background: "linear-gradient(to bottom, rgba(0,0,30,0.1), rgba(0,0,0,0.05))",
       mixBlendMode: "multiply" as const,
     },
     cold: {
-      background: "linear-gradient(135deg, rgba(0,20,60,0.2), rgba(0,10,30,0.15))",
+      background: "linear-gradient(135deg, rgba(0,20,60,0.15), rgba(0,10,30,0.1))",
       mixBlendMode: "overlay" as const,
     },
     warm: {
-      background: "linear-gradient(135deg, rgba(60,30,0,0.15), rgba(40,20,0,0.1))",
+      background: "linear-gradient(135deg, rgba(60,30,0,0.1), rgba(40,20,0,0.05))",
       mixBlendMode: "overlay" as const,
     },
     cyberpunk: {
-      background: "linear-gradient(135deg, rgba(20,0,40,0.2), rgba(0,10,30,0.15))",
+      background: "linear-gradient(135deg, rgba(20,0,40,0.4), rgba(0,255,255,0.05))",
       mixBlendMode: "overlay" as const,
     },
   };
