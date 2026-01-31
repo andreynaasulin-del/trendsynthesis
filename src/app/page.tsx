@@ -280,9 +280,30 @@ export default function LandingPage() {
             {demoState === 'done' && (
               <div className="mt-12 animate-in fade-in zoom-in-95 duration-500">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                  {[1, 2, 3].map((n) => (
-                    <div key={n} className="aspect-[9/16] bg-white/5 border border-white/10 rounded-lg flex items-end p-4 hover:border-white/30 transition-colors cursor-pointer group">
-                      <span className="text-xs font-mono text-white/40 group-hover:text-white">VIDEO_0{n}.mp4</span>
+                  {[
+                    { hook: "3 ERRORs that kill Agencies", views: "1.2M", color: "from-pink-500 to-rose-500" },
+                    { hook: "No Clients? Do THIS", views: "850K", color: "from-violet-500 to-purple-500" },
+                    { hook: "Secret Algorithm Hack", views: "2.4M", color: "from-blue-500 to-cyan-500" }
+                  ].map((video, n) => (
+                    <div key={n} className="aspect-[9/16] relative rounded-xl overflow-hidden group cursor-pointer border border-white/10 hover:border-white/30 transition-all hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/20">
+                      {/* Gradient Mock Placeholder */}
+                      <div className={`absolute inset-0 bg-gradient-to-br ${video.color} opacity-20 group-hover:opacity-30 transition-opacity`} />
+
+                      {/* UI Elements */}
+                      <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-2 py-1 rounded text-[10px] font-bold">
+                        9{8 - n}% VIRAL
+                      </div>
+
+                      <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/90 to-transparent">
+                        <div className="text-[10px] font-mono text-white/60 mb-1 tracking-widest">HOOK_0{n + 1}</div>
+                        <div className="text-sm font-bold leading-tight mb-2 text-white shadow-black drop-shadow-md">
+                          "{video.hook}"
+                        </div>
+                        <div className="flex items-center gap-2 text-[10px font-medium">
+                          <Play size={10} fill="currentColor" />
+                          <span>{video.views}</span>
+                        </div>
+                      </div>
                     </div>
                   ))}
                   <div className="aspect-[9/16] bg-white text-black rounded-lg flex flex-col items-center justify-center p-4 cursor-pointer hover:bg-gray-200 transition-colors">
