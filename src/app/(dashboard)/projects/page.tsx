@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { FolderOpen, Sparkles } from "lucide-react";
+import { FolderOpen, Sparkles, Zap, Plus, Film, Clock, CheckCircle2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import type { Project } from "@/types";
 
 // Placeholder — will be replaced with real data from Supabase
@@ -18,67 +19,124 @@ const statusColors: Record<string, string> = {
   pending: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
 };
 
+const statusIcons: Record<string, React.ElementType> = {
+  completed: CheckCircle2,
+  rendering: Film,
+  pending: Clock,
+};
+
 export default function ProjectsPage() {
+  const { language } = useLanguage();
+
+  const content = {
+    en: {
+      title: "Your Projects",
+      subtitle: "All your video generation batches",
+      newGen: "New Generation",
+      emptyTitle: "No projects yet",
+      emptyDesc: "Generate your first batch of 30 viral videos.",
+      startBtn: "Start Generating",
+      videos: "videos",
+      created: "Created",
+    },
+    ru: {
+      title: "Ваши проекты",
+      subtitle: "Все ваши пакеты генерации видео",
+      newGen: "Новая генерация",
+      emptyTitle: "Нет проектов",
+      emptyDesc: "Сгенерируйте первый пакет из 30 вирусных видео.",
+      startBtn: "Начать генерацию",
+      videos: "видео",
+      created: "Создано",
+    },
+  };
+
+  const c = content[language];
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Your Projects</h1>
-          <p className="mt-1 text-muted-foreground">
-            All your video generation batches
-          </p>
+          <h1 className="text-3xl font-bold tracking-tight">{c.title}</h1>
+          <p className="mt-1 text-muted-foreground">{c.subtitle}</p>
         </div>
-        <Button asChild>
-          <Link href="/generate">New Generation</Link>
+        <Button asChild className="bg-violet-600 hover:bg-violet-500 gap-2">
+          <Link href="/generate">
+            <Plus className="h-4 w-4" />
+            {c.newGen}
+          </Link>
         </Button>
       </div>
 
       {projects.length === 0 ? (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
         >
-          <Card className="flex flex-col items-center justify-center p-12 text-center">
-            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary">
-              <FolderOpen className="h-7 w-7 text-muted-foreground" />
+          <Card className="flex flex-col items-center justify-center p-12 text-center border-dashed border-zinc-800 bg-zinc-950/50">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600/20 to-blue-600/20 border border-violet-500/20">
+              <FolderOpen className="h-7 w-7 text-violet-400" />
             </div>
-            <h3 className="text-lg font-semibold">No projects yet</h3>
-            <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-              Generate your first batch of 30 viral videos.
-            </p>
-            <Button asChild className="mt-6 gap-2">
+            <h3 className="text-lg font-semibold">{c.emptyTitle}</h3>
+            <p className="mt-1 max-w-sm text-sm text-muted-foreground">{c.emptyDesc}</p>
+            <Button asChild className="mt-6 gap-2 bg-violet-600 hover:bg-violet-500">
               <Link href="/generate">
-                <Sparkles className="h-4 w-4" />
-                Start Generating
+                <Zap className="h-4 w-4" />
+                {c.startBtn}
               </Link>
             </Button>
           </Card>
         </motion.div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {projects.map((project) => (
-            <Link key={project.id} href={`/projects/${project.id}`}>
-              <Card className="p-5 transition-colors hover:bg-accent/50">
-                <div className="flex items-start justify-between">
-                  <h3 className="font-medium leading-snug">{project.topic}</h3>
-                  <Badge
-                    variant="outline"
-                    className={statusColors[project.status] || ""}
-                  >
-                    {project.status}
-                  </Badge>
-                </div>
-                <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
-                  <span>{project.video_count} videos</span>
-                  <span>{project.style}</span>
-                  <span>
-                    {new Date(project.created_at).toLocaleDateString()}
-                  </span>
-                </div>
-              </Card>
-            </Link>
-          ))}
-        </div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+        >
+          {projects.map((project, idx) => {
+            const StatusIcon = statusIcons[project.status] || Film;
+            return (
+              <motion.div
+                key={project.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.05 }}
+              >
+                <Link href={`/projects/${project.id}`}>
+                  <Card className="group p-5 transition-all hover:bg-zinc-900/80 hover:border-zinc-700 border-zinc-800 bg-zinc-900/50 cursor-pointer relative overflow-hidden">
+                    {/* Decorative gradient */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-violet-500/5 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                    <div className="flex items-start justify-between relative z-10">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-zinc-800">
+                          <StatusIcon className="h-4 w-4 text-violet-400" />
+                        </div>
+                        <h3 className="font-medium leading-snug line-clamp-1">{project.topic}</h3>
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className={statusColors[project.status] || ""}
+                      >
+                        {project.status}
+                      </Badge>
+                    </div>
+                    <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Film className="h-3 w-3" />
+                        {project.video_count} {c.videos}
+                      </span>
+                      <span className="capitalize">{project.style}</span>
+                      <span>
+                        {c.created}: {new Date(project.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </Card>
+                </Link>
+              </motion.div>
+            );
+          })}
+        </motion.div>
       )}
     </div>
   );
