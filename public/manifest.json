@@ -1,0 +1,22 @@
+{
+    "name": "TRENDSYNTHESIS",
+    "short_name": "TrendSynth",
+    "description": "AI Viral Video Factory - One topic, 30 viral videos in 5 minutes",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#050505",
+    "theme_color": "#8B5CF6",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/favicon.ico",
+            "sizes": "any",
+            "type": "image/x-icon"
+        }
+    ],
+    "categories": [
+        "productivity",
+        "business",
+        "social"
+    ]
+}

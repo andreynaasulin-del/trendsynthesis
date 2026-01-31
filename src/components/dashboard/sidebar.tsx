@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Sparkles, FolderOpen, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, Sparkles, FolderOpen, Settings, LogOut, Zap, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -10,31 +10,37 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 
 export function Sidebar({ className }: { className?: string }) {
   const pathname = usePathname();
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
 
   const navItems = [
     { label: t("dashboard"), href: "/dashboard", icon: LayoutDashboard },
-    { label: t("generate"), href: "/generate", icon: Sparkles },
+    { label: t("generate"), href: "/generate", icon: Sparkles, highlight: true },
     { label: t("projects"), href: "/projects", icon: FolderOpen },
     { label: t("settings"), href: "/settings", icon: Settings },
   ];
 
   async function handleLogout() {
+    // Clear admin bypass cookie
+    document.cookie = "admin-bypass=; path=/; max-age=0";
     const supabase = createClient();
     await supabase.auth.signOut();
     window.location.href = "/";
   }
 
   return (
-    <aside className={cn("glass-strong fixed left-0 top-0 z-40 flex h-screen w-64 flex-col border-r border-border", className)}>
+    <aside className={cn(
+      "fixed left-0 top-0 z-40 flex h-screen w-64 flex-col border-r border-zinc-800 bg-zinc-950/95 backdrop-blur-xl",
+      className
+    )}>
       {/* Logo */}
-      <div className="flex h-16 items-center px-6">
-        <Link
-          href="/dashboard"
-          className="font-mono text-sm font-bold uppercase tracking-[0.2em] text-foreground"
-        >
-          TS
-          <span className="ml-1 text-muted-foreground">SYNTHESIS</span>
+      <div className="flex h-16 items-center px-6 border-b border-zinc-800/50">
+        <Link href="/dashboard" className="flex items-center gap-2">
+          <div className="p-1.5 rounded-lg bg-violet-500/20 border border-violet-500/30">
+            <Zap className="h-4 w-4 text-violet-400" />
+          </div>
+          <span className="font-mono text-sm font-bold tracking-tight">
+            TREND<span className="text-zinc-500">SYNTHESIS</span>
+          </span>
         </Link>
       </div>
 
@@ -42,30 +48,61 @@ export function Sidebar({ className }: { className?: string }) {
       <nav className="flex-1 space-y-1 px-3 py-4">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
+          const ItemIcon = item.icon;
           return (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors",
+                "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200",
                 isActive
-                  ? "bg-accent text-accent-foreground"
-                  : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                  ? "bg-violet-600/20 text-violet-300 border border-violet-500/30"
+                  : "text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200 border border-transparent",
+                item.highlight && !isActive && "hover:border-violet-500/20"
               )}
             >
-              <item.icon className="h-4 w-4" />
-              {item.label}
+              <ItemIcon className={cn(
+                "h-4 w-4 transition-colors",
+                isActive ? "text-violet-400" : "text-zinc-500 group-hover:text-zinc-300"
+              )} />
+              <span>{item.label}</span>
+              {item.highlight && !isActive && (
+                <span className="ml-auto text-[9px] font-bold tracking-wider text-violet-400 bg-violet-500/10 px-1.5 py-0.5 rounded">
+                  AI
+                </span>
+              )}
             </Link>
           );
         })}
       </nav>
 
+      {/* Upgrade Card */}
+      <div className="mx-3 mb-3 p-4 rounded-xl bg-gradient-to-br from-violet-600/10 to-purple-600/5 border border-violet-500/20">
+        <div className="flex items-center gap-2 mb-2">
+          <Crown className="h-4 w-4 text-amber-400" />
+          <span className="text-xs font-semibold text-zinc-300">
+            {language === "ru" ? "Free план" : "Free Plan"}
+          </span>
+        </div>
+        <p className="text-[10px] text-zinc-500 mb-3">
+          {language === "ru"
+            ? "1 генерация осталось"
+            : "1 generation remaining"}
+        </p>
+        <Link
+          href="/#pricing"
+          className="block w-full text-center text-xs font-semibold py-2 rounded-lg bg-violet-600/20 text-violet-300 border border-violet-500/30 hover:bg-violet-600/30 transition-colors"
+        >
+          {language === "ru" ? "Улучшить план" : "Upgrade"}
+        </Link>
+      </div>
+
       {/* Footer */}
-      <div className="border-t border-border p-4">
+      <div className="border-t border-zinc-800/50 p-3">
         <Button
           variant="ghost"
           size="sm"
-          className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground"
+          className="w-full justify-start gap-2 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50"
           onClick={handleLogout}
         >
           <LogOut className="h-4 w-4" />

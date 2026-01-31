@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, Play, X } from "lucide-react";
 import { Pricing } from "@/components/landing/Pricing";
+import { Features } from "@/components/landing/Features";
+import { HowItWorks } from "@/components/landing/HowItWorks";
 
 export default function LandingPage() {
   const [lang, setLang] = useState<"en" | "ru">("en");
@@ -328,12 +330,32 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* HOW IT WORKS */}
+      <HowItWorks lang={lang} />
+
+      {/* FEATURES */}
+      <Features lang={lang} />
+
       {/* PRICING */}
       <Pricing lang={lang} />
 
       {/* FOOTER */}
-      <footer className="py-8 border-t border-white/5 text-center text-white/20 text-sm">
-        © 2026 TRENDSYNTHESIS. All systems operational.
+      <footer className="py-12 border-t border-white/5">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="font-mono text-sm">
+              <span className="font-bold">TREND</span><span className="text-white/40">SYNTHESIS</span>
+            </div>
+            <div className="flex gap-6 text-sm text-white/40">
+              <a href="#how-it-works" className="hover:text-white transition-colors">{lang === 'ru' ? 'Как работает' : 'How It Works'}</a>
+              <a href="#features" className="hover:text-white transition-colors">{lang === 'ru' ? 'Возможности' : 'Features'}</a>
+              <a href="#pricing" className="hover:text-white transition-colors">{lang === 'ru' ? 'Цены' : 'Pricing'}</a>
+            </div>
+            <div className="text-white/20 text-xs">
+              © 2026 TRENDSYNTHESIS. {lang === 'ru' ? 'Все системы работают.' : 'All systems operational.'}
+            </div>
+          </div>
+        </div>
       </footer>
     </div>
   );

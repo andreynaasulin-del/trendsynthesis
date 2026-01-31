@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Sparkles, FolderOpen, Settings } from "lucide-react";
+import { LayoutDashboard, Sparkles, FolderOpen, Settings, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
@@ -12,28 +12,47 @@ export function MobileNav() {
 
     const navItems = [
         { label: t("dashboard"), href: "/dashboard", icon: LayoutDashboard },
-        { label: t("generate"), href: "/generate", icon: Sparkles },
+        { label: t("generate"), href: "/generate", icon: Zap, highlight: true },
         { label: t("projects"), href: "/projects", icon: FolderOpen },
         { label: t("settings"), href: "/settings", icon: Settings },
     ];
 
     return (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around border-t border-border bg-background/80 px-2 backdrop-blur-lg md:hidden">
+        <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-[72px] items-center justify-around border-t border-zinc-800 bg-zinc-950/95 backdrop-blur-xl px-2 md:hidden safe-area-inset-bottom">
             {navItems.map((item) => {
                 const isActive = pathname === item.href;
+                const ItemIcon = item.icon;
                 return (
                     <Link
                         key={item.href}
                         href={item.href}
                         className={cn(
-                            "flex flex-col items-center justify-center gap-1 rounded-lg px-3 py-1.5 text-[10px] font-medium transition-colors",
+                            "flex flex-col items-center justify-center gap-1 rounded-xl px-4 py-2 text-[10px] font-medium transition-all duration-200 min-w-[60px]",
                             isActive
-                                ? "text-primary"
-                                : "text-muted-foreground hover:text-foreground"
+                                ? "text-violet-400"
+                                : "text-zinc-500 active:scale-95"
                         )}
                     >
-                        <item.icon className={cn("h-5 w-5", isActive && "fill-current")} />
-                        <span>{item.label}</span>
+                        <div className={cn(
+                            "relative flex items-center justify-center w-8 h-8 rounded-lg transition-all",
+                            isActive && "bg-violet-600/20",
+                            item.highlight && isActive && "bg-violet-600/30 shadow-[0_0_20px_rgba(139,92,246,0.3)]"
+                        )}>
+                            <ItemIcon className={cn(
+                                "h-5 w-5 transition-colors",
+                                isActive ? "text-violet-400" : "text-zinc-500"
+                            )} />
+                            {item.highlight && (
+                                <span className={cn(
+                                    "absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full",
+                                    isActive ? "bg-violet-400" : "bg-violet-500/50"
+                                )} />
+                            )}
+                        </div>
+                        <span className={cn(
+                            "transition-colors",
+                            isActive ? "text-violet-400" : "text-zinc-500"
+                        )}>{item.label}</span>
                     </Link>
                 );
             })}
