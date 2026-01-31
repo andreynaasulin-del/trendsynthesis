@@ -564,7 +564,8 @@ export function ViralChat({
 
       <div
         className={cn(
-          "relative flex flex-col h-[700px] w-full max-w-5xl mx-auto overflow-hidden rounded-2xl",
+          "relative flex flex-col w-full max-w-5xl mx-auto overflow-hidden rounded-2xl",
+          "h-[calc(100vh-1rem)] md:h-[700px]", // Mobile full height minus margin, Desktop fixed
           "bg-zinc-950/90 backdrop-blur-2xl shadow-2xl shadow-black/40",
           className
         )}
@@ -572,8 +573,8 @@ export function ViralChat({
         <GradientBorder />
 
         {/* ===== HEADER ===== */}
-        <div className="relative flex items-center justify-between border-b border-white/[0.06] bg-zinc-900/30 px-5 py-3 backdrop-blur-xl">
-          <div className="flex items-center gap-3">
+        <div className="relative flex items-center justify-between border-b border-white/[0.06] bg-zinc-900/30 px-3 md:px-5 py-3 backdrop-blur-xl">
+          <div className="flex items-center gap-2 md:gap-3">
             {/* AI Identity */}
             <div className="relative">
               <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-violet-600/20 to-blue-600/20 border border-white/[0.06] flex items-center justify-center">
@@ -593,9 +594,9 @@ export function ViralChat({
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* Signal indicator */}
-            <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-white/[0.02] border border-white/[0.04]">
+          <div className="flex items-center gap-2 md:gap-3">
+            {/* Signal indicator - Hidden on very small screens */}
+            <div className="hidden xs:flex items-center gap-1 px-2 py-1 rounded-md bg-white/[0.02] border border-white/[0.04]">
               <Signal className="h-3 w-3 text-emerald-500/60" />
               <span className="text-[9px] font-mono text-zinc-600">GPT-4o</span>
             </div>
@@ -625,10 +626,10 @@ export function ViralChat({
           <BackgroundGrid />
 
           <div
-            className="h-full overflow-y-auto px-5 py-6 relative z-10 scrollbar-thin scrollbar-thumb-zinc-800/50 scrollbar-track-transparent"
+            className="h-full overflow-y-auto px-3 md:px-5 py-4 md:py-6 relative z-10 scrollbar-thin scrollbar-thumb-zinc-800/50 scrollbar-track-transparent"
             ref={scrollRef}
           >
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-4 md:gap-6">
               <AnimatePresence initial={false}>
                 {messages.map((msg) => (
                   <MessageBubble
@@ -647,7 +648,7 @@ export function ViralChat({
         </div>
 
         {/* ===== INPUT AREA ===== */}
-        <div className="relative border-t border-white/[0.06] bg-zinc-900/20 px-4 py-3 backdrop-blur-xl">
+        <div className="relative border-t border-white/[0.06] bg-zinc-900/20 px-3 md:px-4 py-3 backdrop-blur-xl safe-area-bottom">
           {/* Input glow on focus */}
           <div
             className={cn(
@@ -680,20 +681,21 @@ export function ViralChat({
                     ? "Describe your video idea..."
                     : "Опишите идею видео..."
                 }
-                className="w-full h-11 px-4 pr-12 bg-transparent text-[13px] text-zinc-200 placeholder:text-zinc-600 outline-none font-light"
+                className="w-full h-11 px-4 pr-12 bg-transparent text-[14px] md:text-[13px] text-zinc-200 placeholder:text-zinc-600 outline-none font-light"
+              // Increased font size to 16px equivalent (14px is minimum for inputs on some OS to avoid zoom) to prevent zoom on focus
               />
               <Button
                 size="icon"
                 onClick={handleSend}
                 disabled={!inputValue.trim() || isTyping}
                 className={cn(
-                  "absolute right-1.5 top-1/2 -translate-y-1/2 h-7 w-7 rounded-lg transition-all duration-200",
+                  "absolute right-1.5 top-1/2 -translate-y-1/2 h-8 w-8 md:h-7 md:w-7 rounded-lg transition-all duration-200",
                   inputValue.trim()
                     ? "bg-violet-600 hover:bg-violet-500 text-white shadow-lg shadow-violet-600/30"
                     : "bg-white/[0.03] text-zinc-600"
                 )}
               >
-                <Send className="h-3.5 w-3.5" />
+                <Send className="h-4 w-4 md:h-3.5 md:w-3.5" />
               </Button>
             </div>
           </div>
@@ -706,7 +708,7 @@ export function ViralChat({
                 {language === "en" ? "VIRAL_ENGINE_V3" : "ДВИЖОК_V3"}
               </span>
             </div>
-            <span className="text-[9px] text-zinc-700 font-mono">
+            <span className="hidden md:block text-[9px] text-zinc-700 font-mono">
               ⏎ {language === "en" ? "to send" : "отправить"}
             </span>
           </div>
