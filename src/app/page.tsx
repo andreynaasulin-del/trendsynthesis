@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, Play, X } from "lucide-react";
+import { Pricing } from "@/components/landing/Pricing";
 
 export default function LandingPage() {
   const [lang, setLang] = useState<"en" | "ru">("en");
@@ -13,7 +14,7 @@ export default function LandingPage() {
   // Translations
   const t = {
     en: {
-      nav: { work: "Workflow", feat: "Features", demo: "Platform", start: "START" },
+      nav: { work: "Workflow", feat: "Features", price: "Pricing", demo: "Platform", start: "START" },
       hero: {
         badge: "SYSTEM READY",
         title1: "One topic -",
@@ -36,7 +37,7 @@ export default function LandingPage() {
       }
     },
     ru: {
-      nav: { work: "Как работает", feat: "Возможности", demo: "Демо", start: "НАЧАТЬ" },
+      nav: { work: "Как работает", feat: "Возможности", price: "Цены", demo: "Демо", start: "НАЧАТЬ" },
       hero: {
         badge: "СИСТЕМА ГОТОВА",
         title1: "Одна тема -",
@@ -111,6 +112,7 @@ export default function LandingPage() {
           <div className="hidden md:flex gap-8 text-sm font-medium text-white/60">
             <a href="#how-it-works" className="hover:text-white transition-colors">{currentT.nav.work}</a>
             <a href="#features" className="hover:text-white transition-colors">{currentT.nav.feat}</a>
+            <a href="#pricing" className="hover:text-white transition-colors">{currentT.nav.price}</a>
             <a href="#demo" className="hover:text-white transition-colors">{currentT.nav.demo}</a>
           </div>
           <div className="flex items-center gap-6">
@@ -300,6 +302,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* PRICING */}
+      <Pricing lang={lang} />
 
       {/* FOOTER */}
       <footer className="py-8 border-t border-white/5 text-center text-white/20 text-sm">
