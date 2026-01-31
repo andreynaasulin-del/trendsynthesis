@@ -593,8 +593,8 @@ export function ViralChat({
       <div
         className={cn(
           "relative flex flex-col w-full max-w-5xl mx-auto overflow-hidden rounded-2xl",
-          "h-[calc(100vh-1rem)] md:h-[700px]", // Mobile full height minus margin, Desktop fixed
-          "bg-zinc-950/90 backdrop-blur-2xl shadow-2xl shadow-black/40",
+          "h-[75vh] md:h-[700px]", // Mobile: 75vh to allow seeing content below. Desktop: Fixed.
+          "bg-zinc-950/90 backdrop-blur-lg md:backdrop-blur-2xl shadow-2xl shadow-black/40",
           className
         )}
       >

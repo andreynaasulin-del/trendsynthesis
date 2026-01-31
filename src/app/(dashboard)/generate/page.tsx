@@ -424,7 +424,7 @@ export default function GeneratePage() {
         </div>
 
         {/* ===== RIGHT: Pipeline / Gallery / Preview ===== */}
-        <div className="flex flex-col rounded-xl border border-zinc-800 bg-black/40 backdrop-blur-sm min-h-[700px] overflow-hidden">
+        <div className="flex flex-col rounded-xl border border-zinc-800 bg-black/40 backdrop-blur-sm min-h-[450px] lg:min-h-[700px] overflow-hidden">
           {/* Tab Bar (when there's content) */}
           {!isIdle && (
             <div className="flex border-b border-zinc-800 bg-zinc-900/30">
