@@ -6,11 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
+import { use } from "react";
+
 export default function ProjectDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = use(params);
   return (
     <div className="space-y-8">
       <div className="flex items-center gap-4">
@@ -23,7 +26,7 @@ export default function ProjectDetailPage({
           <h1 className="text-2xl font-bold tracking-tight">
             Project Details
           </h1>
-          <p className="text-sm text-muted-foreground">ID: {params.id}</p>
+          <p className="text-sm text-muted-foreground">ID: {id}</p>
         </div>
       </div>
 
