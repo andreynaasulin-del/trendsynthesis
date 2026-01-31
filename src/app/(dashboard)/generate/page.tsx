@@ -379,14 +379,14 @@ export default function GeneratePage() {
   );
 
   return (
-    <div className="flex h-full flex-col gap-3 p-4 lg:p-5">
+    <div className="flex h-full flex-col gap-3 p-2 md:p-4 lg:p-5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold tracking-tight">
+          <h1 className="text-lg md:text-xl font-bold tracking-tight">
             {language === "ru" ? "Генератор" : "Generator"}
           </h1>
-          <p className="text-xs text-muted-foreground font-mono">
+          <p className="text-[10px] md:text-xs text-muted-foreground font-mono">
             {language === "ru"
               ? `AI → ${videoCount} Сценариев → Ассеты → Монтаж`
               : `AI → ${videoCount} Scenarios → Assets → Montage`}
@@ -424,7 +424,7 @@ export default function GeneratePage() {
         </div>
 
         {/* ===== RIGHT: Pipeline / Gallery / Preview ===== */}
-        <div className="flex flex-col rounded-xl border border-zinc-800 bg-black/40 backdrop-blur-sm min-h-[450px] lg:min-h-[700px] overflow-hidden">
+        <div className="flex flex-col rounded-xl border border-zinc-800 bg-black/40 backdrop-blur-sm min-h-[300px] lg:min-h-[700px] overflow-hidden">
           {/* Tab Bar (when there's content) */}
           {!isIdle && (
             <div className="flex border-b border-zinc-800 bg-zinc-900/30">
