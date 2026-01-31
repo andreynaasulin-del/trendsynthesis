@@ -7,11 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useLanguage } from "@/components/providers/LanguageProvider";
-import { User, CreditCard, Key, Shield, Zap, Crown } from "lucide-react";
+import { User, Key, Shield, Zap, Crown } from "lucide-react";
 import Link from "next/link";
 
 export default function SettingsPage() {
-  const { language, setLanguage, t } = useLanguage();
+  const { language, setLanguage } = useLanguage();
 
   const content = {
     en: {

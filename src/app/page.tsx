@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Check, Play, X } from "lucide-react";
+import Image from "next/image";
+import { ArrowRight, Play } from "lucide-react";
 import { Pricing } from "@/components/landing/Pricing";
 import { Features } from "@/components/landing/Features";
 import { HowItWorks } from "@/components/landing/HowItWorks";
@@ -97,10 +98,12 @@ export default function LandingPage() {
     <div className="min-h-screen text-white font-sans selection:bg-white/20">
       {/* BACKGROUND */}
       <div className="fixed inset-0 -z-10 bg-[#050505]">
-        <img
+        <Image
           src="/bg-luxe.png"
           alt="Background"
-          className="absolute inset-0 w-full h-full object-cover opacity-60"
+          fill
+          className="object-cover opacity-60"
+          priority
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[#050505]/80 via-transparent to-[#050505] pointer-events-none" />
       </div>
@@ -303,7 +306,7 @@ export default function LandingPage() {
                       <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/90 to-transparent">
                         <div className="text-[10px] font-mono text-white/60 mb-1 tracking-widest">HOOK_0{n + 1}</div>
                         <div className="text-sm font-bold leading-tight mb-2 text-white shadow-black drop-shadow-md">
-                          "{video.hook}"
+                          &quot;{video.hook}&quot;
                         </div>
                         <div className="flex items-center gap-2 text-[10px font-medium">
                           <Play size={10} fill="currentColor" />

@@ -1,6 +1,13 @@
 {
-    "framework": "nextjs",
-    "buildCommand": "npm run build",
-    "installCommand": "npm install",
-    "outputDirectory": ".next"
+    "functions": {
+        "src/app/api/generate/video/route.ts": {
+            "maxDuration": 60
+        },
+        "src/app/api/generate/scenario/route.ts": {
+            "maxDuration": 30
+        },
+        "src/app/api/ingest/route.ts": {
+            "maxDuration": 30
+        }
+    }
 }
