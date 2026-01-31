@@ -113,7 +113,7 @@ const ShimmerOverlay = () => (
   </div>
 );
 
-// --- Strategy Card V2 (Premium) ---
+// --- Strategy Card V3 (Cyber-Noir) ---
 const StrategyCard = ({
   option,
   onSelect,
@@ -137,100 +137,113 @@ const StrategyCard = ({
   else if (lowerTitle.includes("story") || lowerTitle.includes("journey") || lowerTitle.includes("истори"))
     Icon = STRATEGY_ICONS.story;
 
-  // Gradient accents per card
-  const gradients = [
-    "from-violet-500/10 to-blue-500/5",
-    "from-emerald-500/10 to-cyan-500/5",
-    "from-rose-500/10 to-orange-500/5",
+  // Cyber-Noir Color Palettes
+  const themes = [
+    {
+      border: "hover:border-violet-500",
+      bg: "bg-violet-500/5",
+      glow: "shadow-violet-500/20",
+      text: "text-violet-400",
+      accent: "bg-violet-500",
+      gradient: "from-violet-500/20 to-transparent"
+    },
+    {
+      border: "hover:border-emerald-500",
+      bg: "bg-emerald-500/5",
+      glow: "shadow-emerald-500/20",
+      text: "text-emerald-400",
+      accent: "bg-emerald-500",
+      gradient: "from-emerald-500/20 to-transparent"
+    },
+    {
+      border: "hover:border-rose-500",
+      bg: "bg-rose-500/5",
+      glow: "shadow-rose-500/20",
+      text: "text-rose-400",
+      accent: "bg-rose-500",
+      gradient: "from-rose-500/20 to-transparent"
+    },
   ];
-  const borderGradients = [
-    "hover:border-violet-500/30",
-    "hover:border-emerald-500/30",
-    "hover:border-rose-500/30",
-  ];
-  const iconColors = [
-    "group-hover:text-violet-400",
-    "group-hover:text-emerald-400",
-    "group-hover:text-rose-400",
-  ];
+
+  const theme = themes[index % 3];
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16, scale: 0.95 }}
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ delay: 0.6 + index * 0.12, type: "spring", stiffness: 300, damping: 25 }}
-      whileHover={{ scale: 1.02, y: -3 }}
-      whileTap={{ scale: 0.97 }}
+      transition={{ delay: 0.5 + index * 0.1, type: "spring", stiffness: 200 }}
+      whileHover={{ scale: 1.02, y: -5 }}
+      whileTap={{ scale: 0.98 }}
       onClick={() => onSelect(option)}
       className={cn(
-        "group relative cursor-pointer overflow-hidden rounded-xl border border-white/[0.06] bg-zinc-950/80 backdrop-blur-xl transition-all duration-300",
-        borderGradients[index % 3],
-        "hover:shadow-2xl hover:shadow-violet-500/5"
+        "group relative cursor-pointer overflow-hidden rounded-xl border border-white/10 bg-zinc-950 transition-all duration-300",
+        theme.border,
+        "hover:shadow-2xl hover:bg-zinc-900",
+        theme.glow
       )}
     >
-      <ShimmerOverlay />
+      {/* Dynamic Background */}
+      <div className={cn("absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br", theme.gradient)} />
 
-      {/* Top gradient accent line */}
-      <div className={cn(
-        "absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r opacity-0 group-hover:opacity-100 transition-opacity duration-300",
-        gradients[index % 3]
-      )} />
+      {/* Scanline Effect */}
+      <div className="absolute inset-0 bg-[url('/scanline.png')] opacity-[0.03] pointer-events-none" />
 
-      <div className="relative z-10 p-4 flex flex-col gap-3">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-2">
+      {/* Content */}
+      <div className="relative z-10 p-5 flex flex-col h-full">
+
+        {/* Top Bar */}
+        <div className="flex justify-between items-start mb-4">
           <div className="flex items-center gap-2">
-            <div className={cn(
-              "p-1.5 rounded-lg bg-white/[0.03] border border-white/[0.06] transition-all duration-300 group-hover:bg-white/[0.06]"
-            )}>
-              <Icon className={cn("h-3.5 w-3.5 text-zinc-500 transition-colors", iconColors[index % 3])} />
+            <div className={cn("p-2 rounded-md bg-black/50 border border-white/10", theme.text)}>
+              <Icon className="h-4 w-4" />
             </div>
-            <div>
-              <span className="text-[9px] font-mono text-zinc-600 tracking-wider">
-                STRATEGY #{index + 1}
-              </span>
+            <div className="flex flex-col">
+              <span className="text-[9px] font-mono text-white/40 uppercase tracking-widest">Protocol {String(index + 1).padStart(2, '0')}</span>
+              <span className={cn("text-[10px] font-bold tracking-wide uppercase", theme.text)}>Active</span>
             </div>
           </div>
-          <ArrowRight className="h-3.5 w-3.5 text-zinc-700 group-hover:text-zinc-400 group-hover:translate-x-0.5 transition-all" />
+
+          {option.confidence && (
+            <div className={cn("px-2 py-1 rounded bg-black/40 border border-white/10 flex items-center gap-1.5")}>
+              <span className={cn("w-1.5 h-1.5 rounded-full animate-pulse", theme.accent)} />
+              <span className="text-[10px] font-mono font-bold text-white/90">{option.confidence}% MATCH</span>
+            </div>
+          )}
         </div>
 
-        {/* Title */}
-        <h3 className="text-[13px] font-semibold text-zinc-200 group-hover:text-white transition-colors leading-tight">
+        {/* Main Title */}
+        <h3 className="text-lg font-bold text-white mb-2 leading-tight group-hover:translate-x-1 transition-transform duration-300">
           {option.title}
         </h3>
 
         {/* Description */}
-        <p className="text-[11px] leading-relaxed text-zinc-500 group-hover:text-zinc-400 transition-colors">
+        <p className="text-xs text-zinc-400 mb-6 leading-relaxed border-l-2 border-white/10 pl-3">
           {option.description}
         </p>
 
-
-        {/* Metrics (New V2 Feature) */}
-        <div className="flex items-center gap-2 mb-2">
-          {option.confidence && (
-            <div className="flex items-center gap-1 bg-emerald-500/10 px-1.5 py-0.5 rounded text-[9px] font-mono text-emerald-400 border border-emerald-500/20">
-              <span className="font-bold">{option.confidence}%</span>
-              <span className="opacity-70">CONFIDENCE</span>
-            </div>
-          )}
-          {option.estimated_views && (
-            <div className="flex items-center gap-1 bg-blue-500/10 px-1.5 py-0.5 rounded text-[9px] font-mono text-blue-400 border border-blue-500/20">
-              <Eye className="h-2.5 w-2.5" />
-              <span>{option.estimated_views}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Hook Preview Low */}
-        <div className="rounded-lg bg-black/50 border border-white/[0.04] p-2.5 mt-auto">
-          <div className="flex items-center gap-1.5 mb-1">
-            <Activity className="h-2.5 w-2.5 text-violet-500/60" />
-            <span className="text-[8px] font-mono text-violet-500/60 tracking-widest">HOOK_TEXT</span>
+        {/* Hook Section (Key Visual) */}
+        <div className="mt-auto relative overflow-hidden rounded-lg bg-black/60 border border-white/5 group-hover:border-white/20 transition-colors">
+          <div className="absolute top-0 left-0 px-2 py-1 bg-white/10 rounded-br-lg">
+            <span className="text-[8px] font-mono text-white/60">VIRAL HOOK</span>
           </div>
-          <p className="font-mono text-[10px] text-violet-300/80 leading-relaxed">
-            &quot;{option.hook_text}&quot;
-          </p>
+          <div className="p-4 pt-6">
+            <p className="font-mono text-sm text-white/90 italic">
+              "{option.hook_text}"
+            </p>
+          </div>
+          {/* Decorative bar */}
+          <div className={cn("h-0.5 w-full", theme.accent, "opacity-50")} />
         </div>
+
+        {/* Metrics Row */}
+        <div className="mt-3 flex items-center justify-between opacity-60 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center gap-1.5">
+            <Eye className="h-3 w-3 text-white/40" />
+            <span className="text-[10px] font-mono text-white/60">{option.estimated_views || "UNLIMITED"}</span>
+          </div>
+          <ArrowRight className={cn("h-3 w-3 transition-transform duration-300 group-hover:translate-x-1", theme.text)} />
+        </div>
+
       </div>
     </motion.div>
   );

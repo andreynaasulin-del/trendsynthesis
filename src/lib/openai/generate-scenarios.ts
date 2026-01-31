@@ -16,25 +16,26 @@ export async function generateScenarios({
   videoCount = 30,
   language = "en",
 }: GenerateScenariosParams): Promise<Scenario[]> {
-  const systemPrompt = `You are a viral content strategist and video scriptwriter.
-You create scenarios for short-form vertical videos (TikTok, Reels, Shorts).
-Each scenario must be unique — different hook, angle, and visual approach.
+  const systemPrompt = `You are a viral content strategist.
+You create scenarios for HIGH-PACED short-form vertical videos (TikTok, Reels, Shorts).
+Target duration: 15 SECONDS MAX.
+Style: Fast, engaging, no fluff.
 Output ONLY valid JSON.`;
 
   const userPrompt = `Generate ${videoCount} unique video scenarios for the topic: "${topic}"
-Language: ${language}
+Language: ${language} (STRICTLY OUTPUT ALL VISIBLE TEXT AND VOICEOVER IN THIS LANGUAGE)
 
 For each scenario, provide:
 - title: catchy video title
-- hook: first 3 seconds attention grabber (1 sentence)
-- body: main content (2-3 sentences)
-- cta: call to action (1 sentence)
+- hook: first 3 seconds attention grabber (short & punchy)
+- body: main content (fast paced, max 2 sentences)
+- cta: call to action (short)
 - angle: the unique perspective/angle
 - tone: one of "professional", "casual", "provocative", "educational", "emotional"
 - keywords: array of 3-5 SEO keywords
-- asset_queries: array of 2-3 search queries for stock video footage
-- voiceover_text: full voiceover script combining hook + body + cta
-- duration_seconds: estimated video duration (15-60)
+- asset_queries: array of 2-3 search queries for stock video footage (ALWAYS IN ENGLISH for search accuracy)
+- voiceover_text: full voiceover script combining hook + body + cta (MAX 40 WORDS)
+- duration_seconds: estimated video duration (15)
 
 Return JSON object with key "scenarios" containing array of ${videoCount} scenario objects.`;
 
