@@ -1,5 +1,6 @@
 // ============================================
-// TRENDSYNTHESIS — Core Type Definitions
+// TRENDSYNTHESIS — Core Type Definitions V2
+// Pipeline + Montage Engine + Subtitles
 // ============================================
 
 // --- User & Auth ---
@@ -23,16 +24,17 @@ export interface Project {
   video_count: number;
   style: VideoStyle;
   language: string;
+  scenarios: Scenario[];
   created_at: string;
   completed_at: string | null;
 }
 
 export type ProjectStatus =
-  | "pending"
-  | "parsing"
+  | "idle"
+  | "brainstorming"
   | "generating_scenarios"
   | "fetching_assets"
-  | "rendering"
+  | "composing"
   | "completed"
   | "failed";
 
@@ -60,6 +62,51 @@ export type ScenarioTone =
   | "provocative"
   | "educational"
   | "emotional";
+
+// --- Video Clip (single clip from Pexels/Coverr) ---
+export interface VideoClip {
+  id: string;
+  url: string;
+  provider: "pexels" | "coverr" | "supabase";
+  query: string;
+  width: number;
+  height: number;
+  duration?: number;
+}
+
+// --- Montage Composition (data for Remotion) ---
+export interface MontageComposition {
+  id: string;
+  scenario: Scenario;
+  clips: VideoClip[];
+  subtitles: SubtitleSegment[];
+  style: MontageStyle;
+  duration_frames: number;
+  fps: number;
+  width: number;
+  height: number;
+}
+
+export interface SubtitleSegment {
+  id: string;
+  text: string;
+  startFrame: number;
+  endFrame: number;
+  phase: "hook" | "body" | "cta";
+  style?: "default" | "highlight" | "impact";
+}
+
+export interface MontageStyle {
+  transition: TransitionType;
+  kenBurns: boolean;
+  overlayOpacity: number;
+  textPosition: "center" | "bottom" | "top";
+  progressBar: boolean;
+  watermark: boolean;
+  colorGrade: "none" | "cinematic" | "cold" | "warm" | "cyberpunk";
+}
+
+export type TransitionType = "cut" | "crossfade" | "dip-to-black" | "slide" | "zoom";
 
 // --- Video (rendered output) ---
 export interface Video {
@@ -99,6 +146,18 @@ export interface PexelsAsset {
   photographer: string;
 }
 
+// --- Pipeline Stage (real-time tracking) ---
+export interface PipelineStage {
+  id: string;
+  name: string;
+  nameRu: string;
+  status: "waiting" | "active" | "completed" | "failed";
+  progress: number; // 0-100
+  log: string[];
+  startedAt?: number;
+  completedAt?: number;
+}
+
 // --- Generation Pipeline ---
 export interface GenerationRequest {
   topic: string;
@@ -115,6 +174,16 @@ export interface GenerationProgress {
   scenarios_generated: number;
   videos_rendered: number;
   total_videos: number;
+}
+
+// --- Strategy from Chat ---
+export interface StrategyOption {
+  id: string;
+  title: string;
+  hook_text: string;
+  description: string;
+  confidence?: number;
+  estimated_views?: string;
 }
 
 // --- API Responses ---
