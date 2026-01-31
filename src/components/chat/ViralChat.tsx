@@ -313,10 +313,15 @@ const MessageBubble = ({
   if (match && match[1]) {
     try {
       rawText = message.content.replace(match[0], "").trim();
+      // Force clean artifacts
+      rawText = rawText.replace(/\*\*/g, "").replace(/—/g, "-").replace(/__/g, "");
       strategies = JSON.parse(match[1]);
     } catch (e) {
       console.error("Failed to parse hidden options:", e);
     }
+  } else {
+    // Clean even if no options found yet (streaming)
+    rawText = rawText.replace(/\*\*/g, "").replace(/—/g, "-").replace(/__/g, "");
   }
 
   return (
@@ -329,7 +334,7 @@ const MessageBubble = ({
       {/* AI Avatar */}
       {!isUser && <AIAvatar />}
 
-      <div className={cn("max-w-[85%] flex flex-col gap-3", isUser && "items-end")}>
+      <div className={cn("max-w-[90%] md:max-w-[85%] flex flex-col gap-3", isUser && "items-end")}>
         {/* Timestamp + Label */}
         <div className={cn("flex items-center gap-2 px-1", isUser && "flex-row-reverse")}>
           <span className="text-[9px] font-mono text-zinc-600">
@@ -344,7 +349,7 @@ const MessageBubble = ({
         {rawText && (
           <div
             className={cn(
-              "rounded-2xl px-5 py-3.5 text-[13px] leading-[1.7] shadow-lg",
+              "rounded-2xl px-5 py-3.5 text-[13px] leading-[1.7] shadow-lg whitespace-pre-wrap break-words",
               isUser
                 ? "bg-gradient-to-br from-violet-600 to-blue-600 text-white rounded-br-sm shadow-violet-500/20"
                 : "bg-zinc-900/70 border border-white/[0.06] text-zinc-300 rounded-bl-sm backdrop-blur-xl shadow-black/20"
@@ -360,7 +365,7 @@ const MessageBubble = ({
 
         {/* Strategy Cards */}
         {!isUser && strategies.length > 0 && (
-          <div className="w-full mt-1">
+          <div className="w-full mt-2">
             <div className="flex items-center gap-2 mb-3 px-1">
               <Shield className="h-3 w-3 text-violet-500/50" />
               <span className="text-[9px] font-mono text-violet-500/50 tracking-widest">
@@ -368,7 +373,7 @@ const MessageBubble = ({
               </span>
               <div className="flex-1 h-px bg-gradient-to-r from-violet-500/20 to-transparent" />
             </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 w-full">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
               {strategies.map((strategy, idx) => (
                 <StrategyCard
                   key={strategy.id}
