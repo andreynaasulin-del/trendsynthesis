@@ -45,12 +45,14 @@ export async function updateSession(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     // Redirect unauthenticated users trying to access dashboard
-    // BACKDOOR: Allow if admin-bypass cookie is present
+    // BACKDOOR: Allow if admin-bypass or demo-user cookie is present
     const adminBypass = request.cookies.get("admin-bypass");
+    const demoUser = request.cookies.get("demo-user");
 
     if (
       !user &&
-      !adminBypass && // Only redirect if NOT an admin bypass
+      !adminBypass &&
+      !demoUser && // MVP: Allow demo users
       (request.nextUrl.pathname.startsWith("/dashboard") ||
         request.nextUrl.pathname.startsWith("/generate") ||
         request.nextUrl.pathname.startsWith("/projects") ||

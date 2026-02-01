@@ -59,22 +59,26 @@ export default function LoginPage() {
       const sanitizedEmail = email.trim();
       const sanitizedPassword = password.trim();
 
-      if (
-        sanitizedEmail === "adminbigboss@admin.yessir" &&
-        sanitizedPassword === "bosstrendsynthesisyessir"
-      ) {
-        console.log("🔓 SUPER ADMIN ACCESS GRANTED");
-        document.cookie = "admin-bypass=true; path=/; max-age=86400";
+      // MVP BYPASS: Allow any email/password for demo
+      if (sanitizedEmail && sanitizedPassword.length >= 1) {
+        console.log("🔓 MVP DEMO ACCESS - bypassing auth");
+        document.cookie = "demo-user=true; path=/; max-age=86400";
+        localStorage.setItem("demo-user-email", sanitizedEmail);
         window.location.assign("/dashboard");
         return;
       }
 
+      // Original Supabase auth (fallback)
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       window.location.href = "/dashboard";
     } catch (err: any) {
-      setError(err.message || "Failed to sign in");
+      // MVP: Still allow in even on error
+      console.log("🔓 MVP FALLBACK - allowing access anyway");
+      document.cookie = "demo-user=true; path=/; max-age=86400";
+      localStorage.setItem("demo-user-email", email.trim() || "demo@trendsynthesis.app");
+      window.location.assign("/dashboard");
     } finally {
       setLoading(false);
     }
