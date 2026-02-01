@@ -1,10 +1,8 @@
-import { NextResponse } from "next/server";
+import { updateSession } from "@/lib/supabase/middleware";
 import type { NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
-    // TEMPORARY BYPASS: Always allow access to prevent 404/500 errors
-    // We will restore auth protection once the deployment stabilizes
-    return NextResponse.next();
+    return await updateSession(request);
 }
 
 export const config = {
