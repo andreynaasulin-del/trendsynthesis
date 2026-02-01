@@ -59,12 +59,24 @@ export async function PATCH(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { full_name, display_name, avatar_url } = body;
+        const {
+            full_name,
+            display_name,
+            avatar_url,
+            system_prompt,
+            target_audience,
+            video_examples,
+            traffic_source
+        } = body;
 
         // Support both full_name and display_name (display_name takes priority)
         const updated = await updateProfile({
             full_name: display_name || full_name,
-            avatar_url
+            avatar_url,
+            system_prompt,
+            target_audience,
+            video_examples,
+            traffic_source,
         });
 
         return NextResponse.json({

@@ -30,6 +30,13 @@ export async function getProfile(): Promise<User | null> {
         avatar_url: data.avatar_url,
         plan: data.plan as "free" | "pro" | "agency",
         credits_remaining: data.credits_remaining,
+
+        // Creator Settings
+        system_prompt: data.system_prompt,
+        target_audience: data.target_audience,
+        video_examples: data.video_examples,
+        traffic_source: data.traffic_source,
+
         created_at: data.created_at,
         updated_at: data.updated_at,
     };
@@ -46,6 +53,10 @@ export async function updateProfile(updates: Partial<User>): Promise<User | null
         .update({
             full_name: updates.full_name,
             avatar_url: updates.avatar_url,
+            system_prompt: updates.system_prompt,
+            target_audience: updates.target_audience,
+            video_examples: updates.video_examples,
+            traffic_source: updates.traffic_source,
             updated_at: new Date().toISOString(),
         })
         .eq("id", user.id)
