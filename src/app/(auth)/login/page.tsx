@@ -81,8 +81,6 @@ export default function LoginPage() {
   }
 
   async function handleGoogleLogin() {
-    setLoading(true);
-    setError(null);
     try {
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithOAuth({
@@ -91,10 +89,11 @@ export default function LoginPage() {
           redirectTo: `${window.location.origin}/callback`,
         },
       });
-      if (error) throw error;
+      if (error) {
+        setError(error.message);
+      }
     } catch (err: any) {
       setError(err.message || "Failed to sign in with Google");
-      setLoading(false);
     }
   }
 
