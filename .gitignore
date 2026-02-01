@@ -7,3 +7,4 @@ dist/
 out/
 public/creations/
 .vercel
+.env*.local

@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   email TEXT NOT NULL,
   full_name TEXT,
   avatar_url TEXT,
-  plan TEXT DEFAULT 'free' CHECK (plan IN ('free', 'creator', 'agency')),
+  plan TEXT DEFAULT 'free' CHECK (plan IN ('free', 'pro', 'agency')),
   credits_remaining INTEGER DEFAULT 1,
   stripe_customer_id TEXT,
   stripe_subscription_id TEXT,
@@ -138,6 +138,8 @@ CREATE POLICY "Users can update own videos" ON public.videos
 -- Usage log policies
 CREATE POLICY "Users can view own usage" ON public.usage_logs 
   FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own usage" ON public.usage_logs 
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- ============================================
 -- FUNCTIONS
@@ -217,7 +219,7 @@ DECLARE
 BEGIN
   -- Determine credits based on plan
   credits_to_add := CASE p_plan
-    WHEN 'creator' THEN 20
+    WHEN 'pro' THEN 20
     WHEN 'agency' THEN 9999
     ELSE 1
   END;
