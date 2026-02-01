@@ -2,9 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-// Force specific runtime to avoid Edge Network 404s
-export const runtime = "nodejs";
-
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
