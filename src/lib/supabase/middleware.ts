@@ -1,17 +1,21 @@
 // ============================================
 // TRENDSYNTHESIS — Supabase Middleware Helper
+// MVP MODE: Auth bypass enabled
 // ============================================
 
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function updateSession(request: NextRequest) {
-  // Safe environment check
+  // MVP MODE: Allow all requests through without auth check
+  // This is temporary for demo purposes
+  console.log("🔓 MVP MODE: Allowing access to", request.nextUrl.pathname);
+
+  // Just refresh cookies if Supabase is configured
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
-    console.warn("⚠️ Middleware: Supabase keys missing. Skipping auth check.");
     return NextResponse.next({ request });
   }
 
@@ -39,40 +43,8 @@ export async function updateSession(request: NextRequest) {
       }
     );
 
-    // Refresh session — IMPORTANT: avoid writing logic between createServerClient and getUser()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    // Redirect unauthenticated users trying to access dashboard
-    // BACKDOOR: Allow if admin-bypass or demo-user cookie is present
-    const adminBypass = request.cookies.get("admin-bypass");
-    const demoUser = request.cookies.get("demo-user");
-
-    if (
-      !user &&
-      !adminBypass &&
-      !demoUser && // MVP: Allow demo users
-      (request.nextUrl.pathname.startsWith("/dashboard") ||
-        request.nextUrl.pathname.startsWith("/generate") ||
-        request.nextUrl.pathname.startsWith("/projects") ||
-        request.nextUrl.pathname.startsWith("/settings"))
-    ) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/login";
-      return NextResponse.redirect(url);
-    }
-
-    // Redirect authenticated users away from auth pages
-    if (
-      user &&
-      (request.nextUrl.pathname.startsWith("/login") ||
-        request.nextUrl.pathname.startsWith("/signup"))
-    ) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/dashboard";
-      return NextResponse.redirect(url);
-    }
+    // Just refresh the session, don't block anyone
+    await supabase.auth.getUser();
 
     return supabaseResponse;
   } catch (error) {
