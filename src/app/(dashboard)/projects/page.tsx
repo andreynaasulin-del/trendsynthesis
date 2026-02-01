@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { fetchProjects, deleteProjectById } from "@/lib/api-client";
 import type { Project } from "@/types";
+import EmptyState from "@/components/ui/empty-state";
 
 const statusColors: Record<string, string> = {
   completed: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
@@ -151,24 +152,14 @@ export default function ProjectsPage() {
       </div>
 
       {projects.length === 0 ? (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <Card className="flex flex-col items-center justify-center p-12 text-center border-dashed border-zinc-800 bg-zinc-950/50">
-            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600/20 to-blue-600/20 border border-violet-500/20">
-              <FolderOpen className="h-7 w-7 text-violet-400" />
-            </div>
-            <h3 className="text-lg font-semibold">{c.emptyTitle}</h3>
-            <p className="mt-1 max-w-sm text-sm text-muted-foreground">{c.emptyDesc}</p>
-            <Button asChild className="mt-6 gap-2 bg-violet-600 hover:bg-violet-500">
-              <Link href="/generate">
-                <Zap className="h-4 w-4" />
-                {c.startBtn}
-              </Link>
-            </Button>
-          </Card>
-        </motion.div>
+        <EmptyState
+          icon={FolderOpen}
+          title={c.emptyTitle}
+          description={c.emptyDesc}
+          actionLabel={c.startBtn}
+          actionHref="/generate"
+          gradient="from-violet-600/20 to-blue-600/20"
+        />
       ) : (
         <motion.div
           initial={{ opacity: 0 }}

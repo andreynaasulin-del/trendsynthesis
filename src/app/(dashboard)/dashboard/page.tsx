@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { fetchProfile, fetchProjects } from "@/lib/api-client";
+import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 
 const container = {
   hidden: { opacity: 0 },
@@ -31,6 +32,15 @@ export default function DashboardPage() {
   const { language } = useLanguage();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Check if onboarding needed
+  useEffect(() => {
+    const completed = localStorage.getItem("onboarding_completed");
+    if (!completed) {
+      setShowOnboarding(true);
+    }
+  }, []);
 
   // Fetch real data on mount with MVP fallback
   useEffect(() => {
@@ -284,6 +294,12 @@ export default function DashboardPage() {
           </Card>
         </motion.div>
       )}
+
+      {/* Onboarding Wizard */}
+      <OnboardingWizard
+        open={showOnboarding}
+        onComplete={() => setShowOnboarding(false)}
+      />
     </div>
   );
 }
