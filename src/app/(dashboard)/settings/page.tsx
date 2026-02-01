@@ -249,7 +249,7 @@ export default function SettingsPage() {
           <Separator className="bg-zinc-800" />
           {profile?.plan === "free" ? (
             <Button asChild variant="outline" className="w-full border-violet-500/30 text-violet-400 hover:bg-violet-500/10">
-              <Link href="/api/checkout?plan=creator">{c.upgrade}</Link>
+              <Link href="/api/checkout?plan=pro">{c.upgrade}</Link>
             </Button>
           ) : (
             <Button asChild variant="outline" className="w-full">
