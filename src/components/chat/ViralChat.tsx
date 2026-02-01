@@ -5,18 +5,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Send,
   Zap,
-  Skull,
   TrendingUp,
   Sparkles,
   User,
-  Globe,
   Bot,
   ArrowRight,
-  Signal,
-  Activity,
-  Shield,
   Eye,
   Target,
+  BarChart2,
+  Lock
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -39,9 +36,9 @@ interface ViralChatProps {
   className?: string;
 }
 
-// --- Icons Map ---
+// --- Icons Map (Minimal) ---
 const STRATEGY_ICONS: Record<string, React.ElementType> = {
-  fear: Skull,
+  fear: Lock,
   hype: TrendingUp,
   value: Zap,
   insider: Eye,
@@ -49,71 +46,24 @@ const STRATEGY_ICONS: Record<string, React.ElementType> = {
   default: Sparkles,
 };
 
-// --- Animated Gradient Border ---
-const GradientBorder = () => (
-  <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
-    <div
-      className="absolute inset-0 rounded-2xl"
-      style={{
-        padding: "1px",
-        background: "linear-gradient(135deg, rgba(139,92,246,0.3), rgba(59,130,246,0.1), rgba(139,92,246,0.05), rgba(236,72,153,0.15), rgba(139,92,246,0.3))",
-        backgroundSize: "300% 300%",
-        animation: "gradient-shift 8s ease infinite",
-        WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-        WebkitMaskComposite: "xor",
-        maskComposite: "exclude",
-      }}
-    />
+// --- Avatar Component (Clean) ---
+const Avatar = ({ role, isTyping }: { role: "user" | "ai"; isTyping?: boolean }) => (
+  <div className={cn(
+    "relative shrink-0 h-8 w-8 rounded-full flex items-center justify-center border transition-colors",
+    role === "ai"
+      ? "bg-zinc-900 border-zinc-800 text-zinc-400"
+      : "bg-white border-white text-black",
+    isTyping && "border-zinc-700"
+  )}>
+    {role === "ai" ? (
+      <Bot className="h-4 w-4" />
+    ) : (
+      <User className="h-4 w-4" />
+    )}
   </div>
 );
 
-// --- AI Avatar Component ---
-const AIAvatar = ({ isTyping }: { isTyping?: boolean }) => (
-  <div className="relative shrink-0">
-    {/* Outer glow ring */}
-    <div className={cn(
-      "absolute -inset-1 rounded-full bg-gradient-to-r from-violet-500/40 via-blue-500/30 to-violet-500/40 blur-sm transition-opacity duration-700",
-      isTyping ? "opacity-100 animate-pulse" : "opacity-40"
-    )} />
-    {/* Avatar body */}
-    <div className="relative h-9 w-9 rounded-full bg-gradient-to-br from-zinc-900 to-zinc-800 border border-white/10 flex items-center justify-center shadow-lg shadow-violet-500/10">
-      <Bot className={cn(
-        "h-4 w-4 transition-colors duration-500",
-        isTyping ? "text-violet-400" : "text-zinc-400"
-      )} />
-      {/* Status dot */}
-      <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-zinc-900">
-        <div className={cn(
-          "h-full w-full rounded-full",
-          isTyping ? "bg-amber-400 animate-pulse" : "bg-emerald-400"
-        )} />
-      </div>
-    </div>
-  </div>
-);
-
-// --- User Avatar ---
-const UserAvatar = () => (
-  <div className="relative shrink-0">
-    <div className="h-9 w-9 rounded-full bg-gradient-to-br from-violet-600 to-blue-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
-      <User className="h-4 w-4 text-white" />
-    </div>
-  </div>
-);
-
-// --- Shimmer Effect for Cards ---
-const ShimmerOverlay = () => (
-  <div className="absolute inset-0 overflow-hidden rounded-xl pointer-events-none">
-    <div
-      className="absolute inset-0 -translate-x-full animate-shimmer"
-      style={{
-        background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.03) 50%, transparent 100%)",
-      }}
-    />
-  </div>
-);
-
-// --- Strategy Card V3 (Cyber-Noir) ---
+// --- Strategy Card (Minimal) ---
 const StrategyCard = ({
   option,
   onSelect,
@@ -126,188 +76,80 @@ const StrategyCard = ({
   let Icon = STRATEGY_ICONS.default;
   const lowerTitle = option.title.toLowerCase();
 
-  if (lowerTitle.includes("fear") || lowerTitle.includes("risk") || lowerTitle.includes("страх") || lowerTitle.includes("риск"))
+  if (lowerTitle.includes("fear") || lowerTitle.includes("risk") || lowerTitle.includes("страх"))
     Icon = STRATEGY_ICONS.fear;
   else if (lowerTitle.includes("trend") || lowerTitle.includes("viral") || lowerTitle.includes("тренд"))
     Icon = STRATEGY_ICONS.hype;
-  else if (lowerTitle.includes("value") || lowerTitle.includes("hack") || lowerTitle.includes("ценност"))
+  else if (lowerTitle.includes("value") || lowerTitle.includes("hack") || lowerTitle.includes("польз"))
     Icon = STRATEGY_ICONS.value;
   else if (lowerTitle.includes("insider") || lowerTitle.includes("secret") || lowerTitle.includes("секрет"))
     Icon = STRATEGY_ICONS.insider;
   else if (lowerTitle.includes("story") || lowerTitle.includes("journey") || lowerTitle.includes("истори"))
     Icon = STRATEGY_ICONS.story;
 
-  // Cyber-Noir Color Palettes
-  const themes = [
-    {
-      border: "hover:border-violet-500",
-      bg: "bg-violet-500/5",
-      glow: "shadow-violet-500/20",
-      text: "text-violet-400",
-      accent: "bg-violet-500",
-      gradient: "from-violet-500/20 to-transparent"
-    },
-    {
-      border: "hover:border-emerald-500",
-      bg: "bg-emerald-500/5",
-      glow: "shadow-emerald-500/20",
-      text: "text-emerald-400",
-      accent: "bg-emerald-500",
-      gradient: "from-emerald-500/20 to-transparent"
-    },
-    {
-      border: "hover:border-rose-500",
-      bg: "bg-rose-500/5",
-      glow: "shadow-rose-500/20",
-      text: "text-rose-400",
-      accent: "bg-rose-500",
-      gradient: "from-rose-500/20 to-transparent"
-    },
-  ];
-
-  const theme = themes[index % 3];
-
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      initial={{ opacity: 0, y: 12, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ delay: 0.5 + index * 0.1, type: "spring", stiffness: 200 }}
-      whileHover={{ scale: 1.02, y: -5 }}
-      whileTap={{ scale: 0.98 }}
+      transition={{ delay: 0.1 * index, duration: 0.3, ease: "easeOut" }}
+      whileHover={{ y: -2 }}
       onClick={() => onSelect(option)}
-      className={cn(
-        "group relative cursor-pointer overflow-hidden rounded-xl border border-white/10 bg-zinc-950 transition-all duration-300",
-        theme.border,
-        "hover:shadow-2xl hover:bg-zinc-900",
-        theme.glow
-      )}
+      className="group cursor-pointer rounded-lg border border-zinc-800 bg-zinc-900/40 hover:bg-zinc-900/80 hover:border-zinc-700 transition-all duration-200 p-4 flex flex-col h-full"
     >
-      {/* Dynamic Background */}
-      <div className={cn("absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br", theme.gradient)} />
-
-      {/* Scanline Effect */}
-      <div className="absolute inset-0 bg-[url('/scanline.png')] opacity-[0.03] pointer-events-none" />
-
-      {/* Content */}
-      <div className="relative z-10 p-5 flex flex-col h-full">
-
-        {/* Top Bar */}
-        <div className="flex justify-between items-start mb-4">
-          <div className="flex items-center gap-2">
-            <div className={cn("p-2 rounded-md bg-black/50 border border-white/10", theme.text)}>
-              <Icon className="h-4 w-4" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[9px] font-mono text-white/40 uppercase tracking-widest">Protocol {String(index + 1).padStart(2, '0')}</span>
-              <span className={cn("text-[10px] font-bold tracking-wide uppercase", theme.text)}>Active</span>
-            </div>
-          </div>
-
-          {option.confidence && (
-            <div className={cn("px-2 py-1 rounded bg-black/40 border border-white/10 flex items-center gap-1.5")}>
-              <span className={cn("w-1.5 h-1.5 rounded-full animate-pulse", theme.accent)} />
-              <span className="text-[10px] font-mono font-bold text-white/90">{option.confidence}% MATCH</span>
-            </div>
-          )}
+      <div className="flex justify-between items-start mb-3">
+        <div className="p-1.5 rounded-md bg-zinc-800 text-zinc-400 group-hover:text-white transition-colors">
+          <Icon className="h-4 w-4" />
         </div>
-
-        {/* Main Title */}
-        <h3 className="text-lg font-bold text-white mb-2 leading-tight group-hover:translate-x-1 transition-transform duration-300">
-          {option.title}
-        </h3>
-
-        {/* Description */}
-        <p className="text-xs text-zinc-400 mb-6 leading-relaxed border-l-2 border-white/10 pl-3">
-          {option.description}
-        </p>
-
-        {/* Hook Section (Key Visual) */}
-        <div className="mt-auto relative overflow-hidden rounded-lg bg-black/60 border border-white/5 group-hover:border-white/20 transition-colors">
-          <div className="absolute top-0 left-0 px-2 py-1 bg-white/10 rounded-br-lg">
-            <span className="text-[8px] font-mono text-white/60">VIRAL HOOK</span>
+        {option.confidence && (
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-zinc-800/50 border border-zinc-800">
+            <BarChart2 className="h-3 w-3 text-zinc-500" />
+            <span className="text-[10px] font-medium text-zinc-400">{option.confidence}% match</span>
           </div>
-          <div className="p-4 pt-6">
-            <p className="font-mono text-sm text-white/90 italic">
-              "{option.hook_text}"
-            </p>
-          </div>
-          {/* Decorative bar */}
-          <div className={cn("h-0.5 w-full", theme.accent, "opacity-50")} />
+        )}
+      </div>
+
+      <h3 className="text-sm font-medium text-zinc-100 mb-1 group-hover:text-white transition-colors">
+        {option.title}
+      </h3>
+
+      <p className="text-xs text-zinc-500 mb-4 line-clamp-2">
+        {option.description}
+      </p>
+
+      <div className="mt-auto pt-3 border-t border-zinc-800/50">
+        <div className="flex items-center gap-2 text-[10px] text-zinc-500 font-mono mb-2">
+          <span className="uppercase">Viral Hook</span>
         </div>
+        <p className="text-xs italic text-zinc-300 font-medium">"{option.hook_text}"</p>
+      </div>
 
-        {/* Metrics Row */}
-        <div className="mt-3 flex items-center justify-between opacity-60 group-hover:opacity-100 transition-opacity">
-          <div className="flex items-center gap-1.5">
-            <Eye className="h-3 w-3 text-white/40" />
-            <span className="text-[10px] font-mono text-white/60">{option.estimated_views || "UNLIMITED"}</span>
-          </div>
-          <ArrowRight className={cn("h-3 w-3 transition-transform duration-300 group-hover:translate-x-1", theme.text)} />
-        </div>
-
+      <div className="mt-4 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity">
+        <span className="text-[10px] text-zinc-500">{option.estimated_views || "High potential"}</span>
+        <ArrowRight className="h-3 w-3 text-zinc-400" />
       </div>
     </motion.div>
   );
 };
 
-// --- Typing Indicator V2 ---
+// --- Typing Indicator (Minimal) ---
 const TypingIndicator = ({ language }: { language: "en" | "ru" }) => {
-  const texts = useMemo(() =>
-    language === "ru"
-      ? ["АНАЛИЗ ТРЕНДОВ", "ГЕНЕРАЦИЯ СТРАТЕГИЙ", "ОБРАБОТКА ДАННЫХ", "ПОИСК ПАТТЕРНОВ"]
-      : ["ANALYZING TRENDS", "GENERATING STRATEGIES", "PROCESSING DATA", "FINDING PATTERNS"],
-    [language]
-  );
-
-  const [textIdx, setTextIdx] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTextIdx((prev) => (prev + 1) % texts.length);
-    }, 2000);
-    return () => clearInterval(interval);
-  }, [texts]);
-
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -8 }}
-      className="flex items-start gap-3 px-1"
+      className="flex items-center gap-3 px-1"
     >
-      <AIAvatar isTyping />
-      <div className="flex flex-col gap-2">
-        <div className="rounded-2xl rounded-bl-sm bg-zinc-900/60 border border-white/[0.06] backdrop-blur-xl px-4 py-3">
-          {/* Animated dots */}
-          <div className="flex items-center gap-2">
-            <div className="flex gap-1">
-              {[0, 1, 2].map((i) => (
-                <motion.div
-                  key={i}
-                  className="h-1.5 w-1.5 rounded-full bg-violet-400"
-                  animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.1, 0.8] }}
-                  transition={{ duration: 1.2, delay: i * 0.2, repeat: Infinity }}
-                />
-              ))}
-            </div>
-            <AnimatePresence mode="wait">
-              <motion.span
-                key={textIdx}
-                initial={{ opacity: 0, x: 4 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -4 }}
-                className="text-[10px] font-mono text-violet-400/70 tracking-wider"
-              >
-                {texts[textIdx]}
-              </motion.span>
-            </AnimatePresence>
-          </div>
-        </div>
+      <Avatar role="ai" isTyping />
+      <div className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-zinc-900/50 border border-zinc-800">
+        <span className="h-1.5 w-1.5 rounded-full bg-zinc-500 animate-[bounce_1.4s_infinite_0ms]" />
+        <span className="h-1.5 w-1.5 rounded-full bg-zinc-500 animate-[bounce_1.4s_infinite_200ms]" />
+        <span className="h-1.5 w-1.5 rounded-full bg-zinc-500 animate-[bounce_1.4s_infinite_400ms]" />
       </div>
     </motion.div>
   );
 };
 
-// --- Message Bubble V2 (Premium) ---
+// --- Message Bubble (Clean) ---
 const MessageBubble = ({
   message,
   onStrategySelect,
@@ -327,35 +169,29 @@ const MessageBubble = ({
   if (match && match[1]) {
     try {
       rawText = message.content.replace(match[0], "").trim();
-      // Force clean artifacts
       rawText = rawText.replace(/\*\*/g, "").replace(/—/g, "-").replace(/__/g, "");
       strategies = JSON.parse(match[1]);
     } catch (e) {
       console.error("Failed to parse hidden options:", e);
     }
   } else {
-    // Clean even if no options found yet (streaming)
     rawText = rawText.replace(/\*\*/g, "").replace(/—/g, "-").replace(/__/g, "");
   }
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ type: "spring", stiffness: 400, damping: 30 }}
-      className={cn("flex w-full gap-3", isUser ? "justify-end" : "justify-start")}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      className={cn("flex w-full gap-4", isUser ? "justify-end" : "justify-start")}
     >
-      {/* AI Avatar */}
-      {!isUser && <AIAvatar />}
+      {!isUser && <Avatar role="ai" />}
 
-      <div className={cn("max-w-[90%] md:max-w-[85%] flex flex-col gap-3", isUser && "items-end")}>
-        {/* Timestamp + Label */}
-        <div className={cn("flex items-center gap-2 px-1", isUser && "flex-row-reverse")}>
-          <span className="text-[9px] font-mono text-zinc-600">
-            {isUser ? "" : "TrendSynth AI"}
-          </span>
-          <span className="text-[9px] font-mono text-zinc-700">
-            {new Date(message.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+      <div className={cn("max-w-[85%] flex flex-col gap-2", isUser && "items-end")}>
+        {/* Timestamp */}
+        <div className="flex items-center gap-2 px-1 opacity-50">
+          <span className="text-[10px] text-zinc-500">
+            {isUser ? "You" : "AI"}
           </span>
         </div>
 
@@ -363,10 +199,10 @@ const MessageBubble = ({
         {rawText && (
           <div
             className={cn(
-              "rounded-2xl px-5 py-3.5 text-[13px] leading-[1.7] shadow-lg whitespace-pre-wrap break-words",
+              "rounded-lg px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap break-words",
               isUser
-                ? "bg-gradient-to-br from-violet-600 to-blue-600 text-white rounded-br-sm shadow-violet-500/20"
-                : "bg-zinc-900/70 border border-white/[0.06] text-zinc-300 rounded-bl-sm backdrop-blur-xl shadow-black/20"
+                ? "bg-white text-black shadow-sm"
+                : "bg-transparent text-zinc-300 pl-0 pt-0" // Minimal AI text
             )}
           >
             {rawText.split("\n").map((line, i) => (
@@ -379,15 +215,8 @@ const MessageBubble = ({
 
         {/* Strategy Cards */}
         {!isUser && strategies.length > 0 && (
-          <div className="w-full mt-2">
-            <div className="flex items-center gap-2 mb-3 px-1">
-              <Shield className="h-3 w-3 text-violet-500/50" />
-              <span className="text-[9px] font-mono text-violet-500/50 tracking-widest">
-                VIRAL STRATEGIES
-              </span>
-              <div className="flex-1 h-px bg-gradient-to-r from-violet-500/20 to-transparent" />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+          <div className="w-full mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 w-full">
               {strategies.map((strategy, idx) => (
                 <StrategyCard
                   key={strategy.id}
@@ -401,46 +230,18 @@ const MessageBubble = ({
         )}
       </div>
 
-      {/* User Avatar */}
-      {isUser && <UserAvatar />}
+      {isUser && <Avatar role="user" />}
     </motion.div>
   );
 };
 
-// --- Animated Background Grid ---
-const BackgroundGrid = () => (
-  <div className="absolute inset-0 pointer-events-none overflow-hidden">
-    {/* Subtle dot grid */}
-    <div
-      className="absolute inset-0 opacity-[0.03]"
-      style={{
-        backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
-        backgroundSize: "32px 32px",
-      }}
-    />
-    {/* Top glow */}
-    <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-violet-600/[0.03] rounded-full blur-[100px]" />
-    {/* Bottom glow */}
-    <div className="absolute -bottom-24 left-1/4 w-[400px] h-[200px] bg-blue-600/[0.02] rounded-full blur-[80px]" />
-  </div>
-);
-
-// ==========================================
-// MAIN CHAT COMPONENT — V3 PREMIUM
-// ==========================================
 export function ViralChat({
   initialMessage,
   onStrategySelect,
   className,
 }: ViralChatProps) {
   const { language, setLanguage } = useLanguage();
-
-  const greeting = initialMessage || (language === "en"
-    ? "Ready to engineer viral content. What's your niche?"
-    : "Готов создать вирусный контент. Какая у вас ниша?");
-
   const [messages, setMessages] = useState<Message[]>([]);
-  // Use a ref to track if component is mounted to avoid hydration mismatch with localStorage
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -453,37 +254,25 @@ export function ViralChat({
         : "Готов создать вирусный контент. Какая у вас ниша?",
       timestamp: Date.now(),
     }]);
-  }, []);
+  }, [language]); // Depend on language to update greeting
 
   const [inputValue, setInputValue] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [isTyping, setIsTyping] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
 
-  // Update greeting on language change
-  useEffect(() => {
-    if (messages.length <= 1 && messages.find(m => m.role === "ai")) {
-      setMessages([{
-        id: "init",
-        role: "ai",
-        content: language === "en"
-          ? "Ready to engineer viral content. What's your niche?"
-          : "Готов создать вирусный контент. Какая у вас ниша?",
-        timestamp: Date.now(),
-      }]);
-    }
-  }, [language]);
-
-  // Auto-scroll
+  // Auto-scroll logic
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTo({
-        top: scrollRef.current.scrollHeight,
-        behavior: "smooth",
+      // Use requestAnimationFrame to ensure DOM updated
+      requestAnimationFrame(() => {
+        if (scrollRef.current) {
+          scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
       });
     }
   }, [messages, isTyping]);
+
 
   const handleSend = async () => {
     if (!inputValue.trim()) return;
@@ -512,18 +301,8 @@ export function ViralChat({
         }),
       });
 
-      if (!response.ok) {
-        let errorMessage = "Network Error";
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.error || `Error ${response.status}`;
-        } catch {
-          if (response.status === 401) errorMessage = "API Key Invalid/Missing";
-          else if (response.status === 500) errorMessage = "OpenAI Service Error";
-        }
-        throw new Error(errorMessage);
-      }
-      if (!response.body) throw new Error("No response body");
+      if (!response.ok) throw new Error("Network Error");
+      if (!response.body) throw new Error("No response");
 
       const aiMsgId = (Date.now() + 1).toString();
       setMessages((prev) => [
@@ -558,7 +337,7 @@ export function ViralChat({
         {
           id: Date.now().toString(),
           role: "ai",
-          content: `⚠ Error: ${error.message || "Connection lost. Please try again."}`,
+          content: `Error: ${error.message || "Connection failed."}`,
           timestamp: Date.now(),
         },
       ]);
@@ -572,176 +351,83 @@ export function ViralChat({
     }
   };
 
-  if (!isMounted) return null; // Avoid hydration mismatch
+  if (!isMounted) return null;
 
   return (
-    <>
-      <style jsx global>{`
-        @keyframes gradient-shift {
-          0%, 100% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-        }
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-        .animate-shimmer {
-          animation: shimmer 3s ease-in-out infinite;
-        }
-      `}</style>
-
-      <div
-        className={cn(
-          "relative flex flex-col w-full max-w-5xl mx-auto overflow-hidden rounded-2xl",
-          "h-[75vh] md:h-[700px]", // Mobile: 75vh to allow seeing content below. Desktop: Fixed.
-          "bg-zinc-950/90 backdrop-blur-lg md:backdrop-blur-2xl shadow-2xl shadow-black/40",
-          className
-        )}
-      >
-        <GradientBorder />
-
-        {/* ===== HEADER ===== */}
-        <div className="relative flex items-center justify-between border-b border-white/[0.06] bg-zinc-900/30 px-3 md:px-5 py-3 backdrop-blur-xl">
-          <div className="flex items-center gap-2 md:gap-3">
-            {/* AI Identity */}
-            <div className="relative">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-violet-600/20 to-blue-600/20 border border-white/[0.06] flex items-center justify-center">
-                <Zap className="h-3.5 w-3.5 text-violet-400" />
-              </div>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[11px] font-semibold text-zinc-300 tracking-wide">
-                TrendSynth V2
-              </span>
-              <div className="flex items-center gap-1.5">
-                <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[9px] font-mono text-zinc-600">
-                  {language === "ru" ? "AI-АРХИТЕКТОР" : "AI ARCHITECT"}
-                </span>
-              </div>
-            </div>
+    <div
+      className={cn(
+        "flex flex-col w-full h-[75vh] md:h-[700px] overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950",
+        className
+      )}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-zinc-800 bg-zinc-900/50 px-4 py-3">
+        <div className="flex items-center gap-3">
+          <div className="h-6 w-6 rounded bg-white flex items-center justify-center">
+            <Zap className="h-3.5 w-3.5 text-black" />
           </div>
-
-          <div className="flex items-center gap-2 md:gap-3">
-            {/* Signal indicator - Hidden on very small screens */}
-            <div className="hidden xs:flex items-center gap-1 px-2 py-1 rounded-md bg-white/[0.02] border border-white/[0.04]">
-              <Signal className="h-3 w-3 text-emerald-500/60" />
-              <span className="text-[9px] font-mono text-zinc-600">GPT-4o</span>
-            </div>
-
-            {/* Language Toggle */}
-            <div className="flex items-center rounded-lg border border-white/[0.06] bg-zinc-900/50 p-0.5">
-              {(["en", "ru"] as const).map((lang) => (
-                <button
-                  key={lang}
-                  onClick={() => setLanguage(lang)}
-                  className={cn(
-                    "px-2.5 py-1 rounded-md text-[10px] font-semibold transition-all duration-200",
-                    language === lang
-                      ? "bg-violet-600/20 text-violet-300 shadow-sm"
-                      : "text-zinc-600 hover:text-zinc-400"
-                  )}
-                >
-                  {lang.toUpperCase()}
-                </button>
-              ))}
-            </div>
+          <div>
+            <h3 className="text-sm font-medium text-white">Viral Architect</h3>
+            <p className="text-[10px] text-zinc-500">AI-Powered Content Strategy</p>
           </div>
         </div>
 
-        {/* ===== MESSAGES AREA ===== */}
-        <div className="flex-1 overflow-hidden relative">
-          <BackgroundGrid />
-
-          <div
-            className="h-full overflow-y-auto px-3 md:px-5 py-4 md:py-6 relative z-10 scrollbar-thin scrollbar-thumb-zinc-800/50 scrollbar-track-transparent"
-            ref={scrollRef}
-          >
-            <div className="flex flex-col gap-4 md:gap-6">
-              <AnimatePresence initial={false}>
-                {messages.map((msg) => (
-                  <MessageBubble
-                    key={msg.id}
-                    message={msg}
-                    onStrategySelect={onStrategySelect}
-                  />
-                ))}
-              </AnimatePresence>
-
-              <AnimatePresence>
-                {isTyping && <TypingIndicator language={language} />}
-              </AnimatePresence>
-            </div>
-          </div>
-        </div>
-
-        {/* ===== INPUT AREA ===== */}
-        <div className="relative border-t border-white/[0.06] bg-zinc-900/20 px-3 md:px-4 py-3 backdrop-blur-xl safe-area-bottom">
-          {/* Input glow on focus */}
-          <div
-            className={cn(
-              "absolute inset-x-0 top-0 h-px transition-opacity duration-300",
-              isFocused ? "opacity-100" : "opacity-0"
-            )}
-            style={{
-              background: "linear-gradient(90deg, transparent, rgba(139,92,246,0.5), transparent)",
-            }}
-          />
-
-          <div className="relative flex items-center gap-2">
-            <div
+        <div className="flex items-center gap-2">
+          {(["en", "ru"] as const).map((lang) => (
+            <button
+              key={lang}
+              onClick={() => setLanguage(lang)}
               className={cn(
-                "relative flex-1 rounded-xl border transition-all duration-200",
-                isFocused
-                  ? "border-violet-500/30 bg-zinc-900/80 shadow-lg shadow-violet-500/5"
-                  : "border-white/[0.06] bg-zinc-900/50"
+                "px-2 py-1 text-[10px] uppercase font-medium rounded transition-colors",
+                language === lang
+                  ? "bg-white text-black"
+                  : "text-zinc-500 hover:text-zinc-300"
               )}
             >
-              <input
-                ref={inputRef}
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={handleKeyDown}
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => setIsFocused(false)}
-                placeholder={
-                  language === "en"
-                    ? "Describe your video idea..."
-                    : "Опишите идею видео..."
-                }
-                className="w-full h-11 px-4 pr-12 bg-transparent text-[14px] md:text-[13px] text-zinc-200 placeholder:text-zinc-600 outline-none font-light"
-              // Increased font size to 16px equivalent (14px is minimum for inputs on some OS to avoid zoom) to prevent zoom on focus
-              />
-              <Button
-                size="icon"
-                onClick={handleSend}
-                disabled={!inputValue.trim() || isTyping}
-                className={cn(
-                  "absolute right-1.5 top-1/2 -translate-y-1/2 h-8 w-8 md:h-7 md:w-7 rounded-lg transition-all duration-200",
-                  inputValue.trim()
-                    ? "bg-violet-600 hover:bg-violet-500 text-white shadow-lg shadow-violet-600/30"
-                    : "bg-white/[0.03] text-zinc-600"
-                )}
-              >
-                <Send className="h-4 w-4 md:h-3.5 md:w-3.5" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Footer info */}
-          <div className="mt-2 flex justify-between items-center px-1">
-            <div className="flex items-center gap-2">
-              <Globe className="h-3 w-3 text-zinc-700" />
-              <span className="text-[9px] text-zinc-700 font-mono">
-                {language === "en" ? "VIRAL_ENGINE_V3" : "ДВИЖОК_V3"}
-              </span>
-            </div>
-            <span className="hidden md:block text-[9px] text-zinc-700 font-mono">
-              ⏎ {language === "en" ? "to send" : "отправить"}
-            </span>
-          </div>
+              {lang}
+            </button>
+          ))}
         </div>
       </div>
-    </>
+
+      {/* Messages */}
+      <div
+        className="flex-1 overflow-y-auto px-4 py-6 scrollbar-thin scrollbar-thumb-zinc-800"
+        ref={scrollRef}
+      >
+        <div className="flex flex-col gap-6 max-w-3xl mx-auto">
+          {messages.map((msg) => (
+            <MessageBubble
+              key={msg.id}
+              message={msg}
+              onStrategySelect={onStrategySelect}
+            />
+          ))}
+          {isTyping && <TypingIndicator language={language} />}
+        </div>
+      </div>
+
+      {/* Input */}
+      <div className="p-4 bg-zinc-900/30 border-t border-zinc-800">
+        <div className="max-w-3xl mx-auto relative flex items-center gap-2">
+          <input
+            ref={inputRef}
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={language === "en" ? "Describe your niche..." : "Опишите вашу нишу..."}
+            className="flex-1 bg-zinc-900 border-zinc-800 text-zinc-200 placeholder:text-zinc-600 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-zinc-700 focus:ring-1 focus:ring-zinc-700 transition-all"
+          />
+          <Button
+            size="icon"
+            onClick={handleSend}
+            disabled={!inputValue.trim() || isTyping}
+            className="bg-white text-black hover:bg-zinc-200 transition-colors h-10 w-10 disabled:opacity-50"
+          >
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }

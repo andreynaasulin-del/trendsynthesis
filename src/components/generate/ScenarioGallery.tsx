@@ -5,24 +5,22 @@ import { motion } from "framer-motion";
 import {
   CheckCircle2,
   Circle,
-  Zap,
   Clock,
-  Hash,
-  Sparkles,
-  CheckCheck,
-  XCircle,
+  Check,
+  X,
+  Play
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { Scenario, MontageComposition } from "@/types";
 
-// --- Tone Badge Colors ---
+// --- Tone Badge Colors (Minimal) ---
 const TONE_COLORS: Record<string, string> = {
-  professional: "text-blue-400 border-blue-400/30 bg-blue-400/5",
-  casual: "text-green-400 border-green-400/30 bg-green-400/5",
-  provocative: "text-red-400 border-red-400/30 bg-red-400/5",
-  educational: "text-yellow-400 border-yellow-400/30 bg-yellow-400/5",
-  emotional: "text-purple-400 border-purple-400/30 bg-purple-400/5",
+  professional: "text-zinc-400 bg-zinc-800/50 border-zinc-700",
+  casual: "text-zinc-400 bg-zinc-800/50 border-zinc-700",
+  provocative: "text-zinc-300 bg-zinc-800 border-zinc-600",
+  educational: "text-zinc-400 bg-zinc-800/50 border-zinc-700",
+  emotional: "text-zinc-400 bg-zinc-800/50 border-zinc-700",
 };
 
 // --- Single Scenario Card ---
@@ -51,93 +49,83 @@ function ScenarioCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.03 }}
       className={cn(
-        "group relative flex flex-col gap-2 rounded-lg border p-3 transition-all cursor-pointer",
+        "group relative flex flex-col gap-3 rounded-lg border p-4 transition-all cursor-pointer",
         isSelected
-          ? "border-primary/40 bg-primary/5 ring-1 ring-primary/20"
+          ? "border-zinc-500 bg-zinc-900 shadow-sm"
           : "border-zinc-800 bg-zinc-900/30 hover:border-zinc-700 hover:bg-zinc-900/50"
       )}
       onClick={onToggle}
     >
       {/* Header Row */}
       <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
+        <div className="flex items-center gap-2.5 min-w-0">
           {/* Selection Indicator */}
           <button
             onClick={(e) => {
               e.stopPropagation();
               onToggle();
             }}
-            className="shrink-0"
-          >
-            {isSelected ? (
-              <CheckCircle2 className="h-4 w-4 text-primary" />
-            ) : (
-              <Circle className="h-4 w-4 text-zinc-600 group-hover:text-zinc-400" />
+            className={cn(
+              "shrink-0 h-4 w-4 rounded-full border flex items-center justify-center transition-colors",
+              isSelected
+                ? "bg-white border-white text-black"
+                : "border-zinc-600 hover:border-zinc-400 bg-transparent"
             )}
+          >
+            {isSelected && <Check className="h-3 w-3" />}
           </button>
 
-          {/* Index */}
-          <span className="text-[10px] font-mono text-zinc-600 shrink-0">
-            #{index + 1}
-          </span>
-
-          {/* Tone Badge */}
-          <span
-            className={cn(
-              "text-[9px] font-mono px-1.5 py-0.5 rounded border",
-              toneClass
-            )}
-          >
-            {scenario.tone.toUpperCase()}
-          </span>
+          <div className="flex flex-col">
+            <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium">
+              Scenario {String(index + 1).padStart(2, '0')}
+            </span>
+          </div>
         </div>
 
-        {/* Duration */}
-        <div className="flex items-center gap-1 text-zinc-600 shrink-0">
-          <Clock className="h-3 w-3" />
-          <span className="text-[10px] font-mono">{scenario.duration_seconds}s</span>
-        </div>
+        {/* Tone Badge */}
+        <span
+          className={cn(
+            "text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded border",
+            toneClass
+          )}
+        >
+          {scenario.tone}
+        </span>
       </div>
 
-      {/* Title */}
-      <h4 className="text-xs font-semibold text-zinc-200 leading-snug line-clamp-2">
+      {/* Content */}
+      <h4 className="text-sm font-medium text-zinc-200 leading-snug line-clamp-2">
         {scenario.title}
       </h4>
 
       {/* Hook */}
-      <div className="rounded bg-black/30 border border-zinc-800 px-2 py-1.5">
-        <p className="text-[10px] font-mono text-primary/80 line-clamp-2">
-          &gt; {scenario.hook}
+      <div className="pl-3 border-l-2 border-zinc-800">
+        <p className="text-xs text-zinc-400 line-clamp-2 italic">
+          "{scenario.hook}"
         </p>
       </div>
 
-      {/* Keywords */}
-      {scenario.keywords && scenario.keywords.length > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {scenario.keywords.slice(0, 3).map((kw, i) => (
-            <span
-              key={i}
-              className="text-[9px] font-mono text-zinc-500 bg-zinc-800/50 px-1.5 py-0.5 rounded"
-            >
-              {kw}
-            </span>
-          ))}
+      {/* Footer */}
+      <div className="mt-auto pt-3 flex items-center justify-between border-t border-zinc-800/50">
+        <div className="flex items-center gap-1.5 text-zinc-600">
+          <Clock className="h-3 w-3" />
+          <span className="text-[10px]">{scenario.duration_seconds}s</span>
         </div>
-      )}
 
-      {/* Preview Button (only if composition exists) */}
-      {hasComposition && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onPreview();
-          }}
-          className="mt-1 flex items-center justify-center gap-1 rounded bg-primary/10 border border-primary/20 px-2 py-1 text-[10px] font-mono text-primary hover:bg-primary/20 transition-colors"
-        >
-          <Sparkles className="h-3 w-3" />
-          {language === "ru" ? "ПРЕВЬЮ" : "PREVIEW"}
-        </button>
-      )}
+        {/* Preview Button */}
+        {hasComposition && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onPreview();
+            }}
+            className="flex items-center gap-1.5 rounded-sm px-2 py-1 text-[10px] font-medium text-white hover:bg-zinc-800 transition-colors"
+          >
+            <Play className="h-3 w-3 fill-current" />
+            {language === "ru" ? "Превью" : "Preview"}
+          </button>
+        )}
+      </div>
     </motion.div>
   );
 }
@@ -170,41 +158,39 @@ export function ScenarioGallery({
   );
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4 h-full">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Hash className="h-4 w-4 text-zinc-500" />
-          <span className="text-xs font-mono text-zinc-400">
+      <div className="flex items-center justify-between px-1">
+        <div className="flex flex-col">
+          <h3 className="text-sm font-medium text-white">Generated Scenarios</h3>
+          <span className="text-xs text-zinc-500">
             {language === "ru"
-              ? `${scenarios.length} сценариев · ${selectedIds.size} выбрано`
-              : `${scenarios.length} scenarios · ${selectedIds.size} selected`}
+              ? `${scenarios.length} найдено · ${selectedIds.size} выбрано`
+              : `${scenarios.length} found · ${selectedIds.size} selected`}
           </span>
         </div>
-        <div className="flex gap-1.5">
+        <div className="flex gap-2">
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
-            className="h-6 text-[10px] font-mono px-2 gap-1"
+            className="h-7 text-xs border-zinc-800 hover:bg-zinc-800 hover:text-white bg-transparent"
             onClick={onSelectAll}
           >
-            <CheckCheck className="h-3 w-3" />
-            {language === "ru" ? "ВСЕ" : "ALL"}
+            {language === "ru" ? "Выбрать все" : "Select All"}
           </Button>
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 text-[10px] font-mono px-2 gap-1"
+            className="h-7 text-xs text-zinc-500 hover:text-white"
             onClick={onDeselectAll}
           >
-            <XCircle className="h-3 w-3" />
-            {language === "ru" ? "СБРОС" : "NONE"}
+            {language === "ru" ? "Сброс" : "Clear"}
           </Button>
         </div>
       </div>
 
       {/* Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-[500px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-zinc-800">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 overflow-y-auto pr-1 pb-4 scrollbar-thin scrollbar-thumb-zinc-800 flex-1">
         {scenarios.map((scenario, idx) => (
           <ScenarioCard
             key={scenario.id}

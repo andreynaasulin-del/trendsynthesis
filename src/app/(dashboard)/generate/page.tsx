@@ -41,9 +41,9 @@ function StageCard({ stage, language }: { stage: any; language: "en" | "ru" }) {
 
   const statusColors: Record<string, string> = {
     waiting: "border-zinc-800 text-zinc-600",
-    active: "border-primary/50 text-primary bg-primary/5",
-    completed: "border-green-500/30 text-green-400",
-    failed: "border-red-500/30 text-red-400",
+    active: "border-zinc-700 text-white bg-zinc-800/50",
+    completed: "border-zinc-700 text-zinc-400",
+    failed: "border-zinc-800 text-zinc-500",
   };
 
   return (
@@ -151,7 +151,7 @@ function VideoCountSelector({
                 className={`
                   px-2 py-0.5 text-[10px] font-mono rounded border transition-all
                   ${count === preset
-                    ? "border-primary/50 bg-primary/10 text-primary"
+                    ? "border-zinc-600 bg-zinc-800 text-white"
                     : "border-zinc-800 text-zinc-600 hover:border-zinc-600 hover:text-zinc-400"
                   }
                   ${disabled ? "opacity-50 cursor-not-allowed" : ""}
@@ -383,25 +383,25 @@ export default function GeneratePage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg md:text-xl font-bold tracking-tight">
+          <h1 className="text-xl font-semibold tracking-tight text-white">
             {language === "ru" ? "Генератор" : "Generator"}
           </h1>
-          <p className="text-[10px] md:text-xs text-muted-foreground font-mono">
+          <p className="text-xs text-zinc-500">
             {language === "ru"
-              ? `AI → ${videoCount} Сценариев → Ассеты → Монтаж`
-              : `AI → ${videoCount} Scenarios → Assets → Montage`}
+              ? `AI → ${videoCount} Сценариев → Монтаж`
+              : `AI → ${videoCount} Scenarios → Montage`}
           </p>
         </div>
         <div className="flex gap-2">
           {!isIdle && (
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={() => store.reset()}
-              className="gap-1.5 font-mono text-[10px] h-7"
+              className="gap-1.5 text-xs text-zinc-500 hover:text-white hover:bg-zinc-800 h-8"
             >
-              <RotateCcw className="h-3 w-3" />
-              {language === "ru" ? "СБРОС" : "RESET"}
+              <RotateCcw className="h-3.5 w-3.5" />
+              {language === "ru" ? "Сброс" : "Reset"}
             </Button>
           )}
         </div>
@@ -437,9 +437,9 @@ export default function GeneratePage() {
                   key={tab.id}
                   onClick={() => setRightTab(tab.id)}
                   className={`
-                    flex items-center gap-1.5 px-4 py-2.5 text-[10px] font-mono transition-all border-b-2
+                    flex items-center gap-1.5 px-4 py-2.5 text-xs transition-all border-b-2
                     ${rightTab === tab.id
-                      ? "border-primary text-primary"
+                      ? "border-white text-white"
                       : "border-transparent text-zinc-500 hover:text-zinc-300"
                     }
                   `}
@@ -510,7 +510,7 @@ export default function GeneratePage() {
                           {selectedStrategy.title} · {videoCount} {language === "ru" ? "видео" : "videos"}
                         </p>
                       </div>
-                      <span className="text-lg font-bold font-mono text-primary">
+                      <span className="text-lg font-semibold text-white">
                         {totalProgress}%
                       </span>
                     </div>
