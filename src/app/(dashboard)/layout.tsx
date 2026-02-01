@@ -1,23 +1,13 @@
-import { redirect } from "next/navigation";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { MobileNav } from "@/components/dashboard/mobile-nav";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Server-side auth check
-  const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  // Redirect to login if not authenticated
-  if (!user) {
-    redirect("/login");
-  }
-
+  // MVP MODE: No auth check - allow everyone
   return (
     <LanguageProvider>
       <div className="min-h-screen bg-background">
