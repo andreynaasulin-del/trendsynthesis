@@ -126,9 +126,9 @@ export default function LandingPage() {
               <span className="mx-2 text-white/20">/</span>
               <span onClick={() => setLang("en")} className={lang === "en" ? "text-white" : "text-white/30"}>EN</span>
             </div>
-            <Link href="/dashboard" className="bg-white text-black px-5 py-2 rounded-full text-xs font-bold hover:scale-105 transition-transform">
+            <a href="/dashboard" className="bg-white text-black px-5 py-2 rounded-full text-xs font-bold hover:scale-105 transition-transform cursor-pointer">
               {currentT.nav.start}
-            </Link>
+            </a>
           </div>
         </div>
       </nav>
