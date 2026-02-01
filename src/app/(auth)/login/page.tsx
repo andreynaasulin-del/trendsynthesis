@@ -81,11 +81,21 @@ export default function LoginPage() {
   }
 
   async function handleGoogleLogin() {
-    const supabase = createClient();
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/callback` },
-    });
+    setLoading(true);
+    setError(null);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/callback`,
+        },
+      });
+      if (error) throw error;
+    } catch (err: any) {
+      setError(err.message || "Failed to sign in with Google");
+      setLoading(false);
+    }
   }
 
   return (
