@@ -16,13 +16,40 @@ export async function generateScenarios({
   videoCount = 30,
   language = "en",
 }: GenerateScenariosParams): Promise<Scenario[]> {
-  const systemPrompt = `You are a viral content strategist.
+  const isRussian = language === "ru";
+
+  const systemPrompt = isRussian
+    ? `Ты вирусный контент-стратег. 
+Ты создаёшь сценарии для БЫСТРЫХ коротких вертикальных видео (TikTok, Reels, Shorts).
+Целевая длительность: 15 СЕКУНД МАКСИМУМ.
+Стиль: Быстро, цепляюще, без воды.
+ВАЖНО: ВСЕ текста должны быть ТОЛЬКО НА РУССКОМ ЯЗЫКЕ!
+Отвечай ТОЛЬКО валидным JSON.`
+    : `You are a viral content strategist.
 You create scenarios for HIGH-PACED short-form vertical videos (TikTok, Reels, Shorts).
 Target duration: 15 SECONDS MAX.
 Style: Fast, engaging, no fluff.
 Output ONLY valid JSON.`;
 
-  const userPrompt = `Generate ${videoCount} unique video scenarios for the topic: "${topic}"
+  const userPrompt = isRussian
+    ? `Сгенерируй ${videoCount} уникальных сценариев для темы: "${topic}"
+
+СТРОГО: ВСЕ ТЕКСТЫ НА РУССКОМ ЯЗЫКЕ!
+
+Для каждого сценария укажи:
+- title: цепляющий заголовок видео (НА РУССКОМ)
+- hook: первые 3 секунды для захвата внимания (коротко и мощно, НА РУССКОМ)
+- body: основной контент (быстро, макс 2 предложения, НА РУССКОМ)
+- cta: призыв к действию (коротко, НА РУССКОМ)
+- angle: уникальный угол/перспектива (НА РУССКОМ)
+- tone: один из "professional", "casual", "provocative", "educational", "emotional"
+- keywords: массив из 3-5 SEO ключевых слов (НА РУССКОМ)
+- asset_queries: массив из 2-3 поисковых запросов для стокового видео (ТОЛЬКО НА АНГЛИЙСКОМ для точности поиска)
+- voiceover_text: полный текст озвучки = hook + body + cta (МАКС 40 СЛОВ, НА РУССКОМ)
+- duration_seconds: примерная длительность видео (15)
+
+Верни JSON объект с ключом "scenarios" содержащий массив из ${videoCount} объектов сценариев.`
+    : `Generate ${videoCount} unique video scenarios for the topic: "${topic}"
 Language: ${language} (STRICTLY OUTPUT ALL VISIBLE TEXT AND VOICEOVER IN THIS LANGUAGE)
 
 For each scenario, provide:
