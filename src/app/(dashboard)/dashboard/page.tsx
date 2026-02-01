@@ -32,14 +32,34 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch real data on mount
+  // Fetch real data on mount with MVP fallback
   useEffect(() => {
     async function fetchData() {
+      // MVP: Set default stats immediately, update if API succeeds
+      const defaultStats: DashboardStats = {
+        totalVideos: 0,
+        monthlyVideos: 0,
+        creditsLeft: 3,
+        plan: "free",
+        projectCount: 0,
+      };
+
+      // Set loading to false quickly with defaults
+      const timeout = setTimeout(() => {
+        if (loading) {
+          console.log("🔓 MVP: Using default dashboard data");
+          setStats(defaultStats);
+          setLoading(false);
+        }
+      }, 1500); // 1.5 second max wait
+
       try {
         const [profileRes, projectsRes] = await Promise.all([
           fetchProfile(),
           fetchProjects(),
         ]);
+
+        clearTimeout(timeout);
 
         const profile = profileRes.data;
         const projects = projectsRes.data || [];
@@ -48,11 +68,6 @@ export default function DashboardPage() {
         const now = new Date();
         const thisMonth = now.getMonth();
         const thisYear = now.getFullYear();
-
-        const monthlyProjects = projects.filter((p: { created_at: string }) => {
-          const d = new Date(p.created_at);
-          return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
-        });
 
         // Count videos across all projects
         let totalVideos = 0;
@@ -68,20 +83,14 @@ export default function DashboardPage() {
         setStats({
           totalVideos,
           monthlyVideos,
-          creditsLeft: profile?.credits_remaining ?? 1,
+          creditsLeft: profile?.credits_remaining ?? 3,
           plan: profile?.plan || "free",
           projectCount: projects.length,
         });
       } catch (err) {
-        console.error("Failed to fetch dashboard data:", err);
-        // Set defaults on error
-        setStats({
-          totalVideos: 0,
-          monthlyVideos: 0,
-          creditsLeft: 1,
-          plan: "free",
-          projectCount: 0,
-        });
+        clearTimeout(timeout);
+        console.log("🔓 MVP: API failed, using defaults");
+        setStats(defaultStats);
       } finally {
         setLoading(false);
       }
