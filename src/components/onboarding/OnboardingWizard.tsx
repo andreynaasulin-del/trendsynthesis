@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Sparkles, Target, Rocket, ArrowRight, ArrowLeft } from "lucide-react";
+import { Sparkles, Target, Rocket, ArrowRight, ArrowLeft, Check } from "lucide-react";
 import { updateProfile } from "@/lib/api-client";
 import { useRouter } from "next/navigation";
 
@@ -24,10 +24,10 @@ const NICHES = [
 ];
 
 const PLATFORMS = [
-    { id: "tiktok", label: "TikTok", color: "from-pink-500 to-cyan-500" },
-    { id: "instagram", label: "Instagram", color: "from-purple-500 to-pink-500" },
-    { id: "youtube", label: "YouTube Shorts", color: "from-red-500 to-red-600" },
-    { id: "telegram", label: "Telegram", color: "from-blue-500 to-cyan-500" },
+    { id: "tiktok", label: "TikTok" },
+    { id: "instagram", label: "Instagram" },
+    { id: "youtube", label: "YouTube Shorts" },
+    { id: "telegram", label: "Telegram" },
 ];
 
 export default function OnboardingWizard({ open, onComplete }: OnboardingWizardProps) {
@@ -42,19 +42,15 @@ export default function OnboardingWizard({ open, onComplete }: OnboardingWizardP
     const handleComplete = async () => {
         setSaving(true);
         try {
-            // Save profile settings
             await updateProfile({
                 system_prompt: `You are a ${niche} content expert creating viral short-form videos.`,
                 target_audience: audience || `${niche} enthusiasts`,
                 traffic_source: platform as any,
             });
 
-            // Mark onboarding as complete
             localStorage.setItem("onboarding_completed", "true");
-
             onComplete();
 
-            // Redirect to generate page with pre-filled topic
             if (topic) {
                 router.push(`/generate?topic=${encodeURIComponent(topic)}`);
             }
@@ -70,16 +66,27 @@ export default function OnboardingWizard({ open, onComplete }: OnboardingWizardP
 
     return (
         <Dialog open={open} onOpenChange={() => { }}>
-            <DialogContent className="max-w-2xl border-violet-500/20 bg-black/95 backdrop-blur-xl p-0 overflow-hidden">
+            <DialogContent className="max-w-lg border-zinc-800 bg-zinc-950 p-0 overflow-hidden">
                 <div className="relative">
-                    {/* Progress Bar */}
-                    <div className="h-1 bg-zinc-800">
+                    {/* Progress Bar — Subtle */}
+                    <div className="h-0.5 bg-zinc-900">
                         <motion.div
-                            className="h-full bg-gradient-to-r from-violet-500 to-fuchsia-500"
+                            className="h-full bg-white"
                             initial={{ width: "0%" }}
                             animate={{ width: `${(step / 3) * 100}%` }}
-                            transition={{ duration: 0.3 }}
+                            transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
                         />
+                    </div>
+
+                    {/* Step indicators */}
+                    <div className="flex justify-center gap-2 pt-6">
+                        {[1, 2, 3].map((s) => (
+                            <div
+                                key={s}
+                                className={`w-2 h-2 rounded-full transition-colors ${s <= step ? "bg-white" : "bg-zinc-800"
+                                    }`}
+                            />
+                        ))}
                     </div>
 
                     <div className="p-8">
@@ -88,33 +95,31 @@ export default function OnboardingWizard({ open, onComplete }: OnboardingWizardP
                             {step === 1 && (
                                 <motion.div
                                     key="step1"
-                                    initial={{ opacity: 0, x: 20 }}
+                                    initial={{ opacity: 0, x: 16 }}
                                     animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -20 }}
+                                    exit={{ opacity: 0, x: -16 }}
+                                    transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
                                     className="space-y-6"
                                 >
                                     <div className="text-center space-y-2">
-                                        <div className="inline-flex p-3 rounded-full bg-violet-500/10 mb-4">
-                                            <Sparkles className="h-8 w-8 text-violet-400" />
-                                        </div>
-                                        <h2 className="text-3xl font-bold">Добро пожаловать в TrendSynthesis!</h2>
-                                        <p className="text-muted-foreground">Давайте настроим ваш профиль за 30 секунд</p>
+                                        <h2 className="text-xl font-semibold text-white">Welcome to TrendSynthesis</h2>
+                                        <p className="text-sm text-zinc-500">Let's set up your profile in 30 seconds</p>
                                     </div>
 
-                                    <div>
-                                        <label className="text-sm font-medium mb-3 block">Выберите вашу нишу:</label>
-                                        <div className="grid grid-cols-2 gap-3">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-medium text-zinc-400 tracking-wide">Select your niche</label>
+                                        <div className="grid grid-cols-2 gap-2">
                                             {NICHES.map((n) => (
                                                 <button
                                                     key={n.id}
                                                     onClick={() => setNiche(n.id)}
-                                                    className={`p-4 rounded-lg border-2 transition-all text-left ${niche === n.id
-                                                            ? "border-violet-500 bg-violet-500/10"
-                                                            : "border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900"
+                                                    className={`p-3 rounded-lg border text-left transition-all ${niche === n.id
+                                                            ? "border-white bg-white/5"
+                                                            : "border-zinc-800 hover:border-zinc-700 bg-zinc-900/30"
                                                         }`}
                                                 >
-                                                    <div className="text-2xl mb-1">{n.emoji}</div>
-                                                    <div className="font-medium">{n.label}</div>
+                                                    <div className="text-lg mb-0.5">{n.emoji}</div>
+                                                    <div className="text-sm font-medium text-zinc-300">{n.label}</div>
                                                 </button>
                                             ))}
                                         </div>
@@ -123,10 +128,9 @@ export default function OnboardingWizard({ open, onComplete }: OnboardingWizardP
                                     <Button
                                         onClick={nextStep}
                                         disabled={!niche}
-                                        className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500"
-                                        size="lg"
+                                        className="w-full bg-white text-black hover:bg-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed"
                                     >
-                                        Продолжить <ArrowRight className="ml-2 h-4 w-4" />
+                                        Continue <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
                                     </Button>
                                 </motion.div>
                             )}
@@ -135,61 +139,53 @@ export default function OnboardingWizard({ open, onComplete }: OnboardingWizardP
                             {step === 2 && (
                                 <motion.div
                                     key="step2"
-                                    initial={{ opacity: 0, x: 20 }}
+                                    initial={{ opacity: 0, x: 16 }}
                                     animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -20 }}
+                                    exit={{ opacity: 0, x: -16 }}
+                                    transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
                                     className="space-y-6"
                                 >
                                     <div className="text-center space-y-2">
-                                        <div className="inline-flex p-3 rounded-full bg-amber-500/10 mb-4">
-                                            <Target className="h-8 w-8 text-amber-400" />
-                                        </div>
-                                        <h2 className="text-2xl font-bold">Кто ваша аудитория?</h2>
-                                        <p className="text-muted-foreground">Это поможет AI создавать релевантный контент</p>
+                                        <h2 className="text-xl font-semibold text-white">Your audience</h2>
+                                        <p className="text-sm text-zinc-500">This helps AI create relevant content</p>
                                     </div>
 
                                     <div className="space-y-4">
-                                        <div>
-                                            <label className="text-sm font-medium mb-2 block">Опишите вашу целевую аудиторию:</label>
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-medium text-zinc-400 tracking-wide">Describe your audience</label>
                                             <Input
-                                                placeholder="Например: Предприниматели 25-35 лет, интересующиеся пассивным доходом"
+                                                placeholder="e.g. Entrepreneurs aged 25-35 interested in crypto"
                                                 value={audience}
                                                 onChange={(e) => setAudience(e.target.value)}
-                                                className="bg-zinc-900/50 border-zinc-800"
+                                                className="bg-zinc-900/50 border-zinc-800 focus:border-zinc-700 text-sm"
                                             />
                                         </div>
 
-                                        <div>
-                                            <label className="text-sm font-medium mb-3 block">Куда будете постить?</label>
-                                            <div className="grid grid-cols-2 gap-3">
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-medium text-zinc-400 tracking-wide">Primary platform</label>
+                                            <div className="grid grid-cols-2 gap-2">
                                                 {PLATFORMS.map((p) => (
                                                     <button
                                                         key={p.id}
                                                         onClick={() => setPlatform(p.id)}
-                                                        className={`p-4 rounded-lg border-2 transition-all ${platform === p.id
-                                                                ? "border-violet-500 bg-violet-500/10"
-                                                                : "border-zinc-800 hover:border-zinc-700"
+                                                        className={`p-3 rounded-lg border text-center text-sm font-medium transition-all ${platform === p.id
+                                                                ? "border-white bg-white/5 text-white"
+                                                                : "border-zinc-800 hover:border-zinc-700 text-zinc-400"
                                                             }`}
                                                     >
-                                                        <div className={`text-sm font-bold bg-gradient-to-r ${p.color} bg-clip-text text-transparent`}>
-                                                            {p.label}
-                                                        </div>
+                                                        {p.label}
                                                     </button>
                                                 ))}
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="flex gap-3">
-                                        <Button onClick={prevStep} variant="outline" size="lg" className="flex-1">
-                                            <ArrowLeft className="mr-2 h-4 w-4" /> Назад
+                                    <div className="flex gap-2">
+                                        <Button onClick={prevStep} variant="ghost" className="flex-1 text-zinc-400 hover:text-white hover:bg-zinc-900">
+                                            <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Back
                                         </Button>
-                                        <Button
-                                            onClick={nextStep}
-                                            className="flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-600"
-                                            size="lg"
-                                        >
-                                            Продолжить <ArrowRight className="ml-2 h-4 w-4" />
+                                        <Button onClick={nextStep} className="flex-1 bg-white text-black hover:bg-zinc-200">
+                                            Continue <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
                                         </Button>
                                     </div>
                                 </motion.div>
@@ -199,43 +195,41 @@ export default function OnboardingWizard({ open, onComplete }: OnboardingWizardP
                             {step === 3 && (
                                 <motion.div
                                     key="step3"
-                                    initial={{ opacity: 0, x: 20 }}
+                                    initial={{ opacity: 0, x: 16 }}
                                     animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -20 }}
+                                    exit={{ opacity: 0, x: -16 }}
+                                    transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
                                     className="space-y-6"
                                 >
                                     <div className="text-center space-y-2">
-                                        <div className="inline-flex p-3 rounded-full bg-green-500/10 mb-4">
-                                            <Rocket className="h-8 w-8 text-green-400" />
-                                        </div>
-                                        <h2 className="text-2xl font-bold">Создайте первое видео!</h2>
-                                        <p className="text-muted-foreground">О чем хотите снять ролик?</p>
+                                        <h2 className="text-xl font-semibold text-white">Create your first video</h2>
+                                        <p className="text-sm text-zinc-500">What topic should we start with?</p>
                                     </div>
 
-                                    <div>
-                                        <label className="text-sm font-medium mb-2 block">Тема видео (опционально):</label>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-medium text-zinc-400 tracking-wide">Topic (optional)</label>
                                         <Input
-                                            placeholder={`Например: Топ-5 способов заработка в ${niche}`}
+                                            placeholder={`e.g., Top 5 ways to earn in ${niche}`}
                                             value={topic}
                                             onChange={(e) => setTopic(e.target.value)}
-                                            className="bg-zinc-900/50 border-zinc-800"
+                                            className="bg-zinc-900/50 border-zinc-800 focus:border-zinc-700 text-sm"
                                         />
-                                        <p className="text-xs text-muted-foreground mt-2">
-                                            Можете пропустить и создать позже в разделе "Генерация"
+                                        <p className="text-xs text-zinc-600">
+                                            You can skip this and create videos later
                                         </p>
                                     </div>
 
-                                    <div className="flex gap-3">
-                                        <Button onClick={prevStep} variant="outline" size="lg" className="flex-1">
-                                            <ArrowLeft className="mr-2 h-4 w-4" /> Назад
+                                    <div className="flex gap-2">
+                                        <Button onClick={prevStep} variant="ghost" className="flex-1 text-zinc-400 hover:text-white hover:bg-zinc-900">
+                                            <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Back
                                         </Button>
                                         <Button
                                             onClick={handleComplete}
                                             disabled={saving}
-                                            className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500"
-                                            size="lg"
+                                            className="flex-1 bg-white text-black hover:bg-zinc-200"
                                         >
-                                            {saving ? "Сохранение..." : topic ? "Создать видео!" : "Начать работу!"}
+                                            {saving ? "Saving..." : topic ? "Create video" : "Get started"}
+                                            {!saving && <Check className="ml-1.5 h-3.5 w-3.5" />}
                                         </Button>
                                     </div>
                                 </motion.div>

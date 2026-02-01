@@ -22,14 +22,15 @@ import { fetchProjects, deleteProjectById } from "@/lib/api-client";
 import type { Project } from "@/types";
 import EmptyState from "@/components/ui/empty-state";
 
+// Minimal status styles
 const statusColors: Record<string, string> = {
-  completed: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-  composing: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  generating_scenarios: "bg-violet-500/10 text-violet-400 border-violet-500/20",
-  fetching_assets: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-  brainstorming: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
-  failed: "bg-destructive/10 text-destructive border-destructive/20",
-  idle: "bg-zinc-500/10 text-zinc-400 border-zinc-500/20",
+  completed: "bg-zinc-800 text-zinc-300 border-zinc-700",
+  composing: "bg-zinc-800 text-zinc-300 border-zinc-700",
+  generating_scenarios: "bg-zinc-800 text-zinc-300 border-zinc-700",
+  fetching_assets: "bg-zinc-800 text-zinc-300 border-zinc-700",
+  brainstorming: "bg-zinc-800 text-zinc-300 border-zinc-700",
+  failed: "bg-zinc-900 text-zinc-500 border-zinc-800",
+  idle: "bg-zinc-900 text-zinc-500 border-zinc-800",
 };
 
 const statusIcons: Record<string, React.ElementType> = {
@@ -131,7 +132,7 @@ export default function ProjectsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
+        <Loader2 className="h-5 w-5 animate-spin text-zinc-500" />
       </div>
     );
   }
@@ -140,12 +141,12 @@ export default function ProjectsPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{c.title}</h1>
-          <p className="mt-1 text-muted-foreground">{c.subtitle}</p>
+          <h1 className="text-2xl font-semibold tracking-tight text-white">{c.title}</h1>
+          <p className="mt-1 text-sm text-zinc-500">{c.subtitle}</p>
         </div>
-        <Button asChild className="bg-violet-600 hover:bg-violet-500 gap-2">
+        <Button asChild size="sm" className="bg-white text-black hover:bg-zinc-200">
           <Link href="/generate">
-            <Plus className="h-4 w-4" />
+            <Plus className="h-3.5 w-3.5 mr-1" />
             {c.newGen}
           </Link>
         </Button>
@@ -158,7 +159,6 @@ export default function ProjectsPage() {
           description={c.emptyDesc}
           actionLabel={c.startBtn}
           actionHref="/generate"
-          gradient="from-violet-600/20 to-blue-600/20"
         />
       ) : (
         <motion.div
@@ -172,19 +172,17 @@ export default function ProjectsPage() {
             return (
               <motion.div
                 key={project.id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.05 }}
+                transition={{ delay: idx * 0.04, duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
               >
                 <Link href={`/projects/${project.id}`}>
-                  <Card className="group p-5 transition-all hover:bg-zinc-900/80 hover:border-zinc-700 border-zinc-800 bg-zinc-900/50 cursor-pointer relative overflow-hidden">
-                    {/* Decorative gradient */}
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-violet-500/5 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <Card className="group p-5 transition-all duration-200 hover:bg-zinc-900/60 border-zinc-800/60 bg-zinc-900/30 cursor-pointer">
 
                     <div className="flex items-start justify-between relative z-10">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-zinc-800">
-                          <StatusIcon className="h-4 w-4 text-violet-400" />
+                        <div className="p-2 rounded-lg bg-zinc-800/50">
+                          <StatusIcon className="h-4 w-4 text-zinc-400" />
                         </div>
                         <h3 className="font-medium leading-snug line-clamp-1">{project.topic}</h3>
                       </div>
