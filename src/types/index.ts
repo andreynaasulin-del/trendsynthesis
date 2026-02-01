@@ -11,6 +11,13 @@ export interface User {
   avatar_url: string | null;
   plan: "free" | "pro" | "agency";
   credits_remaining: number;
+
+  // Creator Settings
+  system_prompt?: string;
+  target_audience?: string;
+  video_examples?: string[];
+  traffic_source?: "tiktok" | "instagram" | "youtube" | "telegram";
+
   created_at: string;
   updated_at: string;
 }

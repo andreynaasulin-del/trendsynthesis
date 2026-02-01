@@ -17,6 +17,13 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   credits_remaining INTEGER DEFAULT 1,
   stripe_customer_id TEXT,
   stripe_subscription_id TEXT,
+  
+  -- Creator Settings
+  system_prompt TEXT DEFAULT 'You are a viral content strategist.',
+  target_audience TEXT DEFAULT 'General audience',
+  video_examples TEXT[] DEFAULT '{}',
+  traffic_source TEXT DEFAULT 'tiktok' CHECK (traffic_source IN ('tiktok', 'instagram', 'youtube', 'telegram')),
+  
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

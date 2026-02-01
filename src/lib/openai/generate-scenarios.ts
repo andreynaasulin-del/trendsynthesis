@@ -9,30 +9,55 @@ interface GenerateScenariosParams {
   topic: string;
   videoCount?: number;
   language?: string;
+  creatorSettings?: {
+    systemPrompt?: string;
+    targetAudience?: string;
+    videoExamples?: string[];
+    trafficSource?: string;
+  };
 }
 
 export async function generateScenarios({
   topic,
   videoCount = 30,
   language = "en",
+  creatorSettings,
 }: GenerateScenariosParams): Promise<Scenario[]> {
   const isRussian = language === "ru";
+
+  // Build context from settings
+  const audienceContext = creatorSettings?.targetAudience
+    ? (isRussian ? `\nЦЕЛЕВАЯ АУДИТОРИЯ: ${creatorSettings.targetAudience}` : `\nTARGET AUDIENCE: ${creatorSettings.targetAudience}`)
+    : "";
+
+  const trafficContext = creatorSettings?.trafficSource
+    ? (isRussian ? `\nПЛАТФОРМА И ТРАФИК: Оптимизируй для ${creatorSettings.trafficSource}` : `\nPLATFORM & TRAFFIC: Optimize for ${creatorSettings.trafficSource}`)
+    : "";
+
+  const examplesContext = creatorSettings?.videoExamples?.length
+    ? (isRussian ? `\nРЕФЕРЕНСЫ (СТИЛЬ): ${creatorSettings.videoExamples.join(", ")}` : `\nVIDEO EXAMPLES (STYLE): ${creatorSettings.videoExamples.join(", ")}`)
+    : "";
+
+  const customSystemPrompt = creatorSettings?.systemPrompt || "";
 
   const systemPrompt = isRussian
     ? `Ты вирусный контент-стратег. 
 Ты создаёшь сценарии для БЫСТРЫХ коротких вертикальных видео (TikTok, Reels, Shorts).
+${customSystemPrompt ? `ГЛОБАЛЬНАЯ ИНСТРУКЦИЯ ОТ КРЕАТОРА: "${customSystemPrompt}"` : ""}
 Целевая длительность: 15 СЕКУНД МАКСИМУМ.
 Стиль: Быстро, цепляюще, без воды.
 ВАЖНО: ВСЕ текста должны быть ТОЛЬКО НА РУССКОМ ЯЗЫКЕ!
 Отвечай ТОЛЬКО валидным JSON.`
     : `You are a viral content strategist.
 You create scenarios for HIGH-PACED short-form vertical videos (TikTok, Reels, Shorts).
+${customSystemPrompt ? `CREATOR INSTRUCTIONS: "${customSystemPrompt}"` : ""}
 Target duration: 15 SECONDS MAX.
 Style: Fast, engaging, no fluff.
 Output ONLY valid JSON.`;
 
   const userPrompt = isRussian
     ? `Сгенерируй ${videoCount} уникальных сценариев для темы: "${topic}"
+${audienceContext}${trafficContext}${examplesContext}
 
 СТРОГО: ВСЕ ТЕКСТЫ НА РУССКОМ ЯЗЫКЕ!
 
@@ -51,6 +76,7 @@ Output ONLY valid JSON.`;
 Верни JSON объект с ключом "scenarios" содержащий массив из ${videoCount} объектов сценариев.`
     : `Generate ${videoCount} unique video scenarios for the topic: "${topic}"
 Language: ${language} (STRICTLY OUTPUT ALL VISIBLE TEXT AND VOICEOVER IN THIS LANGUAGE)
+${audienceContext}${trafficContext}${examplesContext}
 
 For each scenario, provide:
 - title: catchy video title
