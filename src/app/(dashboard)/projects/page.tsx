@@ -1,32 +1,106 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { FolderOpen, Sparkles, Zap, Plus, Film, Clock, CheckCircle2 } from "lucide-react";
+import {
+  FolderOpen,
+  Zap,
+  Plus,
+  Film,
+  Clock,
+  CheckCircle2,
+  Loader2,
+  AlertCircle,
+  Trash2
+} from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { fetchProjects, deleteProjectById } from "@/lib/api-client";
 import type { Project } from "@/types";
-
-// Placeholder — will be replaced with real data from Supabase
-const projects: Project[] = [];
 
 const statusColors: Record<string, string> = {
   completed: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-  rendering: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+  composing: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+  generating_scenarios: "bg-violet-500/10 text-violet-400 border-violet-500/20",
+  fetching_assets: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+  brainstorming: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
   failed: "bg-destructive/10 text-destructive border-destructive/20",
-  pending: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
+  idle: "bg-zinc-500/10 text-zinc-400 border-zinc-500/20",
 };
 
 const statusIcons: Record<string, React.ElementType> = {
   completed: CheckCircle2,
-  rendering: Film,
-  pending: Clock,
+  composing: Film,
+  generating_scenarios: Zap,
+  fetching_assets: Clock,
+  brainstorming: Zap,
+  failed: AlertCircle,
+  idle: Clock,
+};
+
+const statusLabels: Record<string, Record<string, string>> = {
+  en: {
+    completed: "Completed",
+    composing: "Composing",
+    generating_scenarios: "Generating",
+    fetching_assets: "Fetching Assets",
+    brainstorming: "Brainstorming",
+    failed: "Failed",
+    idle: "Idle",
+  },
+  ru: {
+    completed: "Завершено",
+    composing: "Сборка",
+    generating_scenarios: "Генерация",
+    fetching_assets: "Поиск ассетов",
+    brainstorming: "Брейншторм",
+    failed: "Ошибка",
+    idle: "Ожидание",
+  },
 };
 
 export default function ProjectsPage() {
   const { language } = useLanguage();
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState<string | null>(null);
+
+  // Fetch projects on mount
+  useEffect(() => {
+    async function loadProjects() {
+      try {
+        const res = await fetchProjects();
+        if (res.data) {
+          setProjects(res.data);
+        }
+      } catch (err) {
+        console.error("Failed to load projects:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadProjects();
+  }, []);
+
+  // Delete project
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm(language === "ru" ? "Удалить этот проект?" : "Delete this project?")) return;
+
+    setDeleting(id);
+    try {
+      await deleteProjectById(id);
+      setProjects(projects.filter((p) => p.id !== id));
+    } catch (err) {
+      console.error("Failed to delete project:", err);
+    } finally {
+      setDeleting(null);
+    }
+  };
 
   const content = {
     en: {
@@ -52,6 +126,14 @@ export default function ProjectsPage() {
   };
 
   const c = content[language];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -95,6 +177,7 @@ export default function ProjectsPage() {
         >
           {projects.map((project, idx) => {
             const StatusIcon = statusIcons[project.status] || Film;
+            const statusLabel = statusLabels[language]?.[project.status] || project.status;
             return (
               <motion.div
                 key={project.id}
@@ -114,12 +197,27 @@ export default function ProjectsPage() {
                         </div>
                         <h3 className="font-medium leading-snug line-clamp-1">{project.topic}</h3>
                       </div>
-                      <Badge
-                        variant="outline"
-                        className={statusColors[project.status] || ""}
-                      >
-                        {project.status}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          variant="outline"
+                          className={statusColors[project.status] || ""}
+                        >
+                          {statusLabel}
+                        </Badge>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity text-zinc-500 hover:text-red-400"
+                          onClick={(e) => handleDelete(project.id, e)}
+                          disabled={deleting === project.id}
+                        >
+                          {deleting === project.id ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-3 w-3" />
+                          )}
+                        </Button>
+                      </div>
                     </div>
                     <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
