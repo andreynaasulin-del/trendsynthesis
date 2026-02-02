@@ -46,10 +46,19 @@ export async function generateScenarios({
 Твоя задача — создавать сценарии для вертикальных видео (TikTok/Reels), которые удерживают внимание с 1-й секунды.
 Глобальная инструкция: "${customSystemPrompt || "Создавай взрывной контент"}"
 
-ВАЖНЕЙШИЕ ПРАВИЛА:
-1. ЯЗЫК: Весь текст, озвучка и заголовки — СТРОГО НА РУССКОМ ЯЗЫКЕ. Без исключений.
-2. СТИЛЬ: Никакой воды. Никаких "Привет всем". Сразу к делу. Жесткий, динамичный монтаж.
-3. ВИЗУАЛ: Для поиска видео ты должен писать КОНКРЕТНЫЕ ОПИСАНИЯ КАДРОВ НА АНГЛИЙСКОМ (для стоков).
+MANDATORY RULES (CRITICAL):
+1. LANGUAGE (MANDATORY): Ты обязан генерировать `script_text`, `hook`, `body`, `cta` СТРОГО НА РУССКОМ ЯЗЫКЕ.
+   - Даже если тема "Marketing" или "IT", НЕЛЬЗЯ использовать английские предложения.
+   - Переводи всё. Если ты напишешь хоть одно предложение на английском в тексте сценария, система упадёт.
+   - ЗАПРЕЩЕНО: "Why are 90% of people..."
+   - РАЗРЕШЕНО: "Почему 90% людей совершают эту ошибку..."
+
+2. VISUAL ENHANCER (ASSETS):
+   - Ты должен генерировать поле `asset_queries` как "Visual Director".
+   - ЗАПРЕЩЕНЫ односложные запросы ("Money", "Business", "Office").
+   - ОБЯЗАТЕЛЬНО: Используй минимум 3 прилагательных в каждом запросе.
+   - Описывай сцену детально: освещение, действие, эмоцию.
+   - Пример: "stressed businessman pulling hair in dark office cinematic lighting", "close up of burning US dollar bill slow motion".
 
 Формат ответа: Только валидный JSON.`
     : `You are an elite viral screenwriter and visual director.
@@ -58,8 +67,10 @@ Global Instruction: "${customSystemPrompt || "Create explosive content"}"
 
 CRITICAL RULES:
 1. LANGUAGE: All text, voiceover, and titles must be in ${language.toUpperCase()}.
-2. STYLE: No fluff. No "Hello everyone". Straight to the point. Fast-paced editing.
-3. VISUALS: For video search, write CONCRETE SCENE DESCRIPTIONS in ENGLISH (for stock libraries).
+2. VISUALS: For video search, write CONCRETE SCENE DESCRIPTIONS in ENGLISH (for stock libraries).
+   - REJECT single-word queries (e.g., "Money").
+   - REQUIRE at least 3 adjectives per query.
+   - Example: "stressed businessman pulling hair in dark office cinematic lighting".
 
 Output format: Valid JSON only.`;
 
@@ -76,12 +87,12 @@ ${audienceContext}${trafficContext}${examplesContext}
 - angle: Уникальный угол подачи (РУ)
 - tone: "provocative" | "educational" | "emotional"
 - keywords: 3-5 тегов (РУ)
-- voiceover_text: Полный текст озвучки (РУ), макс 40 слов.
+- voiceover_text: Полный текст озвучки (РУ), транслитерация ЗАПРЕЩЕНА. Только кириллица.
 - duration_seconds: 15
 - asset_queries: Массив из 3 поисковых запросов на АНГЛИЙСКОМ.
-  ВАЖНО: Это должны быть ОПИСАНИЯ КАРТИНКИ, а не абстракции.
-  ПЛОХО: "Success", "Business", "Money"
-  ХОРОШО: "Close up of man counting 100 dollar bills stack", "Luxury penthouse with view of night city skyline", "Gold bars stacking animation"
+  ВАЖНО: "Visual Enhancer" включен.
+  ❌ BAD: "Success", "Business", "Money"
+  ✅ GOOD: "Close up of man counting 100 dollar bills stack cinematic", "Luxury penthouse with view of night city skyline 8k", "Gold bars stacking animation 3d render"
 
 JSON структура: { "scenarios": [...] }`
     : `Generate ${videoCount} scripts for topic: "${topic}"
@@ -98,9 +109,9 @@ FOR EACH SCENARIO (JSON Object):
 - voiceover_text: Full voiceover script (in ${language}), max 40 words.
 - duration_seconds: 15
 - asset_queries: Array of 3 search queries IN ENGLISH.
-  CRITICAL: Must be VISUAL SCENE DESCRIPTIONS, not concepts.
+  CRITICAL: Must be VISUAL SCENE DESCRIPTIONS with adjectives.
   BAD: "Success", "Business"
-  GOOD: "Close up of man counting 100 dollar bills stack", "Luxury penthouse with view of night city skyline"
+  GOOD: "Close up of man counting 100 dollar bills stack cinematic", "Luxury penthouse with view of night city skyline 8k"
 
 JSON Structure: { "scenarios": [...] }`;
 
@@ -110,7 +121,7 @@ JSON Structure: { "scenarios": [...] }`;
       { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt },
     ],
-    temperature: 0.8, // Slightly lower for coherence
+    temperature: 0.7, // STRICT adherence
     max_tokens: 16000,
     response_format: { type: "json_object" },
   });
