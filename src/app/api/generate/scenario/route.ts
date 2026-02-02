@@ -3,6 +3,7 @@ import { generateScenarios } from "@/lib/openai/generate-scenarios";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const maxDuration = 60;
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
