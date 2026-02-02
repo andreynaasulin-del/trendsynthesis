@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { StrategyOption } from "@/types";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useGenerationStore } from "@/stores/generation-store";
 
 export type { StrategyOption };
 
@@ -245,6 +246,7 @@ export function ViralChat({
   className,
 }: ViralChatProps) {
   const { language, setLanguage } = useLanguage();
+  const setStoreLanguage = useGenerationStore((state) => state.setLanguage);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isMounted, setIsMounted] = useState(false);
   const [inputValue, setInputValue] = useState("");
@@ -384,7 +386,10 @@ export function ViralChat({
           {(["en", "ru"] as const).map((lang) => (
             <button
               key={lang}
-              onClick={() => setLanguage(lang)}
+              onClick={() => {
+                setLanguage(lang);
+                setStoreLanguage(lang);
+              }}
               className={cn(
                 "px-3 py-1.5 text-[10px] uppercase font-bold tracking-wider rounded transition-colors",
                 language === lang
