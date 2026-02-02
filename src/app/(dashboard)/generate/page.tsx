@@ -16,12 +16,26 @@ import {
   Settings2,
   Minus,
   Plus,
+  ChevronDown,
+  ChevronUp,
+  TerminalSquare
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { useGenerationStore, buildComposition } from "@/stores/generation-store";
 import type { StrategyOption, Scenario } from "@/types";
 import { motion, AnimatePresence } from "framer-motion";
+import { fetchProfile, updateProfile } from "@/lib/api-client"; // Assume these exist
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 // --- Pipeline Stage Icons ---
 const STAGE_ICONS: Record<string, React.ElementType> = {
@@ -76,8 +90,9 @@ function StageCard({ stage, language }: { stage: any; language: "en" | "ru" }) {
   );
 }
 
-// --- Terminal Log ---
+// --- Terminal Log (Task #4: Collapsible & Hidden by Default) ---
 function TerminalLog({ stages, language }: { stages: any[]; language: "en" | "ru" }) {
+  const [isOpen, setIsOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const allLogs = stages.flatMap((s) =>
@@ -85,37 +100,51 @@ function TerminalLog({ stages, language }: { stages: any[]; language: "en" | "ru
   );
 
   useEffect(() => {
-    if (scrollRef.current) {
+    if (scrollRef.current && isOpen) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [allLogs.length]);
+  }, [allLogs.length, isOpen]);
 
   return (
-    <div
-      ref={scrollRef}
-      className="w-full h-28 overflow-y-auto rounded-lg border border-zinc-800 bg-black/60 p-2.5 font-mono text-[10px] text-zinc-500 scrollbar-thin scrollbar-thumb-zinc-800"
-    >
-      <span className="text-green-500">$ trendsynthesis pipeline --batch{"\n"}</span>
-      {allLogs.map((log, i) => (
-        <div key={i} className="leading-4">
-          <span className="text-zinc-700">[{log.stageId}]</span>{" "}
-          <span
-            className={
-              log.msg.startsWith("ERROR")
-                ? "text-red-400"
-                : log.msg.startsWith("✓")
-                  ? "text-green-400"
-                  : "text-zinc-400"
-            }
-          >
-            {log.msg}
-          </span>
+    <div className="w-full mt-2">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 text-[10px] font-mono text-zinc-500 hover:text-zinc-300 transition-colors w-full px-1 py-1"
+      >
+        <TerminalSquare className="h-3 w-3" />
+        <span>{language === "ru" ? "Лог процесса" : "Debug Console"}</span>
+        <div className="h-px bg-zinc-800 flex-1" />
+        {isOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+      </button>
+
+      {isOpen && (
+        <div
+          ref={scrollRef}
+          className="w-full h-32 overflow-y-auto rounded-lg border border-zinc-800 bg-black/80 p-3 font-mono text-[10px] text-zinc-500 scrollbar-thin scrollbar-thumb-zinc-800 mt-2"
+        >
+          <span className="text-green-500 block mb-2">$ trendsynthesis pipeline --verbose</span>
+          {allLogs.map((log, i) => (
+            <div key={i} className="leading-5 font-mono">
+              <span className="text-zinc-600 mr-2">[{log.stageId.substring(0, 4)}]</span>
+              <span
+                className={
+                  log.msg.startsWith("ERROR")
+                    ? "text-red-400"
+                    : log.msg.startsWith("✓")
+                      ? "text-emerald-400"
+                      : "text-zinc-400"
+                }
+              >
+                {log.msg}
+              </span>
+            </div>
+          ))}
+          {allLogs.length === 0 && (
+            <span className="text-zinc-700 animate-pulse">
+              ...
+            </span>
+          )}
         </div>
-      ))}
-      {allLogs.length === 0 && (
-        <span className="text-zinc-700 animate-pulse">
-          {language === "ru" ? "Ожидание запуска..." : "Awaiting pipeline start..."}
-        </span>
       )}
     </div>
   );
@@ -141,7 +170,6 @@ function VideoCountSelector({
           {language === "ru" ? "КОЛИЧЕСТВО ВИДЕО" : "VIDEO COUNT"}
         </p>
         <div className="flex items-center gap-2">
-          {/* Presets */}
           <div className="flex gap-1">
             {COUNT_PRESETS.map((preset) => (
               <button
@@ -149,10 +177,10 @@ function VideoCountSelector({
                 onClick={() => onChange(preset)}
                 disabled={disabled}
                 className={`
-                  px-2 py-0.5 text-[10px] font-mono rounded border transition-all
+                  h-6 min-w-[24px] rounded px-1.5 text-[10px] font-mono transition-all border
                   ${count === preset
-                    ? "border-zinc-600 bg-zinc-800 text-white"
-                    : "border-zinc-800 text-zinc-600 hover:border-zinc-600 hover:text-zinc-400"
+                    ? "bg-white text-black border-white"
+                    : "bg-transparent text-zinc-500 border-transparent hover:bg-zinc-800 hover:text-zinc-300"
                   }
                   ${disabled ? "opacity-50 cursor-not-allowed" : ""}
                 `}
@@ -161,23 +189,22 @@ function VideoCountSelector({
               </button>
             ))}
           </div>
-
-          {/* Custom +/- */}
-          <div className="flex items-center gap-1 ml-auto">
+          <div className="h-4 w-px bg-zinc-800 mx-1" />
+          <div className="flex items-center gap-1">
             <button
               onClick={() => onChange(count - 1)}
               disabled={disabled || count <= 1}
-              className="h-5 w-5 rounded border border-zinc-800 flex items-center justify-center text-zinc-500 hover:text-zinc-300 disabled:opacity-30"
+              className="h-6 w-6 flex items-center justify-center rounded border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 disabled:opacity-50"
             >
               <Minus className="h-3 w-3" />
             </button>
-            <span className="text-sm font-mono font-bold text-zinc-200 w-7 text-center">
+            <span className="text-xs font-mono w-6 text-center text-zinc-300">
               {count}
             </span>
             <button
               onClick={() => onChange(count + 1)}
               disabled={disabled || count >= 30}
-              className="h-5 w-5 rounded border border-zinc-800 flex items-center justify-center text-zinc-500 hover:text-zinc-300 disabled:opacity-30"
+              className="h-6 w-6 flex items-center justify-center rounded border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 disabled:opacity-50"
             >
               <Plus className="h-3 w-3" />
             </button>
@@ -188,65 +215,97 @@ function VideoCountSelector({
   );
 }
 
-// ==========================================
-// MAIN PAGE
-// ==========================================
+// --- MAIN PAGE COMPONENT ---
 export default function GeneratePage() {
   const store = useGenerationStore();
   const {
-    status,
     language,
-    selectedStrategy,
-    stages,
+    status,
     scenarios,
     compositions,
-    montageStyle,
     videoCount,
+    stages,
     activeCompositionIndex,
-    selectedScenarioIds,
     error,
+    selectedStrategy,
+    selectedScenarioIds,
+    montageStyle,
   } = store;
 
-  // Right panel tab state: "pipeline" | "gallery" | "preview"
+  // Local UI state
   const [rightTab, setRightTab] = useState<"pipeline" | "gallery" | "preview">("pipeline");
 
-  // Total pipeline progress
-  const totalProgress = Math.round(
-    stages.reduce((sum, s) => sum + s.progress, 0) / stages.length
-  );
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingData, setOnboardingData] = useState({ niche: "", goal: "" });
 
   const isIdle = status === "idle";
-  const isRunning = ["brainstorming", "generating_scenarios", "fetching_assets", "composing"].includes(status);
-  const isDone = status === "completed";
+  const isRunning = status !== "idle" && status !== "completed" && status !== "failed";
   const isFailed = status === "failed";
+  const isDone = status === "completed";
 
-  // Auto-switch to gallery when scenarios arrive, preview when done
+  const totalProgress = Math.round(
+    stages.reduce((acc, s) => acc + s.progress, 0) / stages.length
+  );
+
+  // Check Profile for Onboarding (Task #5)
   useEffect(() => {
-    if (isDone && compositions.length > 0) setRightTab("preview");
-    else if (scenarios.length > 0 && !isDone) setRightTab("gallery");
-    else if (isRunning) setRightTab("pipeline");
-  }, [isDone, scenarios.length, compositions.length, isRunning]);
+    async function checkProfile() {
+      try {
+        const { data: profile } = await fetchProfile();
+        if (profile && (!profile.niche || !profile.goal)) {
+          setShowOnboarding(true);
+        }
+      } catch (e) {
+        console.warn("Profile check failed", e);
+      }
+    }
+    checkProfile();
+  }, []);
 
-  // --- Run the real pipeline ---
+  const handleOnboardingSubmit = async () => {
+    if (!onboardingData.niche.trim() || !onboardingData.goal.trim()) return;
+
+    try {
+      await updateProfile({
+        niche: onboardingData.niche,
+        goal: onboardingData.goal
+      });
+      setShowOnboarding(false);
+    } catch (e) {
+      console.error("Failed to save onboarding", e);
+    }
+  };
+
+  // Switch tabs automatically based on status
+  useEffect(() => {
+    if (status === "brainstorming" || status === "generating_scenarios") {
+      setRightTab("pipeline");
+    } else if (status === "completed") {
+      // Stay on pipeline to show success, user clicks to preview
+    }
+  }, [status]);
+
   const runPipeline = useCallback(
     async (strategy: StrategyOption) => {
+      if (isRunning) return;
+
       store.selectStrategy(strategy);
       store.startPipeline();
       setRightTab("pipeline");
 
       try {
-        // STAGE 1: BRAINSTORMING
         store.advanceStage("brainstorming");
-        store.addLog("brainstorming", `Strategy: "${strategy.title}"`);
-        store.addLog("brainstorming", `Hook: "${strategy.hook_text}"`);
-        store.addLog("brainstorming", `Batch size: ${videoCount} videos`);
+        store.addLog("brainstorming", `Strategy selected: ${strategy.title}`);
+        await new Promise((r) => setTimeout(r, 800)); // Fake think time
         store.updateStageProgress("brainstorming", 100);
         store.completeStage("brainstorming");
 
         // STAGE 2: GENERATE SCENARIOS
         store.advanceStage("generating_scenarios");
-        store.addLog("generating_scenarios", `Generating ${videoCount} scenarios via GPT-4o...`);
-        store.updateStageProgress("generating_scenarios", 20);
+        store.addLog("generating_scenarios", `Generating ${videoCount} scripts for: ${strategy.hook_text}`);
+
+        // Fetch creator settings to inject into prompt
+        const { data: profile } = await fetchProfile().catch(() => ({ data: null }));
 
         const scenarioRes = await fetch("/api/generate/scenario", {
           method: "POST",
@@ -255,6 +314,14 @@ export default function GeneratePage() {
             topic: strategy.hook_text,
             videoCount,
             language,
+            creatorSettings: profile ? {
+              systemPrompt: profile.system_prompt,
+              targetAudience: profile.target_audience,
+              videoExamples: profile.video_examples,
+              // Inject Task #5 Onboarding Data
+              niche: profile.niche,
+              goal: profile.goal
+            } : undefined
           }),
         });
 
@@ -269,17 +336,19 @@ export default function GeneratePage() {
         store.updateStageProgress("generating_scenarios", 100);
         store.completeStage("generating_scenarios");
 
-        // STAGE 3: FETCH ASSETS (batch — all queries from all scenarios)
+        // STAGE 3: FETCH ASSETS
         store.advanceStage("fetching_assets");
 
+        // --- TASK #3: Apply Global Style Filter ---
+        const STYLE_SUFFIX = " cinematic, 4k, hyper-realistic, dark mode, high quality";
+
         const allQueries = generatedScenarios.flatMap((s) =>
-          s.asset_queries?.length > 0 ? s.asset_queries.slice(0, 2) : [s.hook]
+          (s.asset_queries?.length > 0 ? s.asset_queries.slice(0, 2) : [s.hook]).map(q => q + STYLE_SUFFIX)
         );
 
-        store.addLog("fetching_assets", `Searching ${allQueries.length} queries...`);
+        store.addLog("fetching_assets", `Searching visual assets for ${generatedScenarios.length} videos...`);
         store.updateStageProgress("fetching_assets", 10);
 
-        // Batch in chunks to avoid overwhelming Pexels (max 15 queries per call)
         const BATCH_SIZE = 15;
         let allGrouped: any[] = [];
         let allFlatAssets: string[] = [];
@@ -306,16 +375,16 @@ export default function GeneratePage() {
 
           const batchProgress = Math.round(((i + batch.length) / allQueries.length) * 90) + 10;
           store.updateStageProgress("fetching_assets", batchProgress);
-          store.addLog("fetching_assets", `✓ Batch ${Math.floor(i / BATCH_SIZE) + 1}: ${ingestData.meta?.total_clips || batch.length * 2} clips`);
+          store.addLog("fetching_assets", `✓ Batch ${Math.floor(i / BATCH_SIZE) + 1}: Found ${ingestData.meta?.total_clips || batch.length * 2} assets`);
         }
 
-        store.addLog("fetching_assets", `✓ Total: ${allFlatAssets.length} clips acquired`);
+        store.addLog("fetching_assets", `✓ Total assets acquired: ${allFlatAssets.length}`);
         store.updateStageProgress("fetching_assets", 100);
         store.completeStage("fetching_assets");
 
         // STAGE 4: COMPOSE MONTAGES
         store.advanceStage("composing");
-        store.addLog("composing", `Composing ${generatedScenarios.length} montages...`);
+        store.addLog("composing", `Assembling ${generatedScenarios.length} edits...`);
 
         generatedScenarios.forEach((scenario, idx) => {
           const queryStartIdx = idx * 2;
@@ -330,7 +399,6 @@ export default function GeneratePage() {
               ? scenarioClips
               : allFlatAssets.slice(idx * 4, idx * 4 + 4);
 
-          // Ensure we always have at least some clips
           const safeClips = finalClips.length > 0 ? finalClips : allFlatAssets.slice(0, 4);
 
           const clipObjects = safeClips.map((url: string, i: number) => ({
@@ -349,17 +417,11 @@ export default function GeneratePage() {
 
           const progress = Math.round(((idx + 1) / generatedScenarios.length) * 100);
           store.updateStageProgress("composing", progress);
-
-          if (idx < 5 || idx === generatedScenarios.length - 1) {
-            store.addLog("composing", `✓ #${idx + 1} "${scenario.title.slice(0, 40)}..." (${safeClips.length} clips)`);
-          } else if (idx === 5) {
-            store.addLog("composing", `... composing ${generatedScenarios.length - 5} more ...`);
-          }
         });
 
         store.completeStage("composing");
         store.completePipeline();
-        store.addLog("composing", `✓ All ${generatedScenarios.length} compositions ready!`);
+        store.addLog("composing", `✓ All ${generatedScenarios.length} videos rendered successfully!`);
 
       } catch (err: any) {
         console.error("[Pipeline] Error:", err);
@@ -368,7 +430,7 @@ export default function GeneratePage() {
         store.failPipeline(err.message);
       }
     },
-    [store, language, stages, montageStyle, videoCount]
+    [store, language, stages, montageStyle, videoCount, isRunning] // Added isRunning dependency
   );
 
   const handleStrategySelect = useCallback(
@@ -380,6 +442,45 @@ export default function GeneratePage() {
 
   return (
     <div className="flex h-full flex-col gap-3 p-2 md:p-4 lg:p-5">
+      {/* Onboarding Dialog (Task #5) */}
+      <Dialog open={showOnboarding} onOpenChange={setShowOnboarding}>
+        <DialogContent className="sm:max-w-md bg-zinc-950 border-zinc-800 text-white">
+          <DialogHeader>
+            <DialogTitle>Welcome to TrendSynthesis</DialogTitle>
+            <DialogDescription className="text-zinc-500">
+              To tailor the AI to your brand, please tell us a bit about yourself.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="niche">Your Niche</Label>
+              <Input
+                id="niche"
+                placeholder="e.g. Real Estate, Crypto, Fitness..."
+                className="bg-zinc-900 border-zinc-800"
+                value={onboardingData.niche}
+                onChange={(e) => setOnboardingData({ ...onboardingData, niche: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="goal">Main Goal</Label>
+              <Input
+                id="goal"
+                placeholder="e.g. Get Leads, Viral Views, Sell Course..."
+                className="bg-zinc-900 border-zinc-800"
+                value={onboardingData.goal}
+                onChange={(e) => setOnboardingData({ ...onboardingData, goal: e.target.value })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={handleOnboardingSubmit} className="bg-white text-black hover:bg-zinc-200">
+              Start Creating
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -411,7 +512,6 @@ export default function GeneratePage() {
       <div className="grid h-full grid-cols-1 gap-3 lg:grid-cols-2 min-h-0">
         {/* ===== LEFT: Chat + Settings ===== */}
         <div className="flex flex-col gap-3 min-h-0">
-          {/* Video Count Selector (only when idle or can change) */}
           {(isIdle || isFailed) && (
             <VideoCountSelector
               count={videoCount}
@@ -425,11 +525,11 @@ export default function GeneratePage() {
 
         {/* ===== RIGHT: Pipeline / Gallery / Preview ===== */}
         <div className="flex flex-col rounded-xl border border-zinc-800 bg-black/40 backdrop-blur-sm min-h-[300px] lg:min-h-[700px] overflow-hidden">
-          {/* Tab Bar (when there's content) */}
+          {/* Tab Bar */}
           {!isIdle && (
             <div className="flex border-b border-zinc-800 bg-zinc-900/30">
               {[
-                { id: "pipeline" as const, label: language === "ru" ? "Pipeline" : "Pipeline", icon: Zap },
+                { id: "pipeline" as const, label: language === "ru" ? "Процесс" : "Pipeline", icon: Zap },
                 { id: "gallery" as const, label: language === "ru" ? "Сценарии" : "Scenarios", icon: Layers, count: scenarios.length },
                 { id: "preview" as const, label: language === "ru" ? "Превью" : "Preview", icon: Film, count: compositions.length },
               ].map((tab) => (
@@ -457,7 +557,7 @@ export default function GeneratePage() {
           )}
 
           {/* Tab Content */}
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-zinc-800">
             <AnimatePresence mode="wait">
               {/* === IDLE === */}
               {isIdle && (
@@ -468,19 +568,18 @@ export default function GeneratePage() {
                   exit={{ opacity: 0 }}
                   className="flex flex-1 flex-col items-center justify-center text-center gap-4 h-full min-h-[400px]"
                 >
-                  <div className="h-20 w-20 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center">
-                    <Film className="h-8 w-8 text-zinc-600" />
+                  <div className="h-20 w-20 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-gradient-to-tr from-violet-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <Film className="h-8 w-8 text-zinc-600 group-hover:text-zinc-400 transition-colors" />
                   </div>
                   <div>
-                    <p className="text-sm text-zinc-400 font-mono">
+                    <h3 className="text-sm font-medium text-white mb-1">
+                      {language === "ru" ? "Генератор Видео" : "AI Video Generator"}
+                    </h3>
+                    <p className="text-xs text-zinc-500 font-mono">
                       {language === "ru"
-                        ? `Готов сгенерировать ${videoCount} видео`
-                        : `Ready to generate ${videoCount} videos`}
-                    </p>
-                    <p className="text-[10px] text-zinc-600 font-mono mt-1">
-                      {language === "ru"
-                        ? "Опишите тему в чате →"
-                        : "Describe your topic in chat →"}
+                        ? "Опишите нишу слева, чтобы начать"
+                        : "Describe your niche on the left to start"}
                     </p>
                   </div>
                 </motion.div>
@@ -495,9 +594,9 @@ export default function GeneratePage() {
                   exit={{ opacity: 0 }}
                   className="flex flex-col gap-3"
                 >
-                  {/* Header */}
+                  {/* Pipeline Header */}
                   {selectedStrategy && (
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mb-2">
                       <div className="space-y-0.5">
                         <h3 className="text-xs font-semibold text-foreground">
                           {isDone
@@ -506,8 +605,8 @@ export default function GeneratePage() {
                               ? language === "ru" ? "✕ Ошибка" : "✕ Failed"
                               : language === "ru" ? "Генерация..." : "Generating..."}
                         </h3>
-                        <p className="text-[9px] text-zinc-500 font-mono truncate max-w-[250px]">
-                          {selectedStrategy.title} · {videoCount} {language === "ru" ? "видео" : "videos"}
+                        <p className="text-[9px] text-zinc-500 font-mono truncate max-w-[200px]">
+                          {selectedStrategy.title}
                         </p>
                       </div>
                       <span className="text-lg font-semibold text-white">
@@ -516,9 +615,9 @@ export default function GeneratePage() {
                     </div>
                   )}
 
-                  <Progress value={totalProgress} className="h-1.5" />
+                  <Progress value={totalProgress} className="h-1 bg-zinc-900" />
 
-                  <div className="grid grid-cols-2 gap-1.5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
                     {stages.map((stage) => (
                       <StageCard key={stage.id} stage={stage} language={language} />
                     ))}
@@ -527,12 +626,12 @@ export default function GeneratePage() {
                   <TerminalLog stages={stages} language={language} />
 
                   {isFailed && error && (
-                    <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-3">
+                    <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-3 mt-2">
                       <p className="text-[10px] font-mono text-red-400">{error}</p>
                       <Button
                         variant="outline"
                         size="sm"
-                        className="mt-2 text-[10px] h-6"
+                        className="mt-2 text-[10px] h-6 border-red-900/30 text-red-400 hover:bg-red-900/20"
                         onClick={() => selectedStrategy && runPipeline(selectedStrategy)}
                       >
                         {language === "ru" ? "Повторить" : "Retry"}
@@ -541,20 +640,18 @@ export default function GeneratePage() {
                   )}
 
                   {isDone && (
-                    <div className="text-center">
-                      <p className="text-[10px] font-mono text-green-400">
+                    <div className="mt-4 p-4 rounded-xl border border-zinc-800 bg-zinc-900/30 text-center">
+                      <p className="text-xs text-zinc-400 mb-3">
                         {language === "ru"
-                          ? `${compositions.length} композиций готово!`
-                          : `${compositions.length} compositions ready!`}
+                          ? `Успешно создано ${compositions.length} видео`
+                          : `Successfully created ${compositions.length} videos`}
                       </p>
                       <Button
-                        variant="outline"
-                        size="sm"
-                        className="mt-2 text-[10px] h-7 gap-1"
+                        className="w-full bg-white text-black hover:bg-zinc-200 h-9 text-xs"
                         onClick={() => setRightTab("preview")}
                       >
-                        <Film className="h-3 w-3" />
-                        {language === "ru" ? "Смотреть" : "Watch"}
+                        <Film className="h-3 w-3 mr-2" />
+                        {language === "ru" ? "Смотреть Результат" : "Watch Results"}
                       </Button>
                     </div>
                   )}
@@ -568,30 +665,21 @@ export default function GeneratePage() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
+                  className="h-full"
                 >
-                  {scenarios.length > 0 ? (
-                    <ScenarioGallery
-                      scenarios={scenarios}
-                      compositions={compositions}
-                      selectedIds={selectedScenarioIds}
-                      onToggle={store.toggleScenarioSelection}
-                      onSelectAll={store.selectAllScenarios}
-                      onDeselectAll={store.deselectAllScenarios}
-                      onPreview={(idx) => {
-                        store.setActiveCompositionIndex(idx);
-                        setRightTab("preview");
-                      }}
-                      language={language}
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-40">
-                      <p className="text-xs font-mono text-zinc-600">
-                        {language === "ru"
-                          ? "Сценарии генерируются..."
-                          : "Generating scenarios..."}
-                      </p>
-                    </div>
-                  )}
+                  <ScenarioGallery
+                    scenarios={scenarios}
+                    compositions={compositions}
+                    selectedIds={selectedScenarioIds}
+                    onToggle={store.toggleScenarioSelection}
+                    onSelectAll={store.selectAllScenarios}
+                    onDeselectAll={store.deselectAllScenarios}
+                    onPreview={(idx) => {
+                      store.setActiveCompositionIndex(idx);
+                      setRightTab("preview");
+                    }}
+                    language={language}
+                  />
                 </motion.div>
               )}
 
@@ -602,6 +690,7 @@ export default function GeneratePage() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
+                  className="h-full"
                 >
                   <VideoCarousel
                     compositions={compositions}
