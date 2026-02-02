@@ -35,7 +35,7 @@ import {
   DialogFooter
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+
 
 // --- Pipeline Stage Icons ---
 const STAGE_ICONS: Record<string, React.ElementType> = {
@@ -453,7 +453,7 @@ export default function GeneratePage() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="niche">Your Niche</Label>
+              <label htmlFor="niche" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Your Niche</label>
               <Input
                 id="niche"
                 placeholder="e.g. Real Estate, Crypto, Fitness..."
@@ -463,7 +463,7 @@ export default function GeneratePage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="goal">Main Goal</Label>
+              <label htmlFor="goal" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Main Goal</label>
               <Input
                 id="goal"
                 placeholder="e.g. Get Leads, Viral Views, Sell Course..."
