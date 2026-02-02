@@ -47,14 +47,14 @@ export async function generateScenarios({
 Глобальная инструкция: "${customSystemPrompt || "Создавай взрывной контент"}"
 
 MANDATORY RULES (CRITICAL):
-1. LANGUAGE (MANDATORY): Ты обязан генерировать `script_text`, `hook`, `body`, `cta` СТРОГО НА РУССКОМ ЯЗЫКЕ.
+1. LANGUAGE (MANDATORY): Ты обязан генерировать script_text, hook, body, cta СТРОГО НА РУССКОМ ЯЗЫКЕ.
    - Даже если тема "Marketing" или "IT", НЕЛЬЗЯ использовать английские предложения.
    - Переводи всё. Если ты напишешь хоть одно предложение на английском в тексте сценария, система упадёт.
    - ЗАПРЕЩЕНО: "Why are 90% of people..."
    - РАЗРЕШЕНО: "Почему 90% людей совершают эту ошибку..."
 
 2. VISUAL ENHANCER (ASSETS):
-   - Ты должен генерировать поле `asset_queries` как "Visual Director".
+   - Ты должен генерировать поле asset_queries как "Visual Director".
    - ЗАПРЕЩЕНЫ односложные запросы ("Money", "Business", "Office").
    - ОБЯЗАТЕЛЬНО: Используй минимум 3 прилагательных в каждом запросе.
    - Описывай сцену детально: освещение, действие, эмоцию.
