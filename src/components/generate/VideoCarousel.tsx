@@ -113,13 +113,46 @@ export function VideoCarousel({
         </p>
       </div>
 
+      {/* Actions */}
+      <div className="flex items-center gap-2 mt-4">
+        <Button
+          variant="outline"
+          size="sm"
+          className="text-xs border-zinc-700 bg-zinc-900/50 hover:bg-zinc-800 text-zinc-300"
+          onClick={() => {
+            const text = `TITLE: ${active.scenario.title}\n\nHOOK: ${active.scenario.hook}\n\nBODY: ${active.scenario.body}\n\nCTA: ${active.scenario.cta}`;
+            const blob = new Blob([text], { type: "text/plain" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `script-${active.scenario.id}.txt`;
+            a.click();
+          }}
+        >
+          {language === "ru" ? "Скачать Текст" : "Download Script"}
+        </Button>
+        <Button
+          size="sm"
+          className="text-xs bg-white text-black hover:bg-zinc-200 font-semibold"
+          onClick={() => {
+            // Simulate fake download for now
+            const fakeUrl = "https://cdn.coverr.co/videos/coverr-walking-in-a-city-at-night-vertical-4565/1080p.mp4";
+            window.open(fakeUrl, "_blank");
+          }}
+        >
+          {language === "ru" ? "Скачать Видео (Demo)" : "Download Video (Demo)"}
+        </Button>
+      </div>
+
       {/* Thumbnail Strip */}
       {compositions.length > 1 && (
-        <div className="flex gap-1.5 flex-wrap justify-center max-w-[340px]">
+        <div className="flex gap-1.5 flex-wrap justify-center max-w-[340px] mt-4">
           {compositions.map((comp, i) => (
             <button
               key={comp.id}
               onClick={() => onChangeIndex(i)}
+
+
               className={`
                 px-2.5 py-1 text-[10px] font-mono rounded-md border transition-all
                 ${i === activeIndex
