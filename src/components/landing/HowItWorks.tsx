@@ -112,7 +112,7 @@ export function HowItWorks({ lang }: HowItWorksProps) {
                     </p>
                 </motion.div>
 
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 relative">
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 relative">
                     {/* Connection line */}
                     <div className="hidden lg:block absolute top-24 left-[12.5%] right-[12.5%] h-px bg-gradient-to-r from-violet-500/20 via-blue-500/20 to-emerald-500/20" />
 
@@ -137,10 +137,10 @@ export function HowItWorks({ lang }: HowItWorksProps) {
                                 <div className="text-center">
                                     {/* Step number */}
                                     <div className="relative inline-block mb-6">
-                                        <div className={`w-16 h-16 rounded-2xl ${colors[i]} border flex items-center justify-center mb-2 mx-auto relative z-10 backdrop-blur-xl`}>
+                                        <div className={`w-16 h-16 rounded-2xl ${colors[i]} border flex items-center justify-center mb-2 mx-auto relative z-20 backdrop-blur-xl`}>
                                             <Icon className="w-7 h-7" />
                                         </div>
-                                        <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-white text-black text-xs font-bold flex items-center justify-center">
+                                        <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-white text-black text-xs font-bold flex items-center justify-center z-30">
                                             {step.step}
                                         </div>
                                     </div>

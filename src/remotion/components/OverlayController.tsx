@@ -1,6 +1,7 @@
 // ============================================
-// TRENDSYNTHESIS — Overlay Controller V2
-// Animated subtitles, phases, clip counter
+// TRENDSYNTHESIS — Overlay Controller V3
+// TikTok-style captions with word highlighting
+// Skills Integration: template-tiktok
 // ============================================
 
 import {
@@ -10,7 +11,7 @@ import {
   spring,
   interpolate,
 } from "remotion";
-import React from "react";
+import React, { useMemo } from "react";
 import type { SubtitleSegment } from "@/types";
 
 // --- Types ---
@@ -26,8 +27,14 @@ interface OverlayControllerProps {
   textPosition?: "center" | "bottom" | "top";
 }
 
-// --- Animated Subtitle Component ---
-const AnimatedSubtitle: React.FC<{
+// --- TikTok Style Constants ---
+const HIGHLIGHT_COLOR = "#39E508"; // Bright green like template-tiktok
+const WORD_DURATION_MS = 400; // How long each word stays highlighted
+
+// ============================================
+// TIKTOK-STYLE ANIMATED WORD (from template-tiktok)
+// ============================================
+const TikTokSubtitle: React.FC<{
   text: string;
   startFrame: number;
   endFrame: number;
@@ -42,19 +49,32 @@ const AnimatedSubtitle: React.FC<{
 
   const localFrame = frame - startFrame;
   const duration = endFrame - startFrame;
+  const durationMs = (duration / fps) * 1000;
+  const localTimeMs = (localFrame / fps) * 1000;
 
-  // Entrance animation (spring pop-in)
+  // Split text into words for highlighting
+  const words = useMemo(() => {
+    const wordList = text.split(" ").filter(Boolean);
+    const wordDuration = durationMs / wordList.length;
+    return wordList.map((word, idx) => ({
+      text: word,
+      startMs: idx * wordDuration,
+      endMs: (idx + 1) * wordDuration,
+    }));
+  }, [text, durationMs]);
+
+  // Spring entrance animation
   const entrance = spring({
     fps,
     frame: localFrame,
     config: {
-      damping: 14,
-      stiffness: 180,
-      mass: 0.6,
+      damping: 200, // Match template-tiktok damping
+      stiffness: 300,
     },
+    durationInFrames: 5,
   });
 
-  // Exit animation (fade out in last 8 frames)
+  // Exit fade
   const exitStart = duration - 8;
   const exitOpacity = interpolate(
     localFrame,
@@ -63,63 +83,115 @@ const AnimatedSubtitle: React.FC<{
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
   );
 
-  // Y translation (slide up)
-  const translateY = interpolate(entrance, [0, 1], [25, 0]);
+  // Scale and Y translation
+  const scaleValue = interpolate(entrance, [0, 1], [0.8, 1]);
+  const translateY = interpolate(entrance, [0, 1], [50, 0]);
 
-  // Scale for impact style
-  const scale = style === "impact"
-    ? interpolate(entrance, [0, 1], [0.85, 1])
-    : 1;
-
-  // Glitch offset for impact style (first 6 frames)
-  const glitchX = style === "impact"
-    ? interpolate(localFrame, [0, 3, 6], [4, -3, 0], {
-        extrapolateLeft: "clamp",
-        extrapolateRight: "clamp",
-      })
-    : 0;
-
-  // Style variants
-  const styleClasses: Record<string, string> = {
-    default: "bg-black/50 backdrop-blur-sm px-6 py-3 rounded-lg",
-    highlight: "bg-black/60 backdrop-blur-md px-6 py-3 rounded-lg border-l-4 border-white/80",
-    impact: "bg-black/70 backdrop-blur-lg px-8 py-4 rounded-xl border border-white/20",
-  };
-
-  const textClasses: Record<string, string> = {
-    default: "text-lg font-medium text-white/95 leading-relaxed",
-    highlight: "text-xl font-semibold text-white leading-snug",
-    impact: "text-3xl font-black text-white tracking-tight leading-tight",
-  };
-
-  // Position mapping
+  // Position styles - adjusted for safe text display
   const positionStyles: Record<string, React.CSSProperties> = {
-    top: { position: "absolute", top: "15%", left: 0, right: 0, paddingLeft: 32, paddingRight: 32 },
-    center: { position: "absolute", top: "50%", left: 0, right: 0, transform: `translateY(calc(-50% + ${translateY}px)) translateX(${glitchX}px) scale(${scale})`, paddingLeft: 32, paddingRight: 32 },
-    bottom: { position: "absolute", bottom: "12%", left: 0, right: 0, paddingLeft: 32, paddingRight: 32 },
+    top: { top: "8%", bottom: undefined },
+    center: { top: "45%", transform: `translateY(-50%)` },
+    bottom: { bottom: "8%", top: undefined }, // Lower position to avoid cut-off
   };
 
-  // For non-center, apply transforms differently
-  const wrapperStyle: React.CSSProperties = position === "center"
-    ? { ...positionStyles.center, opacity: exitOpacity }
-    : {
-        ...positionStyles[position],
-        transform: `translateY(${translateY}px) translateX(${glitchX}px) scale(${scale})`,
-        opacity: exitOpacity,
-      };
+  // Style variants - reduced font sizes for better fit
+  const fontSizes: Record<string, number> = {
+    default: 36,
+    highlight: 42,
+    impact: 48, // Reduced from 56 to prevent text cut-off
+  };
+
+  const fontSize = fontSizes[style] || fontSizes.default;
 
   return (
-    <div style={wrapperStyle} className="flex justify-center z-40">
-      <div className={styleClasses[style] || styleClasses.default} style={{ boxShadow: style === "impact" ? "0 8px 32px rgba(0,0,0,0.5)" : undefined }}>
-        <p className={`${textClasses[style] || textClasses.default} text-center font-mono`}>
-          {text.toUpperCase()}
+    <AbsoluteFill
+      style={{
+        ...positionStyles[position],
+        justifyContent: "center",
+        alignItems: "center",
+        paddingLeft: 24,
+        paddingRight: 24,
+        paddingBottom: position === "bottom" ? 40 : 0, // Extra safe area at bottom
+        opacity: exitOpacity,
+      }}
+    >
+      <div
+        style={{
+          transform: `scale(${scaleValue}) translateY(${translateY}px)`,
+          textAlign: "center",
+          maxWidth: "95%",
+          wordWrap: "break-word",
+          overflowWrap: "break-word",
+        }}
+      >
+        {/* Stroke layer (behind) */}
+        <p
+          style={{
+            position: "absolute",
+            fontSize,
+            fontWeight: 900,
+            fontFamily: "system-ui, -apple-system, sans-serif",
+            textTransform: "uppercase",
+            color: "white",
+            WebkitTextStroke: "6px black", // Reduced stroke for cleaner look
+            paintOrder: "stroke",
+            margin: 0,
+            lineHeight: 1.1, // Tighter line height
+            letterSpacing: "0.01em",
+            wordBreak: "break-word",
+          }}
+        >
+          {words.map((word, idx) => (
+            <span key={idx} style={{ whiteSpace: "pre-wrap", display: "inline-block" }}>
+              {word.text}{" "}
+            </span>
+          ))}
+        </p>
+
+        {/* Main text with word highlighting */}
+        <p
+          style={{
+            position: "relative",
+            fontSize,
+            fontWeight: 900,
+            fontFamily: "system-ui, -apple-system, sans-serif",
+            textTransform: "uppercase",
+            margin: 0,
+            lineHeight: 1.15, // Tighter line height
+            letterSpacing: "0.01em",
+            wordBreak: "break-word",
+          }}
+        >
+          {words.map((word, idx) => {
+            const isActive =
+              localTimeMs >= word.startMs && localTimeMs < word.endMs;
+
+            return (
+              <span
+                key={idx}
+                style={{
+                  display: "inline-block",
+                  whiteSpace: "pre-wrap",
+                  color: isActive ? HIGHLIGHT_COLOR : "white",
+                  transition: "color 0.05s ease-out",
+                  textShadow: isActive
+                    ? `0 0 20px ${HIGHLIGHT_COLOR}, 0 0 40px ${HIGHLIGHT_COLOR}50`
+                    : "none",
+                }}
+              >
+                {word.text}{" "}
+              </span>
+            );
+          })}
         </p>
       </div>
-    </div>
+    </AbsoluteFill>
   );
 };
 
-// --- Phase Indicator (small tag showing current phase) ---
+// ============================================
+// PHASE INDICATOR
+// ============================================
 const PhaseIndicator: React.FC = () => {
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
@@ -128,27 +200,28 @@ const PhaseIndicator: React.FC = () => {
   const bodyEnd = Math.floor(durationInFrames * 0.8);
 
   let phase = "HOOK";
-  let color = "#f87171"; // red-400
+  let color = "#f87171";
   if (frame >= hookEnd && frame < bodyEnd) {
     phase = "CONTENT";
-    color = "#60a5fa"; // blue-400
+    color = "#60a5fa";
   } else if (frame >= bodyEnd) {
     phase = "CTA";
-    color = "#4ade80"; // green-400
+    color = "#4ade80";
   }
 
   return (
     <div style={{ position: "absolute", top: 24, left: 24, zIndex: 50 }}>
       <span
         style={{
-          padding: "4px 8px",
-          fontSize: 9,
+          padding: "4px 10px",
+          fontSize: 10,
           fontFamily: "monospace",
-          letterSpacing: "0.2em",
-          border: `1px solid ${color}40`,
+          letterSpacing: "0.15em",
+          border: `1px solid ${color}50`,
           borderRadius: 4,
           color,
-          backgroundColor: "rgba(0,0,0,0.4)",
+          backgroundColor: "rgba(0,0,0,0.5)",
+          backdropFilter: "blur(4px)",
         }}
       >
         {phase}
@@ -157,7 +230,93 @@ const PhaseIndicator: React.FC = () => {
   );
 };
 
-// --- Main Overlay Controller ---
+// ============================================
+// SIMPLE ANIMATED SUBTITLE (fallback for non-TikTok mode)
+// ============================================
+const AnimatedSubtitle: React.FC<{
+  text: string;
+  startFrame: number;
+  endFrame: number;
+  style?: "default" | "highlight" | "impact";
+  position: "center" | "bottom" | "top";
+}> = ({ text, startFrame, endFrame, style = "default", position }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
+  if (frame < startFrame || frame > endFrame) return null;
+
+  const localFrame = frame - startFrame;
+  const duration = endFrame - startFrame;
+
+  const entrance = spring({
+    fps,
+    frame: localFrame,
+    config: { damping: 14, stiffness: 180, mass: 0.6 },
+  });
+
+  const exitStart = duration - 8;
+  const exitOpacity = interpolate(
+    localFrame,
+    [exitStart, duration],
+    [1, 0],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
+  );
+
+  const translateY = interpolate(entrance, [0, 1], [25, 0]);
+  const scale = style === "impact" ? interpolate(entrance, [0, 1], [0.85, 1]) : 1;
+
+  const positionStyles: Record<string, React.CSSProperties> = {
+    top: { position: "absolute", top: "15%", left: 0, right: 0, paddingLeft: 32, paddingRight: 32 },
+    center: { position: "absolute", top: "50%", left: 0, right: 0, paddingLeft: 32, paddingRight: 32 },
+    bottom: { position: "absolute", bottom: "12%", left: 0, right: 0, paddingLeft: 32, paddingRight: 32 },
+  };
+
+  const styleClasses: Record<string, React.CSSProperties> = {
+    default: { backgroundColor: "rgba(0,0,0,0.5)", padding: "12px 24px", borderRadius: 8 },
+    highlight: { backgroundColor: "rgba(0,0,0,0.6)", padding: "12px 24px", borderRadius: 8, borderLeft: "4px solid white" },
+    impact: { backgroundColor: "rgba(0,0,0,0.7)", padding: "16px 32px", borderRadius: 12, border: "1px solid rgba(255,255,255,0.2)" },
+  };
+
+  const fontSizes: Record<string, number> = {
+    default: 20,
+    highlight: 24,
+    impact: 36,
+  };
+
+  return (
+    <div
+      style={{
+        ...positionStyles[position],
+        transform: `translateY(${translateY}px) scale(${scale})`,
+        opacity: exitOpacity,
+        display: "flex",
+        justifyContent: "center",
+        zIndex: 40,
+      }}
+    >
+      <div style={{ ...styleClasses[style], backdropFilter: "blur(8px)" }}>
+        <p
+          style={{
+            fontSize: fontSizes[style],
+            fontWeight: style === "impact" ? 900 : 600,
+            color: "white",
+            textTransform: "uppercase",
+            textAlign: "center",
+            fontFamily: "system-ui, sans-serif",
+            letterSpacing: "0.05em",
+            margin: 0,
+          }}
+        >
+          {text}
+        </p>
+      </div>
+    </div>
+  );
+};
+
+// ============================================
+// MAIN OVERLAY CONTROLLER V3
+// ============================================
 export const OverlayController: React.FC<OverlayControllerProps> = ({
   config,
   subtitles,
@@ -166,10 +325,9 @@ export const OverlayController: React.FC<OverlayControllerProps> = ({
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
 
-  // If we have V2 subtitles data, use it. Otherwise, fall back to legacy config
   const hasSubtitles = subtitles && subtitles.length > 0;
 
-  // --- V2 Subtitle-driven mode ---
+  // --- V2/V3: Subtitle-driven mode with TikTok highlighting ---
   if (hasSubtitles) {
     const activeSub = subtitles.find(
       (s) => frame >= s.startFrame && frame <= s.endFrame
@@ -179,7 +337,7 @@ export const OverlayController: React.FC<OverlayControllerProps> = ({
       <AbsoluteFill>
         <PhaseIndicator />
         {activeSub && (
-          <AnimatedSubtitle
+          <TikTokSubtitle
             key={activeSub.id}
             text={activeSub.text}
             startFrame={activeSub.startFrame}
@@ -208,9 +366,9 @@ export const OverlayController: React.FC<OverlayControllerProps> = ({
     <AbsoluteFill>
       <PhaseIndicator />
 
-      {/* PHASE 1: HOOK */}
+      {/* PHASE 1: HOOK — Use TikTok style for impact */}
       {isHookPhase && (
-        <AnimatedSubtitle
+        <TikTokSubtitle
           text={config.hook}
           startFrame={0}
           endFrame={hookDuration}
@@ -221,7 +379,7 @@ export const OverlayController: React.FC<OverlayControllerProps> = ({
 
       {/* PHASE 2: BODY POINTS */}
       {isBodyPhase && activePoint && (
-        <AnimatedSubtitle
+        <TikTokSubtitle
           key={activePoint}
           text={activePoint}
           startFrame={hookDuration + currentPointIndex * pointDuration}
@@ -233,7 +391,7 @@ export const OverlayController: React.FC<OverlayControllerProps> = ({
 
       {/* PHASE 3: CTA */}
       {isCtaPhase && (
-        <AnimatedSubtitle
+        <TikTokSubtitle
           text={config.cta}
           startFrame={hookDuration + bodyDuration}
           endFrame={durationInFrames}

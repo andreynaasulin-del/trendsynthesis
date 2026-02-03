@@ -48,7 +48,7 @@ const STAGE_ICONS: Record<string, React.ElementType> = {
 };
 
 // --- Video Count Presets ---
-const COUNT_PRESETS = [3, 6, 10, 15, 30];
+const COUNT_PRESETS = [1, 2, 3, 6, 10, 15, 30];
 
 // --- Pipeline Stage Card ---
 function StageCard({ stage, language }: { stage: any; language: "en" | "ru" }) {
@@ -141,7 +141,7 @@ function TerminalLog({ stages, language }: { stages: any[]; language: "en" | "ru
   );
 }
 
-// --- Video Count Selector (Enhanced for Mobile) ---
+// --- Video Count Selector (Enhanced with custom input) ---
 function VideoCountSelector({
   count,
   onChange,
@@ -153,6 +153,19 @@ function VideoCountSelector({
   language: "en" | "ru";
   disabled: boolean;
 }) {
+  const [customValue, setCustomValue] = useState("");
+  const [showCustom, setShowCustom] = useState(false);
+  const isCustom = !COUNT_PRESETS.includes(count);
+
+  const handleCustomSubmit = () => {
+    const val = parseInt(customValue, 10);
+    if (!isNaN(val) && val >= 1 && val <= 30) {
+      onChange(val);
+      setShowCustom(false);
+      setCustomValue("");
+    }
+  };
+
   return (
     <div className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900/50 p-3">
       <Settings2 className="h-4 w-4 text-zinc-500 shrink-0" />
@@ -160,15 +173,15 @@ function VideoCountSelector({
         <p className="text-[10px] font-mono text-zinc-400 mb-1.5 whitespace-nowrap">
           {language === "ru" ? "КОЛИЧЕСТВО ВИДЕО" : "VIDEO COUNT"}
         </p>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 flex-wrap">
           {COUNT_PRESETS.map((preset) => (
             <button
               key={preset}
-              onClick={() => onChange(preset)}
+              onClick={() => { onChange(preset); setShowCustom(false); }}
               disabled={disabled}
               className={cn(
-                "h-7 min-w-[28px] rounded px-2 text-[11px] font-mono transition-all border",
-                count === preset
+                "h-7 min-w-[26px] rounded px-1.5 text-[11px] font-mono transition-all border",
+                count === preset && !isCustom
                   ? "bg-white text-black border-white shadow-sm"
                   : "bg-transparent text-zinc-500 border-transparent hover:bg-zinc-800 hover:text-zinc-300",
                 disabled && "opacity-50 cursor-not-allowed"
@@ -177,6 +190,48 @@ function VideoCountSelector({
               {preset}
             </button>
           ))}
+          {/* Custom button */}
+          {!showCustom ? (
+            <button
+              onClick={() => setShowCustom(true)}
+              disabled={disabled}
+              className={cn(
+                "h-7 px-2 rounded text-[11px] font-mono transition-all border",
+                isCustom
+                  ? "bg-violet-600 text-white border-violet-600"
+                  : "bg-transparent text-zinc-500 border-zinc-700 hover:bg-zinc-800 hover:text-zinc-300",
+                disabled && "opacity-50 cursor-not-allowed"
+              )}
+            >
+              {isCustom ? count : "..."}
+            </button>
+          ) : (
+            <div className="flex items-center gap-1">
+              <input
+                type="number"
+                min="1"
+                max="30"
+                value={customValue}
+                onChange={(e) => setCustomValue(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleCustomSubmit()}
+                placeholder="1-30"
+                className="h-7 w-14 px-2 rounded text-[11px] font-mono bg-zinc-800 border border-zinc-700 text-white focus:outline-none focus:border-violet-500"
+                autoFocus
+              />
+              <button
+                onClick={handleCustomSubmit}
+                className="h-7 px-2 rounded bg-violet-600 text-white text-[10px] font-mono hover:bg-violet-500"
+              >
+                OK
+              </button>
+              <button
+                onClick={() => { setShowCustom(false); setCustomValue(""); }}
+                className="h-7 px-1.5 rounded text-zinc-500 hover:text-zinc-300 text-[11px]"
+              >
+                ✕
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

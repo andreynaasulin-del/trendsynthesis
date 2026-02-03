@@ -4,6 +4,8 @@
 // ============================================
 
 import { NextRequest, NextResponse } from "next/server";
+
+export const maxDuration = 60;
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 // GET /api/export?video_id=xxx — Get video download URL

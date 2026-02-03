@@ -203,10 +203,23 @@ export default function LandingPage() {
                   <span className="text-white">{currentT.demo.val}</span>
                 </div>
 
-                {/* Grid Visual */}
-                <div className="grid grid-cols-3 gap-3 mb-6">
-                  {[...Array(9)].map((_, i) => (
-                    <div key={i} className={`aspect-square rounded-lg border border-white/5 ${i === 4 ? 'bg-white/10 border-white/20' : 'bg-white/5'}`} />
+                {/* Dynamic Trend Visual */}
+                <div className="space-y-3 mb-6">
+                  {[0.9, 0.7, 0.4].map((opacity, i) => (
+                    <div key={i} className="flex gap-2 items-center">
+                      <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
+                        <div className={`w-1.5 h-1.5 rounded-full ${i === 0 ? 'bg-green-400' : 'bg-white/20'}`} />
+                      </div>
+                      <div className="flex-1 h-8 rounded-lg bg-white/5 border border-white/10 overflow-hidden relative">
+                        <div
+                          className="absolute inset-y-0 left-0 bg-white/10"
+                          style={{ width: `${85 - (i * 20)}%` }}
+                        />
+                        <div className="absolute inset-0 flex items-center px-3">
+                          <div className="h-1.5 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 w-full opacity-60" style={{ width: `${60 - (i * 15)}%` }} />
+                        </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
 
@@ -295,21 +308,31 @@ export default function LandingPage() {
                     { hook: "Секретный Хак Алгоритмов", views: "2.4M", color: "from-blue-500 to-cyan-500" }
                   ]).map((video, n) => (
                     <div key={n} className="aspect-[9/16] relative rounded-xl overflow-hidden group cursor-pointer border border-white/10 hover:border-white/30 transition-all hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/20">
-                      {/* Gradient Mock Placeholder */}
+                      {/* Gradient Background */}
                       <div className={`absolute inset-0 bg-gradient-to-br ${video.color} opacity-20 group-hover:opacity-30 transition-opacity`} />
 
-                      {/* UI Elements */}
-                      <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-2 py-1 rounded text-[10px] font-bold">
-                        9{8 - n}% VIRAL
+                      {/* Fake Video Content */}
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center">
+                          <Play fill="white" size={16} />
+                        </div>
                       </div>
 
-                      <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/90 to-transparent">
-                        <div className="text-[10px] font-mono text-white/60 mb-1 tracking-widest">HOOK_0{n + 1}</div>
-                        <div className="text-sm font-bold leading-tight mb-2 text-white shadow-black drop-shadow-md">
+                      {/* UI Elements */}
+                      <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md border border-white/5 shadow-lg">
+                        <span className="text-[10px] font-bold text-green-400">9{8 - n}% VIRAL</span>
+                      </div>
+
+                      <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black via-black/80 to-transparent">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-4 h-4 rounded-full bg-gradient-to-br from-white/20 to-white/5 border border-white/10" />
+                          <div className="text-[10px] font-mono text-white/60 tracking-widest">HOOK_0{n + 1}</div>
+                        </div>
+                        <div className="text-sm font-bold leading-snug mb-2 text-white shadow-black drop-shadow-md line-clamp-2">
                           &quot;{video.hook}&quot;
                         </div>
-                        <div className="flex items-center gap-2 text-[10px font-medium">
-                          <Play size={10} fill="currentColor" />
+                        <div className="flex items-center gap-1.5 text-[10px] font-medium text-white/80 bg-white/5 px-2 py-1 rounded-full w-fit">
+                          <Play size={8} fill="currentColor" />
                           <span>{video.views}</span>
                         </div>
                       </div>

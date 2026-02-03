@@ -32,15 +32,23 @@ const COVERR_FALLBACKS = [
   "https://cdn.coverr.co/videos/coverr-coffee-shop-ambience-4478/1080p.mp4",
 ];
 
-// --- Single query search ---
+// --- Single query search with timeout ---
 async function searchPexels(query: string, count: number = 4): Promise<string[]> {
   if (!PEXELS_API_KEY) return [];
 
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
+
     const res = await fetch(
       `https://api.pexels.com/videos/search?query=${encodeURIComponent(query)}&orientation=portrait&size=medium&per_page=${count}`,
-      { headers: { Authorization: PEXELS_API_KEY } }
+      {
+        headers: { Authorization: PEXELS_API_KEY },
+        signal: controller.signal
+      }
     );
+
+    clearTimeout(timeoutId);
 
     if (!res.ok) return [];
 
@@ -55,8 +63,12 @@ async function searchPexels(query: string, count: number = 4): Promise<string[]>
         video.video_files[0];
       return best.link;
     });
-  } catch (e) {
-    console.warn(`[Ingest] Pexels search failed for "${query}":`, e);
+  } catch (e: any) {
+    if (e.name === 'AbortError') {
+      console.warn(`[Ingest] Pexels timeout for "${query}"`);
+    } else {
+      console.warn(`[Ingest] Pexels search failed for "${query}":`, e);
+    }
     return [];
   }
 }
@@ -135,7 +147,8 @@ export async function POST(request: NextRequest) {
     );
 
     // --- Optional: Upload to Supabase Storage ---
-    const shouldUpload = supabaseAdmin && body.upload !== false;
+    // Disabled by default for speed - enable with upload: true
+    const shouldUpload = supabaseAdmin && body.upload === true;
 
     let finalResults;
     if (shouldUpload) {
