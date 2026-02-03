@@ -92,10 +92,65 @@ CREATE TABLE IF NOT EXISTS public.usage_logs (
 );
 
 -- ============================================
--- ROW LEVEL SECURITY
+-- FUNCTIONS & RPC
 -- ============================================
+
+-- Atomic Credit Adjustment (Refunds / Bonuses)
+CREATE OR REPLACE FUNCTION increment_credits(user_id UUID, amount INTEGER)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  UPDATE public.profiles
+  SET credits_remaining = credits_remaining + amount,
+      updated_at = NOW()
+  WHERE id = user_id;
+END;
+$$;
+
+-- ============================================
+-- ROW LEVEL SECURITY (RLS) POLICIES
+-- ============================================
+
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.scenarios ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.videos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.usage_logs ENABLE ROW LEVEL SECURITY;
+
+-- Profiles
+DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
+CREATE POLICY "Users can view own profile" ON public.profiles FOR SELECT USING (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
+CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
+
+-- Projects
+DROP POLICY IF EXISTS "Users can view own projects" ON public.projects;
+CREATE POLICY "Users can view own projects" ON public.projects FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can create projects" ON public.projects;
+CREATE POLICY "Users can create projects" ON public.projects FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can update own projects" ON public.projects;
+CREATE POLICY "Users can update own projects" ON public.projects FOR UPDATE USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can delete own projects" ON public.projects;
+CREATE POLICY "Users can delete own projects" ON public.projects FOR DELETE USING (auth.uid() = user_id);
+
+-- Scenarios
+DROP POLICY IF EXISTS "Users can view scenarios of own projects" ON public.scenarios;
+CREATE POLICY "Users can view scenarios of own projects" ON public.scenarios FOR SELECT USING (
+    EXISTS (SELECT 1 FROM public.projects WHERE id = project_id AND user_id = auth.uid())
+);
+
+-- Videos
+DROP POLICY IF EXISTS "Users can view videos of own projects" ON public.videos;
+CREATE POLICY "Users can view videos of own projects" ON public.videos FOR SELECT USING (
+    EXISTS (SELECT 1 FROM public.projects WHERE id = project_id AND user_id = auth.uid())
+);
+
+-- Usage Logs
+DROP POLICY IF EXISTS "Users can view own usage" ON public.usage_logs;
+CREATE POLICY "Users can view own usage" ON public.usage_logs FOR SELECT USING (auth.uid() = user_id);

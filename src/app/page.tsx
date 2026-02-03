@@ -125,7 +125,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen text-white font-sans selection:bg-white/20">
+    <div className="min-h-screen text-white font-sans selection:bg-white/20 overflow-x-hidden">
       {/* BACKGROUND */}
       <div className="fixed inset-0 -z-10 bg-[#050505]">
         <Image
@@ -282,145 +282,173 @@ export default function LandingPage() {
       </section>
 
       {/* DEMO INTERACTIVE SECTION */}
-      <section id="demo" className="py-32 border-t border-white/5 relative">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <div className="text-xs font-mono text-purple-400 mb-4 tracking-widest">{currentT.demo.sectionLabel}</div>
-            <h2 className="text-4xl font-bold">{currentT.demo.sectionTitle}</h2>
+      <section id="demo" className="py-32 relative overflow-hidden">
+        {/* Ambient Background Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[600px] bg-purple-600/20 blur-[120px] rounded-full pointer-events-none -z-10" />
+
+        <div className="max-w-5xl mx-auto px-6 relative z-10">
+          <div className="text-center mb-20 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-purple-500/30 bg-purple-500/10 text-purple-300 text-[10px] font-mono tracking-widest mb-6">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
+              </span>
+              {currentT.demo.sectionLabel}
+            </div>
+            <h2 className="text-5xl md:text-6xl font-black tracking-tight mb-4 drop-shadow-2xl">
+              <span className="bg-clip-text text-transparent bg-gradient-to-b from-white via-white to-white/40">
+                {currentT.demo.sectionTitle}
+              </span>
+            </h2>
           </div>
 
-          <div className="bg-[#0A0A0C]/80 backdrop-blur-3xl border border-white/10 rounded-3xl p-8 md:p-12 shadow-2xl ring-1 ring-white/5">
+          {/* Main Interface Module */}
+          <div className="relative group perspective-1000">
+            <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 to-blue-500 rounded-[2.5rem] opacity-20 blur-xl group-hover:opacity-40 transition duration-1000"></div>
+            <div className="relative bg-[#050505]/80 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-8 md:p-12 overflow-hidden shadow-2xl ring-1 ring-white/5 transition-transform duration-500 hover:scale-[1.002]">
 
-            {/* Controls */}
-            <div className={`transition-all duration-500 ${demoState !== 'idle' ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
-              <div className="flex flex-col md:flex-row gap-4">
-                <input
-                  type="text"
-                  disabled={demoState !== 'idle'}
-                  defaultValue={currentT.demo.val.replace(/"/g, '')}
-                  className="flex-1 bg-white/5 border border-white/10 rounded-xl px-6 py-4 text-white focus:outline-none focus:border-white/30 transition-colors"
-                />
-                <button
-                  onClick={runDemo}
-                  disabled={demoState !== 'idle'}
-                  className={`
-                    px-8 py-4 rounded-xl font-bold transition-all relative overflow-hidden group
-                    ${demoState === 'idle'
-                      ? 'bg-white text-black hover:bg-gray-200 hover:scale-[1.02]'
-                      : 'bg-white/10 text-white cursor-wait border border-white/10'}
-                  `}
-                >
-                  <span className="relative z-10 flex items-center gap-2">
-                    {demoState === 'idle' ? (
-                      currentT.demo.btn
-                    ) : (
-                      <>
-                        <span className="animate-spin">⟳</span>
-                        PROCESSING...
-                      </>
+              {/* Noise Texture */}
+              <div className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E")` }}></div>
+
+              {/* Controls - Spotlight Style */}
+              <div className={`relative z-20 transition-all duration-500 ${demoState !== 'idle' ? 'opacity-50 pointer-events-none grayscale blur-sm' : ''}`}>
+                <div className="flex flex-col md:flex-row gap-4 p-2 bg-white/5 border border-white/10 rounded-3xl md:rounded-full backdrop-blur-md shadow-lg group-hover:border-white/20 transition-colors">
+                  <div className="flex-1 flex items-center px-6 py-4 md:py-2">
+                    <span className="text-white/40 mr-4 font-mono text-xs tracking-widest border-r border-white/10 pr-4 h-6 flex items-center select-none">{currentT.demo.label}</span>
+                    <input
+                      type="text"
+                      disabled={demoState !== 'idle'}
+                      defaultValue={currentT.demo.val.replace(/"/g, '')}
+                      className="flex-1 bg-transparent border-none text-white text-lg font-medium focus:outline-none placeholder:text-white/20 w-full caret-purple-500"
+                    />
+                  </div>
+                  <button
+                    onClick={runDemo}
+                    disabled={demoState !== 'idle'}
+                    className={`
+                      px-8 py-4 md:py-3 rounded-2xl md:rounded-full font-bold transition-all relative overflow-hidden group/btn flex items-center justify-center
+                      ${demoState === 'idle'
+                        ? 'bg-white text-black hover:scale-[1.02] shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)]'
+                        : 'bg-white/10 text-white cursor-wait border border-white/10'}
+                    `}
+                  >
+                    <span className="relative z-10 flex items-center gap-2">
+                      {demoState === 'idle' ? (
+                        <>
+                          {currentT.demo.btn} <ArrowRight size={16} />
+                        </>
+                      ) : (
+                        <>
+                          <span className="animate-spin">⟳</span>
+                          PROCESSING...
+                        </>
+                      )}
+                    </span>
+                    {demoState === 'idle' && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700 ease-in-out" />
                     )}
-                  </span>
-                  {demoState !== 'idle' && (
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* Progress State */}
-            {(demoState === 'parsing' || demoState === 'synthesis') && (
-              <div className="mt-12 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                {/* Parsing Bar */}
-                <div>
-                  <div className="flex justify-between text-xs font-mono mb-2">
-                    <span className={parsingProgress === 100 ? 'text-green-400' : 'text-white/60'}>
-                      {currentT.demo.parsing} {parsingProgress === 100 && '✓'}
-                    </span>
-                    <span>{parsingProgress}%</span>
-                  </div>
-                  <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                    <div className="h-full bg-white transition-all duration-75 ease-out" style={{ width: `${parsingProgress}%` }} />
-                  </div>
-                </div>
-
-                {/* Synthesis Bar */}
-                <div className={`transition-opacity duration-500 ${demoState === 'parsing' ? 'opacity-30' : 'opacity-100'}`}>
-                  <div className="flex justify-between text-xs font-mono mb-2">
-                    <span className={synthesisProgress === 100 ? 'text-green-400' : 'text-white/60'}>
-                      {currentT.demo.synth} {synthesisProgress === 100 && '✓'}
-                    </span>
-                    <span>{synthesisProgress}%</span>
-                  </div>
-                  <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                    <div className="h-full bg-white transition-all duration-75 ease-out" style={{ width: `${synthesisProgress}%` }} />
-                  </div>
+                  </button>
                 </div>
               </div>
-            )}
 
-            {/* Results */}
-            {demoState === 'done' && (
-              <div className="mt-12 animate-in fade-in zoom-in-95 duration-500">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                  {(lang === 'en' ? [
-                    { hook: "3 ERRORs that kill Agencies", views: "1.2M", color: "from-pink-500 to-rose-500" },
-                    { hook: "No Clients? Do THIS", views: "850K", color: "from-violet-500 to-purple-500" },
-                    { hook: "Secret Algorithm Hack", views: "2.4M", color: "from-blue-500 to-cyan-500" }
-                  ] : [
-                    { hook: "3 ОШИБКИ SMM-агентств", views: "1.2M", color: "from-pink-500 to-rose-500" },
-                    { hook: "Нет клиентов? Делай ЭТО", views: "850K", color: "from-violet-500 to-purple-500" },
-                    { hook: "Секретный Хак Алгоритмов", views: "2.4M", color: "from-blue-500 to-cyan-500" }
-                  ]).map((video, n) => (
-                    <div key={n} className="aspect-[9/16] relative rounded-xl overflow-hidden group cursor-pointer border border-white/10 hover:border-white/30 transition-all hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/20">
-                      {/* Gradient Background */}
-                      <div className={`absolute inset-0 bg-gradient-to-br ${video.color} opacity-20 group-hover:opacity-30 transition-opacity`} />
-
-                      {/* Fake Video Content */}
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center">
-                          <Play fill="white" size={16} />
-                        </div>
-                      </div>
-
-                      {/* UI Elements */}
-                      <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md border border-white/5 shadow-lg">
-                        <span className="text-[10px] font-bold text-green-400">9{8 - n}% VIRAL</span>
-                      </div>
-
-                      <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black via-black/80 to-transparent">
-                        <div className="flex items-center gap-2 mb-2">
-                          <div className="w-4 h-4 rounded-full bg-gradient-to-br from-white/20 to-white/5 border border-white/10" />
-                          <div className="text-[10px] font-mono text-white/60 tracking-widest">HOOK_0{n + 1}</div>
-                        </div>
-                        <div className="text-sm font-bold leading-snug mb-2 text-white shadow-black drop-shadow-md line-clamp-2">
-                          &quot;{video.hook}&quot;
-                        </div>
-                        <div className="flex items-center gap-1.5 text-[10px] font-medium text-white/80 bg-white/5 px-2 py-1 rounded-full w-fit backdrop-blur-sm border border-white/5">
-                          <Play size={8} fill="currentColor" />
-                          <span>{video.views}</span>
-                        </div>
-                      </div>
-
-                      {/* Fake Progress Bar */}
-                      <div className="absolute bottom-0 left-0 w-full h-0.5 bg-white/20">
-                        <div className="h-full bg-white/80" style={{ width: '35%' }} />
-                      </div>
+              {/* Parsing / Synthesis UI (Loading State) */}
+              {(demoState === 'parsing' || demoState === 'synthesis') && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center z-30">
+                  <div className="relative w-40 h-40 mb-8">
+                    {/* Spinner Rings */}
+                    <div className="absolute inset-0 border-4 border-white/5 rounded-full"></div>
+                    <div className="absolute inset-0 border-4 border-t-purple-500 border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+                    <div className="absolute inset-4 border-4 border-t-transparent border-r-blue-500 border-b-transparent border-l-transparent rounded-full animate-spin reverse duration-1000 opacity-70"></div>
+                    <div className="absolute inset-0 flex items-center justify-center font-mono text-3xl font-bold tracking-tighter">
+                      {parsingProgress < 100 ? parsingProgress : synthesisProgress}<span className="text-sm align-top ml-1">%</span>
                     </div>
-                  ))}
-                  <div className="aspect-[9/16] bg-white/5 border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center p-4 cursor-pointer hover:bg-white/10 transition-colors group">
-                    <span className="text-3xl font-bold mb-1 group-hover:scale-110 transition-transform">+27</span>
-                    <span className="text-[10px] font-bold tracking-widest uppercase text-white/50">{currentT.demo.done}</span>
+                  </div>
+
+                  <div className="space-y-3 text-center animate-pulse">
+                    <h3 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400">
+                      {parsingProgress < 100 ? currentT.demo.parsing : currentT.demo.synth}
+                    </h3>
+                    <p className="text-white/50 text-sm font-mono tracking-wider uppercase">
+                      {parsingProgress < 100 ? "> Analyzing semantic patterns" : "> Rendering 4K assets"}
+                    </p>
                   </div>
                 </div>
+              )}
 
-                <div className="text-center">
-                  <Link href="/dashboard" className="inline-block bg-white text-black font-bold px-10 py-4 rounded-full hover:scale-105 transition-transform shadow-[0_0_40px_rgba(255,255,255,0.3)]">
-                    {currentT.demo.action}
-                  </Link>
+              {/* Results Grid */}
+              {demoState === 'done' && (
+                <div className="mt-16 animate-in fade-in slide-in-from-bottom-8 duration-700 relative z-10">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                    {(lang === 'en' ? [
+                      { hook: "3 ERRORs that kill Agencies", views: "1.2M", color: "from-pink-500 to-rose-500" },
+                      { hook: "No Clients? Do THIS", views: "850K", color: "from-violet-500 to-purple-500" },
+                      { hook: "Secret Algorithm Hack", views: "2.4M", color: "from-blue-500 to-cyan-500" }
+                    ] : [
+                      { hook: "3 ОШИБКИ SMM-агентств", views: "1.2M", color: "from-pink-500 to-rose-500" },
+                      { hook: "Нет клиентов? Делай ЭТО", views: "850K", color: "from-violet-500 to-purple-500" },
+                      { hook: "Секретный Хак Алгоритмов", views: "2.4M", color: "from-blue-500 to-cyan-500" }
+                    ]).map((video, n) => (
+                      <div key={n} className="aspect-[9/16] relative rounded-2xl overflow-hidden group cursor-pointer border border-white/10 hover:border-white/40 transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_30px_rgba(168,85,247,0.15)] bg-black/40">
+                        {/* Gradient Background */}
+                        <div className={`absolute inset-0 bg-gradient-to-br ${video.color} opacity-20 group-hover:opacity-40 transition-opacity duration-500`} />
+
+                        {/* Fake Video Content */}
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform scale-90 group-hover:scale-100">
+                          <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-xl">
+                            <Play fill="white" size={20} className="ml-1" />
+                          </div>
+                        </div>
+
+                        {/* Top Badge */}
+                        <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md border border-white/10 shadow-lg translate-y-[-10px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 delay-100">
+                          <span className="text-[10px] font-bold text-green-400 flex items-center gap-1">
+                            <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                            9{8 - n}% VIRAL
+                          </span>
+                        </div>
+
+                        {/* Bottom Info */}
+                        <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black via-black/90 to-transparent pt-12">
+                          <div className="flex items-center gap-2 mb-2 opacity-70 group-hover:opacity-100 transition-opacity">
+                            <div className="w-4 h-4 rounded-full bg-gradient-to-br from-white/20 to-white/5 border border-white/20" />
+                            <div className="text-[10px] font-mono text-white/80 tracking-widest">HOOK_0{n + 1}</div>
+                          </div>
+                          <div className="text-sm font-bold leading-snug mb-3 text-white shadow-black drop-shadow-md line-clamp-2 group-hover:text-white transition-colors">
+                            &quot;{video.hook}&quot;
+                          </div>
+                          <div className="flex items-center gap-1.5 text-[10px] font-bold text-white/90 bg-white/10 px-2.5 py-1.5 rounded-full w-fit backdrop-blur-sm border border-white/5 group-hover:bg-white/20 transition-colors">
+                            <Play size={8} fill="currentColor" />
+                            <span>{video.views}</span>
+                          </div>
+                        </div>
+
+                        {/* Progress Line */}
+                        <div className="absolute bottom-0 left-0 w-full h-0.5 bg-white/10">
+                          <div className="h-full bg-gradient-to-r from-purple-500 to-blue-500" style={{ width: '45%' }} />
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* More Placeholder */}
+                    <div className="aspect-[9/16] bg-white/5 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center p-4 cursor-pointer hover:bg-white/10 hover:border-white/20 transition-all group">
+                      <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-3 group-hover:scale-110 group-hover:bg-white/10 transition-all">
+                        <span className="text-2xl font-bold text-white/70 group-hover:text-white">+</span>
+                      </div>
+                      <span className="text-3xl font-bold mb-1 group-hover:scale-105 transition-transform text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50">27</span>
+                      <span className="text-[10px] font-bold tracking-widest uppercase text-white/40 group-hover:text-white/60 transition-colors">{currentT.demo.done}</span>
+                    </div>
+                  </div>
+
+                  <div className="text-center relative z-20">
+                    <Link href="/dashboard" className="inline-flex items-center gap-3 bg-white text-black font-bold px-10 py-5 rounded-full hover:scale-105 transition-all duration-300 shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:shadow-[0_0_60px_rgba(255,255,255,0.4)] group">
+                      <span>{currentT.demo.action}</span>
+                      <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
+            </div>
           </div>
         </div>
       </section>

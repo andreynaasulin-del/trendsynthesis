@@ -69,22 +69,47 @@ export async function POST(request: NextRequest) {
 
         console.log(`[API] Starting generation for user ${user.id}, topic: "${topic}"`);
 
-        // Run the generation pipeline
-        const result = await runGenerationPipeline({
-            topic: topic.trim(),
-            videoCount: Math.min(video_count, 30), // Cap at 30
-            style,
-            language,
-        });
+        // 1. DEDUCT CREDIT FIRST (Atomic Security)
+        const { error: deductError } = await supabase
+            .from("profiles")
+            .update({
+                credits_remaining: profile.credits_remaining - 1,
+                updated_at: new Date().toISOString(),
+            })
+            .eq("id", user.id);
 
-        if (!result.success) {
+        if (deductError) {
             return NextResponse.json(
-                { success: false, error: result.error || "Generation failed", stages: result.stages },
+                { success: false, error: "Failed to process credits" },
                 { status: 500 }
             );
         }
 
-        // Prepare response data
+        // 2. RUN PIPELINE (with Fail-Safe Refund)
+        let result;
+        try {
+            result = await runGenerationPipeline({
+                topic: topic.trim(),
+                videoCount: Math.min(video_count, 30),
+                style,
+                language,
+            });
+
+            if (!result.success) throw new Error(result.error || "Pipeline failed");
+
+        } catch (pipelineError: any) {
+            console.error("[API] Pipeline Failed - REFUNDING CREDIT:", pipelineError);
+
+            // REFUND CREDIT
+            await supabase.rpc('increment_credits', { user_id: user.id, amount: 1 });
+
+            return NextResponse.json(
+                { success: false, error: pipelineError.message || "Generation failed. Credit refunded." },
+                { status: 500 }
+            );
+        }
+
+        // 3. SUCCESS - SAVE DATA
         let responseData: any = {
             scenarios: result.scenarios,
             compositions: result.compositions,
@@ -92,7 +117,6 @@ export async function POST(request: NextRequest) {
             count: result.compositions.length,
         };
 
-        // Optionally save to database
         if (save_to_db) {
             // Create project
             const project = await createProject({
@@ -119,25 +143,14 @@ export async function POST(request: NextRequest) {
             // Update project status
             await updateProjectStatus(project.id, "completed");
 
-            // Decrement credits
-            await supabase
-                .from("profiles")
-                .update({
-                    credits_remaining: profile.credits_remaining - 1,
-                    updated_at: new Date().toISOString(),
-                })
-                .eq("id", user.id);
-
-            // Log usage
+            // Log usage (Credit already deducted)
             await supabase.from("usage_logs").insert({
                 user_id: user.id,
                 action: "video_generation",
                 credits_used: 1,
                 metadata: {
                     topic,
-                    video_count: result.scenarios.length,
-                    style,
-                    language,
+                    success: true,
                     project_id: project.id,
                 },
             });
@@ -159,9 +172,9 @@ export async function POST(request: NextRequest) {
         });
 
     } catch (error: any) {
-        console.error("[API] Generate Video Error:", error);
+        console.error("[API] Generate Video Critical Error:", error);
         return NextResponse.json(
-            { success: false, error: error.message || "Failed to generate videos" },
+            { success: false, error: error.message || "System error" },
             { status: 500 }
         );
     }
