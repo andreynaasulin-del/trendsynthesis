@@ -203,24 +203,42 @@ export default function LandingPage() {
                   <span className="text-white">{currentT.demo.val}</span>
                 </div>
 
-                {/* Dynamic Trend Visual */}
-                <div className="space-y-3 mb-6">
-                  {[0.9, 0.7, 0.4].map((opacity, i) => (
-                    <div key={i} className="flex gap-2 items-center">
-                      <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
-                        <div className={`w-1.5 h-1.5 rounded-full ${i === 0 ? 'bg-green-400' : 'bg-white/20'}`} />
-                      </div>
-                      <div className="flex-1 h-8 rounded-lg bg-white/5 border border-white/10 overflow-hidden relative">
-                        <div
-                          className="absolute inset-y-0 left-0 bg-white/10"
-                          style={{ width: `${85 - (i * 20)}%` }}
-                        />
-                        <div className="absolute inset-0 flex items-center px-3">
-                          <div className="h-1.5 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 w-full opacity-60" style={{ width: `${60 - (i * 15)}%` }} />
+                {/* Advanced AI Visual Interface */}
+                <div className="relative z-10 space-y-4 mb-6">
+                  {/* Status Header */}
+                  <div className="flex items-center justify-between text-[10px] font-mono border-b border-white/5 pb-2 mb-4">
+                    <span className="text-green-400 animate-pulse">● SYSTEM ONLINE</span>
+                    <span className="text-white/30">V.3.4.0</span>
+                  </div>
+
+                  {/* Analysis Nodes */}
+                  <div className="space-y-3">
+                    {[
+                      { label: "TREND VELOCITY", val: "98.4%", color: "bg-purple-500" },
+                      { label: "AUDIENCE MATCH", val: "HIGH", color: "bg-blue-500" },
+                      { label: "VIRALITY SCORE", val: "9.8/10", color: "bg-emerald-500" }
+                    ].map((item, i) => (
+                      <div key={i} className="bg-white/5 rounded-lg p-3 border border-white/5 flex items-center justify-between group hover:bg-white/10 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-1.5 h-1.5 rounded-full shadow-[0_0_10px_currentColor] ${item.color} ${i === 0 ? 'animate-ping' : ''}`} />
+                          <span className="text-[10px] font-mono text-white/50 tracking-wider">{item.label}</span>
+                        </div>
+                        <div className="font-mono text-xs font-bold text-white group-hover:scale-105 transition-transform">
+                          {item.val}
                         </div>
                       </div>
+                    ))}
+                  </div>
+
+                  {/* Terminal Log */}
+                  <div className="mt-4 h-24 bg-black/40 rounded-lg p-3 font-mono text-[10px] text-green-400/80 overflow-hidden border border-white/5 flex flex-col justify-end">
+                    <div className="space-y-1 opacity-70">
+                      <div>&gt; Scanning TikTok API...</div>
+                      <div>&gt; Found 12 rising hooks</div>
+                      <div>&gt; Analyzing semantic structures...</div>
+                      <div className="text-white animate-pulse">&gt; GENERATING SCENARIOS...</div>
                     </div>
-                  ))}
+                  </div>
                 </div>
 
                 {/* Progress Bar Visual */}
@@ -256,9 +274,26 @@ export default function LandingPage() {
                 <button
                   onClick={runDemo}
                   disabled={demoState !== 'idle'}
-                  className="bg-white text-black font-bold px-8 py-4 rounded-xl hover:bg-gray-200 transition-colors whitespace-nowrap"
+                  className={`
+                    px-8 py-4 rounded-xl font-bold transition-all relative overflow-hidden group
+                    ${demoState === 'idle'
+                      ? 'bg-white text-black hover:bg-gray-200 hover:scale-[1.02]'
+                      : 'bg-white/10 text-white cursor-wait border border-white/10'}
+                  `}
                 >
-                  {demoState === 'idle' ? currentT.demo.btn : 'PROCESSING...'}
+                  <span className="relative z-10 flex items-center gap-2">
+                    {demoState === 'idle' ? (
+                      currentT.demo.btn
+                    ) : (
+                      <>
+                        <span className="animate-spin">⟳</span>
+                        PROCESSING...
+                      </>
+                    )}
+                  </span>
+                  {demoState !== 'idle' && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
+                  )}
                 </button>
               </div>
             </div>
@@ -331,16 +366,21 @@ export default function LandingPage() {
                         <div className="text-sm font-bold leading-snug mb-2 text-white shadow-black drop-shadow-md line-clamp-2">
                           &quot;{video.hook}&quot;
                         </div>
-                        <div className="flex items-center gap-1.5 text-[10px] font-medium text-white/80 bg-white/5 px-2 py-1 rounded-full w-fit">
+                        <div className="flex items-center gap-1.5 text-[10px] font-medium text-white/80 bg-white/5 px-2 py-1 rounded-full w-fit backdrop-blur-sm border border-white/5">
                           <Play size={8} fill="currentColor" />
                           <span>{video.views}</span>
                         </div>
                       </div>
+
+                      {/* Fake Progress Bar */}
+                      <div className="absolute bottom-0 left-0 w-full h-0.5 bg-white/20">
+                        <div className="h-full bg-white/80" style={{ width: '35%' }} />
+                      </div>
                     </div>
                   ))}
-                  <div className="aspect-[9/16] bg-white text-black rounded-lg flex flex-col items-center justify-center p-4 cursor-pointer hover:bg-gray-200 transition-colors">
-                    <span className="text-3xl font-bold mb-1">+27</span>
-                    <span className="text-[10px] font-bold tracking-widest uppercase">{currentT.demo.done}</span>
+                  <div className="aspect-[9/16] bg-white/5 border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center p-4 cursor-pointer hover:bg-white/10 transition-colors group">
+                    <span className="text-3xl font-bold mb-1 group-hover:scale-110 transition-transform">+27</span>
+                    <span className="text-[10px] font-bold tracking-widest uppercase text-white/50">{currentT.demo.done}</span>
                   </div>
                 </div>
 
