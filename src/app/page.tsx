@@ -380,17 +380,25 @@ export default function LandingPage() {
                 <div className="mt-16 animate-in fade-in slide-in-from-bottom-8 duration-700 relative z-10">
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                     {(lang === 'en' ? [
-                      { hook: "3 ERRORs that kill Agencies", views: "1.2M", color: "from-pink-500 to-rose-500" },
-                      { hook: "No Clients? Do THIS", views: "850K", color: "from-violet-500 to-purple-500" },
-                      { hook: "Secret Algorithm Hack", views: "2.4M", color: "from-blue-500 to-cyan-500" }
+                      { hook: "3 ERRORs that kill Agencies", views: "1.2M", image: "https://images.unsplash.com/photo-1664575602554-208c7a264360?q=80&w=800&auto=format&fit=crop" },
+                      { hook: "No Clients? Do THIS", views: "850K", image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop" },
+                      { hook: "Secret Algorithm Hack", views: "2.4M", image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=800&auto=format&fit=crop" }
                     ] : [
-                      { hook: "3 ОШИБКИ SMM-агентств", views: "1.2M", color: "from-pink-500 to-rose-500" },
-                      { hook: "Нет клиентов? Делай ЭТО", views: "850K", color: "from-violet-500 to-purple-500" },
-                      { hook: "Секретный Хак Алгоритмов", views: "2.4M", color: "from-blue-500 to-cyan-500" }
+                      { hook: "3 ОШИБКИ SMM-агентств", views: "1.2M", image: "https://images.unsplash.com/photo-1664575602554-208c7a264360?q=80&w=800&auto=format&fit=crop" },
+                      { hook: "Нет клиентов? Делай ЭТО", views: "850K", image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop" },
+                      { hook: "Секретный Хак Алгоритмов", views: "2.4M", image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=800&auto=format&fit=crop" }
                     ]).map((video, n) => (
                       <div key={n} className="aspect-[9/16] relative rounded-2xl overflow-hidden group cursor-pointer border border-white/10 hover:border-white/40 transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_30px_rgba(168,85,247,0.15)] bg-black/40">
-                        {/* Gradient Background */}
-                        <div className={`absolute inset-0 bg-gradient-to-br ${video.color} opacity-20 group-hover:opacity-40 transition-opacity duration-500`} />
+                        {/* Stock Background Image */}
+                        <div className="absolute inset-0">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={video.image}
+                            alt="Video Thumbnail"
+                            className="w-full h-full object-cover opacity-60 group-hover:opacity-80 group-hover:scale-110 transition-all duration-700"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90" />
+                        </div>
 
                         {/* Fake Video Content */}
                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform scale-90 group-hover:scale-100">
