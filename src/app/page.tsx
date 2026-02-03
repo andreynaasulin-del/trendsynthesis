@@ -26,9 +26,24 @@ export default function LandingPage() {
         subHighlight: "in 5 minutes, no editor and no bans",
         cta: "TRY FOR FREE",
         demo: "Watch demo",
-        stats: { v: "videos created", u: "users", w: "views" }
+        stats: { v: "videos created", u: "users", w: "views" },
+        terminal: {
+          status: "SYSTEM ONLINE",
+          velocity: "TREND VELOCITY",
+          audience: "AUDIENCE MATCH",
+          audienceVal: "HIGH",
+          virality: "VIRALITY SCORE",
+          logs: [
+            "> Scanning TikTok API...",
+            "> Found 12 rising hooks",
+            "> Analyzing semantic structures...",
+            "> GENERATING SCENARIOS..."
+          ]
+        }
       },
       demo: {
+        sectionLabel: "INTERACTIVE DEMO",
+        sectionTitle: "Experience the speed",
         title: "system.trendsynthesis.app",
         label: "THEME:",
         val: '"Why SMM-agencies die"',
@@ -49,9 +64,24 @@ export default function LandingPage() {
         subHighlight: "за 5 минут, без монтажера и без банов",
         cta: "ПОПРОБОВАТЬ БЕСПЛАТНО",
         demo: "Смотреть демо",
-        stats: { v: "видео создано", u: "пользователей", w: "просмотров" }
+        stats: { v: "видео создано", u: "пользователей", w: "просмотров" },
+        terminal: {
+          status: "СИСТЕМА В СЕТИ",
+          velocity: "СКОРОСТЬ ТРЕНДА",
+          audience: "СОВПАДЕНИЕ АУДИТОРИИ",
+          audienceVal: "ВЫСОКОЕ",
+          virality: "ВИРУСНЫЙ ПОТЕНЦИАЛ",
+          logs: [
+            "> Сканирование TikTok API...",
+            "> Найдено 12 растущих хуков",
+            "> Анализ семантических структур...",
+            "> ГЕНЕРАЦИЯ СЦЕНАРИЕВ..."
+          ]
+        }
       },
       demo: {
+        sectionLabel: "ИНТЕРАКТИВНОЕ ДЕМО",
+        sectionTitle: "Почувствуй скорость",
         title: "system.trendsynthesis.app",
         label: "ТЕМА:",
         val: '"Почему SMM-агентства умирают"',
@@ -207,16 +237,16 @@ export default function LandingPage() {
                 <div className="relative z-10 space-y-4 mb-6">
                   {/* Status Header */}
                   <div className="flex items-center justify-between text-[10px] font-mono border-b border-white/5 pb-2 mb-4">
-                    <span className="text-green-400 animate-pulse">● SYSTEM ONLINE</span>
+                    <span className="text-green-400 animate-pulse">● {currentT.hero.terminal?.status || "SYSTEM ONLINE"}</span>
                     <span className="text-white/30">V.3.4.0</span>
                   </div>
 
                   {/* Analysis Nodes */}
                   <div className="space-y-3">
                     {[
-                      { label: "TREND VELOCITY", val: "98.4%", color: "bg-purple-500" },
-                      { label: "AUDIENCE MATCH", val: "HIGH", color: "bg-blue-500" },
-                      { label: "VIRALITY SCORE", val: "9.8/10", color: "bg-emerald-500" }
+                      { label: currentT.hero.terminal?.velocity || "TREND VELOCITY", val: "98.4%", color: "bg-purple-500" },
+                      { label: currentT.hero.terminal?.audience || "AUDIENCE MATCH", val: currentT.hero.terminal?.audienceVal || "HIGH", color: "bg-blue-500" },
+                      { label: currentT.hero.terminal?.virality || "VIRALITY SCORE", val: "9.8/10", color: "bg-emerald-500" }
                     ].map((item, i) => (
                       <div key={i} className="bg-white/5 rounded-lg p-3 border border-white/5 flex items-center justify-between group hover:bg-white/10 transition-colors">
                         <div className="flex items-center gap-3">
@@ -233,10 +263,9 @@ export default function LandingPage() {
                   {/* Terminal Log */}
                   <div className="mt-4 h-24 bg-black/40 rounded-lg p-3 font-mono text-[10px] text-green-400/80 overflow-hidden border border-white/5 flex flex-col justify-end">
                     <div className="space-y-1 opacity-70">
-                      <div>&gt; Scanning TikTok API...</div>
-                      <div>&gt; Found 12 rising hooks</div>
-                      <div>&gt; Analyzing semantic structures...</div>
-                      <div className="text-white animate-pulse">&gt; GENERATING SCENARIOS...</div>
+                      {(currentT.hero.terminal?.logs || ["> Scanning TikTok API..."]).map((log, i) => (
+                        <div key={i} className={i === 3 ? "text-white animate-pulse" : ""}>{log}</div>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -256,8 +285,8 @@ export default function LandingPage() {
       <section id="demo" className="py-32 border-t border-white/5 relative">
         <div className="max-w-4xl mx-auto px-6">
           <div className="text-center mb-16">
-            <div className="text-xs font-mono text-purple-400 mb-4 tracking-widest">INTERACTIVE DEMO</div>
-            <h2 className="text-4xl font-bold">Experience the speed</h2>
+            <div className="text-xs font-mono text-purple-400 mb-4 tracking-widest">{currentT.demo.sectionLabel}</div>
+            <h2 className="text-4xl font-bold">{currentT.demo.sectionTitle}</h2>
           </div>
 
           <div className="bg-[#0A0A0C]/80 backdrop-blur-3xl border border-white/10 rounded-3xl p-8 md:p-12 shadow-2xl ring-1 ring-white/5">
