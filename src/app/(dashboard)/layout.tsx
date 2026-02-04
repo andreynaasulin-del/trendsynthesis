@@ -18,7 +18,7 @@ export default async function DashboardLayout({
         <MobileNav />
 
         {/* Main Content Area - Mobile optimized */}
-        <main className="min-h-screen px-4 py-6 pb-24 md:ml-64 md:px-8 md:py-8 md:pb-8">
+        <main className="min-h-screen px-3 sm:px-4 py-4 sm:py-6 pb-20 sm:pb-24 md:ml-64 md:px-6 lg:px-8 md:py-8 md:pb-8">
           {children}
         </main>
       </div>

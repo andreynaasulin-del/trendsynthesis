@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { MessageSquare, Brain, Film, Rocket, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 interface HowItWorksProps {
     lang: "en" | "ru";
@@ -19,30 +20,30 @@ export function HowItWorks({ lang }: HowItWorksProps) {
                 {
                     icon: MessageSquare,
                     step: "01",
-                    title: "Describe Your Topic",
-                    desc: "Tell the AI what you want to create content about. One sentence is enough.",
-                    highlight: "Natural language input"
+                    title: "Input Topic",
+                    desc: "Just paste a topic or URL. Our AI understands context instantly.",
+                    highlight: "Natural Language"
                 },
                 {
                     icon: Brain,
                     step: "02",
-                    title: "AI Analysis",
-                    desc: "GPT-4o analyzes trends, generates scripts, hooks, and 30 unique angles.",
-                    highlight: "30 script variations"
+                    title: "Deep Analysis",
+                    desc: "System scans 1M+ viral videos to find winning angles and scripts.",
+                    highlight: "Strategic AI"
                 },
                 {
                     icon: Film,
                     step: "03",
-                    title: "Auto Assembly",
-                    desc: "System finds matching stock footage and assembles videos with subtitles.",
-                    highlight: "Dynamic editing"
+                    title: "Auto-Production",
+                    desc: "We match stock footage, add voiceovers, and sync subtitles.",
+                    highlight: "Cinema Quality"
                 },
                 {
                     icon: Rocket,
                     step: "04",
-                    title: "Download & Post",
-                    desc: "Get 30 ready-to-post vertical videos optimized for TikTok and Reels.",
-                    highlight: "Ready in 5 min"
+                    title: "Viral Launch",
+                    desc: "Download 30 videos optimized for the algorithm and start posting.",
+                    highlight: "Ready to Scale"
                 }
             ]
         },
@@ -55,30 +56,30 @@ export function HowItWorks({ lang }: HowItWorksProps) {
                 {
                     icon: MessageSquare,
                     step: "01",
-                    title: "Опишите тему",
-                    desc: "Расскажите ИИ о чём хотите создать контент. Одного предложения достаточно.",
-                    highlight: "На естественном языке"
+                    title: "Ввод Темы",
+                    desc: "Просто вставьте тему или ссылку. ИИ мгновенно поймет контекст.",
+                    highlight: "Натуральный язык"
                 },
                 {
                     icon: Brain,
                     step: "02",
-                    title: "AI Анализ",
-                    desc: "GPT-4o анализирует тренды, генерирует скрипты, хуки и 30 уникальных углов.",
-                    highlight: "30 вариаций скриптов"
+                    title: "Глубокий Анализ",
+                    desc: "Система сканирует 1M+ вирусных видео для поиска лучших углов.",
+                    highlight: "Стратегический AI"
                 },
                 {
                     icon: Film,
                     step: "03",
-                    title: "Авто-Сборка",
-                    desc: "Система находит подходящее видео и собирает ролики с субтитрами.",
-                    highlight: "Динамичный монтаж"
+                    title: "Авто-Продакшн",
+                    desc: "Мы подбираем стоки, добавляем озвучку и синхронизируем субтитры.",
+                    highlight: "Кино-качество"
                 },
                 {
                     icon: Rocket,
                     step: "04",
-                    title: "Скачайте и публикуйте",
-                    desc: "Получите 30 готовых вертикальных видео для TikTok и Reels.",
-                    highlight: "Готово за 5 мин"
+                    title: "Вирусный Старт",
+                    desc: "Скачивайте 30 видео, оптимизированных под алгоритмы.",
+                    highlight: "Готово к масштабу"
                 }
             ]
         }
@@ -89,71 +90,77 @@ export function HowItWorks({ lang }: HowItWorksProps) {
     return (
         <section id="how-it-works" className="py-32 px-6 relative border-t border-white/5 overflow-hidden">
             {/* Background */}
-            <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+            <div className="absolute inset-0 pointer-events-none -z-10">
+                <div className="absolute top-1/2 left-0 w-full h-[600px] bg-gradient-to-r from-violet-900/10 via-black to-violet-900/10 blur-[100px]" />
             </div>
 
-            <div className="max-w-6xl mx-auto relative z-10">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6 }}
-                    className="text-center mb-20"
-                >
+            <div className="max-w-5xl mx-auto relative z-10">
+                <div className="text-center mb-24 animate-in fade-in slide-in-from-bottom-4 duration-700">
                     <div className="inline-flex items-center gap-2 border border-white/10 bg-white/5 rounded-full px-4 py-1.5 mb-6">
                         <span className="text-[10px] font-mono tracking-widest text-white/60">{c.badge}</span>
                     </div>
-                    <h2 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">
+                    <h2 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight drop-shadow-xl">
                         {c.title}
                     </h2>
                     <p className="text-white/40 text-lg max-w-xl mx-auto">
                         {c.subtitle}
                     </p>
-                </motion.div>
+                </div>
 
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 relative">
-                    {/* Connection line */}
-                    <div className="hidden lg:block absolute top-24 left-[12.5%] right-[12.5%] h-px bg-gradient-to-r from-violet-500/20 via-blue-500/20 to-emerald-500/20" />
+                <div className="relative">
+                    {/* Central Line */}
+                    <div className="absolute left-[28px] md:left-1/2 top-0 bottom-0 w-px bg-white/5 -translate-x-1/2 md:translate-x-0">
+                        <div className="absolute top-0 bottom-0 w-full bg-gradient-to-b from-transparent via-violet-500 to-transparent opacity-50" />
+                    </div>
 
-                    {c.steps.map((step, i) => {
-                        const Icon = step.icon;
-                        const colors = [
-                            "border-violet-500/30 bg-violet-500/10 text-violet-400",
-                            "border-blue-500/30 bg-blue-500/10 text-blue-400",
-                            "border-cyan-500/30 bg-cyan-500/10 text-cyan-400",
-                            "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
-                        ];
-
-                        return (
-                            <motion.div
-                                key={i}
-                                initial={{ opacity: 0, y: 30 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.5, delay: i * 0.1 }}
-                                className="relative"
-                            >
-                                <div className="text-center">
-                                    {/* Step number */}
-                                    <div className="relative inline-block mb-6">
-                                        <div className={`w-16 h-16 rounded-2xl ${colors[i]} border flex items-center justify-center mb-2 mx-auto relative z-20 backdrop-blur-xl`}>
-                                            <Icon className="w-7 h-7" />
-                                        </div>
-                                        <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-white text-black text-xs font-bold flex items-center justify-center z-30">
-                                            {step.step}
+                    <div className="space-y-12 md:space-y-24">
+                        {c.steps.map((step, i) => {
+                            const isEven = i % 2 === 0;
+                            return (
+                                <motion.div
+                                    key={i}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true, margin: "-100px" }}
+                                    transition={{ duration: 0.5, delay: i * 0.1 }}
+                                    className={cn(
+                                        "relative flex flex-col md:flex-row items-start md:items-center gap-8 md:gap-16",
+                                        isEven ? "" : "md:flex-row-reverse"
+                                    )}
+                                >
+                                    {/* Icon / Marker */}
+                                    <div className="absolute left-[28px] md:left-1/2 w-14 h-14 -translate-x-1/2 rounded-full bg-[#050505] border border-white/10 flex items-center justify-center z-20 shadow-[0_0_20px_rgba(139,92,246,0.3)]">
+                                        <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
+                                            <step.icon className="w-5 h-5 text-white" />
                                         </div>
                                     </div>
 
-                                    <h3 className="text-lg font-semibold mb-2 text-white">{step.title}</h3>
-                                    <p className="text-sm text-white/50 leading-relaxed mb-3">{step.desc}</p>
-                                    <span className="inline-block text-[10px] font-mono tracking-wider text-white/30 border border-white/10 rounded-full px-3 py-1">
-                                        {step.highlight}
-                                    </span>
-                                </div>
-                            </motion.div>
-                        );
-                    })}
+                                    {/* Content Card Side */}
+                                    <div className={cn(
+                                        "ml-20 md:ml-0 md:w-1/2",
+                                        isEven ? "md:text-right md:pr-12" : "md:text-left md:pl-12"
+                                    )}>
+                                        <div className="relative group p-6 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300 backdrop-blur-md">
+                                            <div className="absolute -top-3 -right-3 w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center font-bold text-xs shadow-lg group-hover:scale-110 transition-transform">
+                                                {step.step}
+                                            </div>
+                                            <h3 className="text-xl font-bold mb-2 text-white">{step.title}</h3>
+                                            <p className="text-white/50 text-sm leading-relaxed mb-4">{step.desc}</p>
+                                            <div className={cn(
+                                                "inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/5 text-[10px] uppercase tracking-wider font-bold text-white/70",
+                                                isEven ? "md:mr-0" : ""
+                                            )}>
+                                                {step.highlight}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Empty Side for balance */}
+                                    <div className="hidden md:block md:w-1/2" />
+                                </motion.div>
+                            );
+                        })}
+                    </div>
                 </div>
 
                 {/* CTA */}
@@ -162,14 +169,14 @@ export function HowItWorks({ lang }: HowItWorksProps) {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: 0.5 }}
-                    className="text-center mt-16"
+                    className="text-center mt-24"
                 >
                     <Link
-                        href="/generate"
-                        className="inline-flex items-center gap-2 bg-white text-black font-bold px-8 py-4 rounded-full hover:scale-105 transition-transform shadow-[0_0_40px_rgba(255,255,255,0.2)] group"
+                        href="/dashboard"
+                        className="inline-flex items-center gap-3 bg-white text-black font-bold px-10 py-5 rounded-full hover:scale-105 transition-all duration-300 shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:shadow-[0_0_60px_rgba(255,255,255,0.4)] group"
                     >
                         {c.cta}
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </Link>
                 </motion.div>
             </div>

@@ -170,15 +170,15 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-8 max-w-5xl">
+    <div className="space-y-5 sm:space-y-8 max-w-5xl px-1 sm:px-0">
       {/* Header — Clean, minimal */}
       <motion.div
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
       >
-        <h1 className="text-2xl font-semibold tracking-tight text-white">{c.title}</h1>
-        <p className="mt-1 text-sm text-zinc-500">{c.subtitle}</p>
+        <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-white">{c.title}</h1>
+        <p className="mt-1 text-xs sm:text-sm text-zinc-500">{c.subtitle}</p>
       </motion.div>
 
       {/* Credits Warning — Subtle */}
@@ -186,12 +186,12 @@ export default function DashboardPage() {
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
-          className="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-3"
+          className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 sm:px-4 py-2.5 sm:py-3"
         >
-          <p className="text-sm text-zinc-400">
+          <p className="text-xs sm:text-sm text-zinc-400">
             {language === "ru" ? "Кредиты закончились" : "Out of credits"}
           </p>
-          <Button asChild variant="ghost" size="sm" className="text-white hover:bg-zinc-800">
+          <Button asChild variant="ghost" size="sm" className="text-white hover:bg-zinc-800 h-8 text-xs">
             <Link href="/#pricing">
               {language === "ru" ? "Обновить" : "Upgrade"}
               <ArrowRight className="ml-1 h-3 w-3" />
@@ -205,18 +205,18 @@ export default function DashboardPage() {
         variants={container}
         initial="hidden"
         animate="show"
-        className="grid gap-4 grid-cols-2 lg:grid-cols-4"
+        className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4"
       >
         {statsData.map((stat) => (
           <motion.div key={stat.title} variants={item}>
             <Card className="group relative border-zinc-800/60 bg-zinc-900/30 hover:bg-zinc-900/50 hover:border-zinc-700/60 transition-all duration-300">
-              <CardContent className="p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <stat.icon className={`h-4 w-4 ${stat.warning ? 'text-amber-400' : 'text-zinc-500'}`} />
+              <CardContent className="p-3 sm:p-5">
+                <div className="flex items-center justify-between mb-2 sm:mb-4">
+                  <stat.icon className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${stat.warning ? 'text-amber-400' : 'text-zinc-500'}`} />
                 </div>
-                <div className="space-y-1">
-                  <p className="text-2xl font-semibold tracking-tight text-white">{stat.value}</p>
-                  <p className="text-xs text-zinc-500 tracking-wide">{stat.title}</p>
+                <div className="space-y-0.5 sm:space-y-1">
+                  <p className="text-xl sm:text-2xl font-semibold tracking-tight text-white">{stat.value}</p>
+                  <p className="text-[10px] sm:text-xs text-zinc-500 tracking-wide">{stat.title}</p>
                 </div>
               </CardContent>
             </Card>
@@ -229,23 +229,23 @@ export default function DashboardPage() {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2, duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-        className="space-y-4"
+        className="space-y-3 sm:space-y-4"
       >
-        <h2 className="text-sm font-medium text-zinc-400 tracking-wide">{c.quickActions}</h2>
-        <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
+        <h2 className="text-xs sm:text-sm font-medium text-zinc-400 tracking-wide">{c.quickActions}</h2>
+        <div className="grid gap-2.5 sm:gap-3 grid-cols-1 sm:grid-cols-2">
 
           {/* Primary Action */}
           <Link href="/generate">
             <Card className="group cursor-pointer border-zinc-700/50 bg-white/[0.02] hover:bg-white/[0.04] hover:border-zinc-600/50 transition-all duration-300 active:scale-[0.99]">
-              <CardContent className="flex items-center gap-4 p-5">
-                <div className="p-2.5 rounded-lg bg-zinc-800/80 group-hover:bg-zinc-800 transition-colors">
-                  <Zap className="h-4 w-4 text-white" />
+              <CardContent className="flex items-center gap-3 sm:gap-4 p-3.5 sm:p-5">
+                <div className="p-2 sm:p-2.5 rounded-lg bg-zinc-800/80 group-hover:bg-zinc-800 transition-colors">
+                  <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm text-white">{c.newGen}</p>
-                  <p className="text-xs text-zinc-500 mt-0.5">AI → 30 Videos</p>
+                  <p className="font-medium text-xs sm:text-sm text-white">{c.newGen}</p>
+                  <p className="text-[10px] sm:text-xs text-zinc-500 mt-0.5">AI → 30 Videos</p>
                 </div>
-                <ArrowRight className="h-4 w-4 text-zinc-600 group-hover:text-zinc-400 group-hover:translate-x-0.5 transition-all" />
+                <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-zinc-600 group-hover:text-zinc-400 group-hover:translate-x-0.5 transition-all" />
               </CardContent>
             </Card>
           </Link>
@@ -253,17 +253,17 @@ export default function DashboardPage() {
           {/* Secondary Action */}
           <Link href="/projects">
             <Card className="group cursor-pointer border-zinc-800/60 bg-zinc-900/20 hover:bg-zinc-900/40 hover:border-zinc-700/60 transition-all duration-300 active:scale-[0.99]">
-              <CardContent className="flex items-center gap-4 p-5">
-                <div className="p-2.5 rounded-lg bg-zinc-800/50 group-hover:bg-zinc-800/80 transition-colors">
-                  <Play className="h-4 w-4 text-zinc-400" />
+              <CardContent className="flex items-center gap-3 sm:gap-4 p-3.5 sm:p-5">
+                <div className="p-2 sm:p-2.5 rounded-lg bg-zinc-800/50 group-hover:bg-zinc-800/80 transition-colors">
+                  <Play className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-zinc-400" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm text-zinc-300">{c.viewProjects}</p>
-                  <p className="text-xs text-zinc-600 mt-0.5">
+                  <p className="font-medium text-xs sm:text-sm text-zinc-300">{c.viewProjects}</p>
+                  <p className="text-[10px] sm:text-xs text-zinc-600 mt-0.5">
                     {stats?.projectCount || 0} {language === "ru" ? "проектов" : "projects"}
                   </p>
                 </div>
-                <ArrowRight className="h-4 w-4 text-zinc-700 group-hover:text-zinc-500 group-hover:translate-x-0.5 transition-all" />
+                <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-zinc-700 group-hover:text-zinc-500 group-hover:translate-x-0.5 transition-all" />
               </CardContent>
             </Card>
           </Link>
@@ -277,18 +277,18 @@ export default function DashboardPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="mt-8"
+          className="mt-6 sm:mt-8"
         >
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="mb-5 p-4 rounded-2xl bg-zinc-900/50 border border-zinc-800/50">
-              <Video className="h-6 w-6 text-zinc-500" />
+          <div className="flex flex-col items-center justify-center py-10 sm:py-16 text-center px-4">
+            <div className="mb-4 sm:mb-5 p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-zinc-900/50 border border-zinc-800/50">
+              <Video className="h-5 w-5 sm:h-6 sm:w-6 text-zinc-500" />
             </div>
-            <h3 className="text-base font-medium text-white">{c.emptyTitle}</h3>
-            <p className="mt-1.5 text-sm text-zinc-500 max-w-xs">{c.emptyDesc}</p>
-            <Button asChild size="sm" className="mt-6 bg-white text-black hover:bg-zinc-200 transition-colors">
+            <h3 className="text-sm sm:text-base font-medium text-white">{c.emptyTitle}</h3>
+            <p className="mt-1 sm:mt-1.5 text-xs sm:text-sm text-zinc-500 max-w-xs">{c.emptyDesc}</p>
+            <Button asChild size="sm" className="mt-4 sm:mt-6 bg-white text-black hover:bg-zinc-200 transition-colors h-9 sm:h-10 text-xs sm:text-sm">
               <Link href="/generate">
                 {c.startBtn}
-                <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                <ArrowRight className="ml-1.5 h-3 w-3 sm:h-3.5 sm:w-3.5" />
               </Link>
             </Button>
           </div>

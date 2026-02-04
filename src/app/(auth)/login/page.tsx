@@ -85,28 +85,43 @@ export default function LoginPage() {
   }
 
   async function handleGoogleLogin() {
+    setLoading(true);
+    setError(null);
     try {
       const supabase = createClient();
+
+      // Get redirect param if exists
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirectTo = urlParams.get('redirect') || '/dashboard';
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/callback`,
+          redirectTo: `${window.location.origin}/callback?next=${encodeURIComponent(redirectTo)}`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
         },
       });
       if (error) {
+        console.error("Google OAuth error:", error);
         setError(error.message);
+        setLoading(false);
       }
     } catch (err: any) {
+      console.error("Google login error:", err);
       setError(err.message || "Failed to sign in with Google");
+      setLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center p-3 sm:p-4 relative overflow-hidden">
       {/* Background */}
       <div className="fixed inset-0 -z-10 bg-[#050505]">
-        <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-violet-600/10 rounded-full blur-[150px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-blue-600/10 rounded-full blur-[120px]" />
+        <div className="absolute top-1/4 left-1/4 w-[300px] sm:w-[600px] h-[300px] sm:h-[600px] bg-violet-600/10 rounded-full blur-[100px] sm:blur-[150px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-[200px] sm:w-[400px] h-[200px] sm:h-[400px] bg-blue-600/10 rounded-full blur-[80px] sm:blur-[120px]" />
       </div>
 
       <motion.div
@@ -116,29 +131,29 @@ export default function LoginPage() {
         className="w-full max-w-md"
       >
         {/* Logo */}
-        <div className="mb-8 text-center">
+        <div className="mb-6 sm:mb-8 text-center">
           <Link href="/" className="inline-flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-violet-500/20 border border-violet-500/30">
-              <Zap className="h-5 w-5 text-violet-400" />
+            <div className="p-1.5 sm:p-2 rounded-lg bg-violet-500/20 border border-violet-500/30">
+              <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-violet-400" />
             </div>
-            <span className="font-mono text-lg font-bold tracking-tight">
+            <span className="font-mono text-base sm:text-lg font-bold tracking-tight">
               TREND<span className="text-white/40">SYNTHESIS</span>
             </span>
           </Link>
         </div>
 
         {/* Language Toggle */}
-        <div className="flex justify-center mb-6">
-          <div className="flex text-xs font-bold tracking-widest cursor-pointer bg-zinc-900/50 border border-zinc-800 rounded-lg p-1">
+        <div className="flex justify-center mb-4 sm:mb-6">
+          <div className="flex text-xs font-bold tracking-widest cursor-pointer bg-zinc-900/50 border border-zinc-800 rounded-lg p-0.5 sm:p-1">
             <button
               onClick={() => setLang("en")}
-              className={`px-3 py-1.5 rounded-md transition-colors ${lang === "en" ? "bg-violet-600/20 text-violet-300" : "text-zinc-500"}`}
+              className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-md transition-colors text-[11px] sm:text-xs ${lang === "en" ? "bg-violet-600/20 text-violet-300" : "text-zinc-500"}`}
             >
               EN
             </button>
             <button
               onClick={() => setLang("ru")}
-              className={`px-3 py-1.5 rounded-md transition-colors ${lang === "ru" ? "bg-violet-600/20 text-violet-300" : "text-zinc-500"}`}
+              className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-md transition-colors text-[11px] sm:text-xs ${lang === "ru" ? "bg-violet-600/20 text-violet-300" : "text-zinc-500"}`}
             >
               RU
             </button>
@@ -146,26 +161,26 @@ export default function LoginPage() {
         </div>
 
         <Card className="bg-zinc-900/50 border-zinc-800 backdrop-blur-xl">
-          <CardHeader className="text-center pb-2">
-            <h1 className="text-2xl font-bold">{c.title}</h1>
-            <p className="text-sm text-muted-foreground">{c.subtitle}</p>
+          <CardHeader className="text-center pb-2 px-4 sm:px-6">
+            <h1 className="text-xl sm:text-2xl font-bold">{c.title}</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">{c.subtitle}</p>
           </CardHeader>
 
-          <CardContent className="pt-6">
-            <form onSubmit={handleEmailLogin} className="space-y-4">
+          <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
+            <form onSubmit={handleEmailLogin} className="space-y-3 sm:space-y-4">
               {error && (
                 <motion.p
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="rounded-lg bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive"
+                  className="rounded-lg bg-destructive/10 border border-destructive/20 p-2.5 sm:p-3 text-xs sm:text-sm text-destructive"
                 >
                   {error}
                 </motion.p>
               )}
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium flex items-center gap-2">
-                  <Mail className="h-3.5 w-3.5 text-zinc-500" />
+              <div className="space-y-1.5 sm:space-y-2">
+                <label className="text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2">
+                  <Mail className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-zinc-500" />
                   {c.email}
                 </label>
                 <Input
@@ -174,17 +189,17 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="bg-zinc-950/50 border-zinc-800 focus:border-violet-500/50 transition-colors"
+                  className="bg-zinc-950/50 border-zinc-800 focus:border-violet-500/50 transition-colors h-10 sm:h-11 text-sm"
                 />
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-1.5 sm:space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium flex items-center gap-2">
-                    <Lock className="h-3.5 w-3.5 text-zinc-500" />
+                  <label className="text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2">
+                    <Lock className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-zinc-500" />
                     {c.password}
                   </label>
-                  <button type="button" className="text-xs text-violet-400 hover:text-violet-300 transition-colors">
+                  <button type="button" className="text-[10px] sm:text-xs text-violet-400 hover:text-violet-300 transition-colors">
                     {c.forgotPassword}
                   </button>
                 </div>
@@ -194,13 +209,13 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="bg-zinc-950/50 border-zinc-800 focus:border-violet-500/50 transition-colors"
+                  className="bg-zinc-950/50 border-zinc-800 focus:border-violet-500/50 transition-colors h-10 sm:h-11 text-sm"
                 />
               </div>
 
               <Button
                 type="submit"
-                className="w-full bg-violet-600 hover:bg-violet-500 gap-2 group"
+                className="w-full bg-violet-600 hover:bg-violet-500 gap-2 group h-10 sm:h-11 text-sm sm:text-base"
                 disabled={loading}
               >
                 {loading ? (
@@ -208,15 +223,15 @@ export default function LoginPage() {
                 ) : (
                   <>
                     {c.signIn}
-                    <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 group-hover:translate-x-1 transition-transform" />
                   </>
                 )}
               </Button>
             </form>
 
-            <div className="relative my-6">
+            <div className="relative my-4 sm:my-6">
               <Separator className="bg-zinc-800" />
-              <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-zinc-900 px-3 text-xs text-muted-foreground">
+              <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-zinc-900 px-2 sm:px-3 text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap">
                 {c.or}
               </span>
             </div>
@@ -224,7 +239,7 @@ export default function LoginPage() {
             <Button
               type="button"
               variant="outline"
-              className="w-full border-zinc-800 hover:bg-zinc-800/50 gap-2"
+              className="w-full border-zinc-800 hover:bg-zinc-800/50 gap-2 h-10 sm:h-11 text-sm sm:text-base"
               onClick={handleGoogleLogin}
               disabled={loading}
             >
@@ -242,8 +257,8 @@ export default function LoginPage() {
             </Button>
           </CardContent>
 
-          <CardFooter className="justify-center border-t border-zinc-800 pt-6">
-            <p className="text-sm text-muted-foreground">
+          <CardFooter className="justify-center border-t border-zinc-800 pt-4 sm:pt-6 px-4 sm:px-6">
+            <p className="text-xs sm:text-sm text-muted-foreground">
               {c.noAccount}{" "}
               <Link href="/signup" className="font-medium text-violet-400 hover:text-violet-300 transition-colors">
                 {c.signUp}

@@ -167,20 +167,20 @@ function VideoCountSelector({
   };
 
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900/50 p-3">
-      <Settings2 className="h-4 w-4 text-zinc-500 shrink-0" />
+    <div className="flex items-center gap-2 sm:gap-3 rounded-lg border border-zinc-800 bg-zinc-900/50 p-2 sm:p-3">
+      <Settings2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-zinc-500 shrink-0" />
       <div className="flex-1 overflow-x-auto scrollbar-none">
-        <p className="text-[10px] font-mono text-zinc-400 mb-1.5 whitespace-nowrap">
+        <p className="text-[9px] sm:text-[10px] font-mono text-zinc-400 mb-1 sm:mb-1.5 whitespace-nowrap">
           {language === "ru" ? "КОЛИЧЕСТВО ВИДЕО" : "VIDEO COUNT"}
         </p>
-        <div className="flex items-center gap-1.5 flex-wrap">
+        <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
           {COUNT_PRESETS.map((preset) => (
             <button
               key={preset}
               onClick={() => { onChange(preset); setShowCustom(false); }}
               disabled={disabled}
               className={cn(
-                "h-7 min-w-[26px] rounded px-1.5 text-[11px] font-mono transition-all border",
+                "h-6 sm:h-7 min-w-[22px] sm:min-w-[26px] rounded px-1 sm:px-1.5 text-[10px] sm:text-[11px] font-mono transition-all border",
                 count === preset && !isCustom
                   ? "bg-white text-black border-white shadow-sm"
                   : "bg-transparent text-zinc-500 border-transparent hover:bg-zinc-800 hover:text-zinc-300",
@@ -196,7 +196,7 @@ function VideoCountSelector({
               onClick={() => setShowCustom(true)}
               disabled={disabled}
               className={cn(
-                "h-7 px-2 rounded text-[11px] font-mono transition-all border",
+                "h-6 sm:h-7 px-1.5 sm:px-2 rounded text-[10px] sm:text-[11px] font-mono transition-all border",
                 isCustom
                   ? "bg-violet-600 text-white border-violet-600"
                   : "bg-transparent text-zinc-500 border-zinc-700 hover:bg-zinc-800 hover:text-zinc-300",
@@ -215,18 +215,18 @@ function VideoCountSelector({
                 onChange={(e) => setCustomValue(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleCustomSubmit()}
                 placeholder="1-30"
-                className="h-7 w-14 px-2 rounded text-[11px] font-mono bg-zinc-800 border border-zinc-700 text-white focus:outline-none focus:border-violet-500"
+                className="h-6 sm:h-7 w-12 sm:w-14 px-1.5 sm:px-2 rounded text-[10px] sm:text-[11px] font-mono bg-zinc-800 border border-zinc-700 text-white focus:outline-none focus:border-violet-500"
                 autoFocus
               />
               <button
                 onClick={handleCustomSubmit}
-                className="h-7 px-2 rounded bg-violet-600 text-white text-[10px] font-mono hover:bg-violet-500"
+                className="h-6 sm:h-7 px-1.5 sm:px-2 rounded bg-violet-600 text-white text-[9px] sm:text-[10px] font-mono hover:bg-violet-500"
               >
                 OK
               </button>
               <button
                 onClick={() => { setShowCustom(false); setCustomValue(""); }}
-                className="h-7 px-1.5 rounded text-zinc-500 hover:text-zinc-300 text-[11px]"
+                className="h-6 sm:h-7 px-1 sm:px-1.5 rounded text-zinc-500 hover:text-zinc-300 text-[10px] sm:text-[11px]"
               >
                 ✕
               </button>
@@ -440,18 +440,18 @@ export default function GeneratePage() {
       </Dialog>
 
       {/* Mobile Header & Tabs */}
-      <div className="flex flex-col gap-2 shrink-0">
-        <div className="flex items-center justify-between px-2">
+      <div className="flex flex-col gap-1.5 sm:gap-2 shrink-0">
+        <div className="flex items-center justify-between px-1 sm:px-2">
           <div>
-            <h1 className="text-lg font-semibold tracking-tight text-white flex items-center gap-2">
+            <h1 className="text-base sm:text-lg font-semibold tracking-tight text-white flex items-center gap-1.5 sm:gap-2">
               {language === "ru" ? "Генератор" : "Generator"}
-              <span className="lg:hidden text-[10px] bg-violet-900/40 text-violet-300 px-1.5 py-0.5 rounded border border-violet-500/20">Beta</span>
+              <span className="lg:hidden text-[8px] sm:text-[10px] bg-violet-900/40 text-violet-300 px-1 sm:px-1.5 py-0.5 rounded border border-violet-500/20">Beta</span>
             </h1>
           </div>
           <div className="flex gap-2">
             {!isIdle && (
-              <Button variant="ghost" size="sm" onClick={() => store.reset()} className="h-8 w-8 p-0 lg:w-auto lg:px-3 text-zinc-500 hover:text-white">
-                <RotateCcw className="h-4 w-4 lg:mr-1.5" />
+              <Button variant="ghost" size="sm" onClick={() => store.reset()} className="h-7 w-7 sm:h-8 sm:w-8 p-0 lg:w-auto lg:px-3 text-zinc-500 hover:text-white">
+                <RotateCcw className="h-3.5 w-3.5 sm:h-4 sm:w-4 lg:mr-1.5" />
                 <span className="hidden lg:inline">{language === "ru" ? "Сброс" : "Reset"}</span>
               </Button>
             )}
@@ -459,27 +459,27 @@ export default function GeneratePage() {
         </div>
 
         {/* MOBILE TAB SWITCHER */}
-        <div className="lg:hidden grid grid-cols-2 gap-1 bg-zinc-900/50 p-1 rounded-xl border border-zinc-800/50">
+        <div className="lg:hidden grid grid-cols-2 gap-1 bg-zinc-900/50 p-0.5 sm:p-1 rounded-lg sm:rounded-xl border border-zinc-800/50">
           <button
             onClick={() => setMobileTab("chat")}
             className={cn(
-              "flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-medium transition-all",
+              "flex items-center justify-center gap-1.5 sm:gap-2 py-1.5 sm:py-2 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-medium transition-all",
               mobileTab === "chat" ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-300"
             )}
           >
-            <MessageSquare className="h-3.5 w-3.5" />
-            {language === "ru" ? "Чат & Идеи" : "Chat & Ideas"}
+            <MessageSquare className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+            {language === "ru" ? "Чат" : "Chat"}
           </button>
           <button
             onClick={() => setMobileTab("results")}
             className={cn(
-              "flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-medium transition-all relative",
+              "flex items-center justify-center gap-1.5 sm:gap-2 py-1.5 sm:py-2 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-medium transition-all relative",
               mobileTab === "results" ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-300"
             )}
           >
-            <LayoutTemplate className="h-3.5 w-3.5" />
+            <LayoutTemplate className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             {language === "ru" ? "Результаты" : "Results"}
-            {isRunning && <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-violet-500 rounded-full animate-pulse" />}
+            {isRunning && <span className="absolute top-1 right-1 sm:top-1.5 sm:right-1.5 w-1.5 h-1.5 bg-violet-500 rounded-full animate-pulse" />}
           </button>
         </div>
       </div>
