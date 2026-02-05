@@ -97,9 +97,9 @@ const Avatar = ({ role, mode }: { role: "user" | "ai"; mode: ChatMode }) => (
       "relative shrink-0 h-7 w-7 sm:h-9 sm:w-9 rounded-full flex items-center justify-center border transition-all",
       role === "ai"
         ? cn(
-            "bg-zinc-900/80 backdrop-blur-sm text-zinc-400",
-            mode === "creator" ? "border-violet-500/40" : "border-amber-500/40"
-          )
+          "bg-zinc-900/80 backdrop-blur-sm text-zinc-400",
+          mode === "creator" ? "border-violet-500/40" : "border-amber-500/40"
+        )
         : "bg-white border-white text-black shadow-lg shadow-white/10"
     )}
   >
@@ -290,12 +290,12 @@ const MessageBubble = ({
               isUser
                 ? "bg-white text-black rounded-tr-none px-3 py-2.5 sm:px-5 sm:py-4 shadow-lg shadow-white/5"
                 : cn(
-                    // Glassmorphism for AI messages
-                    "backdrop-blur-sm border px-3 py-2.5 sm:px-5 sm:py-4 rounded-tl-none",
-                    mode === "creator"
-                      ? "bg-violet-500/5 border-violet-500/20 text-zinc-200"
-                      : "bg-amber-500/5 border-amber-500/20 text-zinc-200"
-                  )
+                  // Glassmorphism for AI messages
+                  "backdrop-blur-sm border px-3 py-2.5 sm:px-5 sm:py-4 rounded-tl-none",
+                  mode === "creator"
+                    ? "bg-violet-500/5 border-violet-500/20 text-zinc-200"
+                    : "bg-amber-500/5 border-amber-500/20 text-zinc-200"
+                )
             )}
           >
             {isUser ? (
@@ -321,7 +321,7 @@ const MessageBubble = ({
                 <StrategyCard
                   key={strategy.id || idx}
                   option={strategy}
-                  onSelect={onStrategySelect || (() => {})}
+                  onSelect={onStrategySelect || (() => { })}
                   index={idx}
                 />
               ))}
@@ -459,7 +459,7 @@ export function ViralChat({ initialMessage, onStrategySelect, className }: Viral
       const updated = [newItem, ...prev.filter(h => h.query !== query)].slice(0, MAX_HISTORY);
       try {
         localStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
-      } catch (e) {}
+      } catch (e) { }
       return updated;
     });
   };
@@ -469,7 +469,7 @@ export function ViralChat({ initialMessage, onStrategySelect, className }: Viral
     setQueryHistory([]);
     try {
       localStorage.removeItem(HISTORY_KEY);
-    } catch (e) {}
+    } catch (e) { }
   };
 
   // Select from history
@@ -570,10 +570,47 @@ export function ViralChat({ initialMessage, onStrategySelect, className }: Viral
     }
   };
 
+
+
+
   const handleSend = async () => {
     if (!inputValue.trim()) return;
 
     const queryText = inputValue.trim();
+
+    // INTENT DETECTION: If user says "start" or "generate", check context
+    if (
+      /start|generate|create|поехали|начинай|генерация/i.test(queryText) &&
+      mode === "creator"
+    ) {
+      // Find the last AI message with strategies
+      const lastAiMsg = [...messages].reverse().find(m => m.role === "ai" && m.content.includes("<options>"));
+      if (lastAiMsg) {
+        const match = lastAiMsg.content.match(/<options>([\s\S]*?)<\/options>/);
+        if (match && match[1]) {
+          try {
+            const options: StrategyOption[] = JSON.parse(match[1]);
+            const bestStrategy = options[0]; // Take the first/best match
+            if (bestStrategy && onStrategySelect) {
+              setInputValue("");
+              // Emulate user message
+              setMessages((prev) => [...prev, {
+                id: Date.now().toString(),
+                role: "user",
+                content: queryText,
+                timestamp: Date.now()
+              }]);
+
+              // Trigger pipeline directly
+              setTimeout(() => onStrategySelect(bestStrategy), 500);
+              return;
+            }
+          } catch (e) {
+            console.error("Failed to parse previous strategy context", e);
+          }
+        }
+      }
+    }
 
     // Save to history
     saveToHistory(queryText);
@@ -760,8 +797,8 @@ export function ViralChat({ initialMessage, onStrategySelect, className }: Viral
                   ? "Describe your niche... (e.g. Real Estate in Dubai)"
                   : "Опишите нишу... (например: Недвижимость в Дубае)"
                 : language === "en"
-                ? "Ask about strategy, monetization, funnels..."
-                : "Спросите о стратегии, монетизации, воронках..."
+                  ? "Ask about strategy, monetization, funnels..."
+                  : "Спросите о стратегии, монетизации, воронках..."
             }
             className={cn(
               "flex-1 bg-zinc-900/80 backdrop-blur-sm text-zinc-200 placeholder:text-zinc-600 rounded-xl px-4 py-3 text-base focus:outline-none transition-all font-light border",
@@ -799,8 +836,8 @@ export function ViralChat({ initialMessage, onStrategySelect, className }: Viral
                 ? "Creator Mode — Scripts & Hooks"
                 : "Режим Креатора — Скрипты и Хуки"
               : language === "en"
-              ? "Business Mode — Strategy & Monetization"
-              : "Бизнес Режим — Стратегия и Монетизация"}
+                ? "Business Mode — Strategy & Monetization"
+                : "Бизнес Режим — Стратегия и Монетизация"}
           </p>
         </div>
       </div>
