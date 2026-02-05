@@ -1,3 +1,6 @@
+
+
+
 import { openai } from "./client";
 import type { Scenario } from "@/types";
 
@@ -18,14 +21,23 @@ interface GenerateScenariosParams {
 export async function generateScenarios({
   topic,
   videoCount = 3,
-  language = "ru", // Дефолт теперь не важен, так как мы починили кнопку
+  language = "ru",
   creatorSettings,
 }: GenerateScenariosParams): Promise<Scenario[]> {
-
-  // Вот тут теперь будет TRUE, если нажата кнопка RU
   const isRussian = language === "ru";
+  const BATCH_SIZE = 5; // Split into chunks of 5 to avoid timeouts
 
-  // Собираем контекст пользователя
+  // --- Prepare Batches ---
+  const batches: number[] = [];
+  let remaining = videoCount;
+  while (remaining > 0) {
+    batches.push(Math.min(remaining, BATCH_SIZE));
+    remaining -= BATCH_SIZE;
+  }
+
+  console.log(`🚀 Generative AI: Starting ${videoCount} scenarios in ${batches.length} batches.`);
+
+  // --- Common Context Construction ---
   const contextBlock = `
   CONTEXT:
   - Niche: ${creatorSettings?.niche || "General Business"}
@@ -33,7 +45,6 @@ export async function generateScenarios({
   - Audience: ${creatorSettings?.targetAudience || "Broad"}
   `;
 
-  // --- ЖЕСТКИЙ СИСТЕМНЫЙ ПРОМПТ ---
   const systemPrompt = isRussian
     ? `ROLE: Ты — элитный Viral Architect для TikTok/Reels.
 ${contextBlock}
@@ -55,70 +66,90 @@ ${contextBlock}
    - Hook: Кликбейт (0-3 сек).
    - Body: Сжатая польза (макс 20 слов).
    - CTA: Призыв подписаться.`
-
     : `ROLE: You are an elite Viral Architect.
 ${contextBlock}
 RULES:
 - Generate high-retention scripts in English.
 - Use detailed visual descriptions for 'asset_queries' (min 3 adjectives).`;
 
-  // --- ЗАПРОС ПОЛЬЗОВАТЕЛЯ ---
-  const userPrompt = isRussian
-    ? `Сгенерируй ${videoCount} сценариев на тему: "${topic}".
-    
-    ВЫВОД JSON (Strict Structure):
-    {
-      "scenarios": [
-        {
-          "title": "Заголовок (РУ)",
-          "hook": "Текст на экране (РУ)",
-          "body": "Текст сценария (РУ)",
-          "cta": "Призыв (РУ)",
-          "angle": "Unique angle",
-          "voiceover_text": "Полный текст озвучки (РУ, только кириллица)",
-          "asset_queries": [
-            "DETAILED SCENE 1 DESCRIPTION IN ENGLISH (Cinematic)",
-            "DETAILED SCENE 2 DESCRIPTION IN ENGLISH (Cinematic)",
-            "DETAILED SCENE 3 DESCRIPTION IN ENGLISH (Cinematic)"
-          ]
-        }
-      ]
-    }`
-    : `Generate ${videoCount} scripts for topic "${topic}" in JSON format.`;
+  // --- Process Batches in Parallel ---
+  const validScenarios: Scenario[] = [];
 
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: userPrompt },
-    ],
-    temperature: 0.7,
-    response_format: { type: "json_object" },
+  const promises = batches.map(async (countInBatch, batchIdx) => {
+    const userPrompt = isRussian
+      ? `Сгенерируй ${countInBatch} сценариев на тему: "${topic}".
+      
+      ВЫВОД JSON (Strict Structure):
+      {
+        "scenarios": [
+          {
+            "title": "Заголовок (РУ)",
+            "hook": "Текст на экране (РУ)",
+            "body": "Текст сценария (РУ)",
+            "cta": "Призыв (РУ)",
+            "angle": "Unique angle",
+            "voiceover_text": "Полный текст озвучки (РУ, только кириллица, макс 30 сек)",
+            "asset_queries": [
+              "DETAILED SCENE 1 DESCRIPTION IN ENGLISH (Cinematic)",
+              "DETAILED SCENE 2 DESCRIPTION IN ENGLISH (Cinematic)",
+              "DETAILED SCENE 3 DESCRIPTION IN ENGLISH (Cinematic)"
+            ]
+          }
+        ]
+      }`
+      : `Generate ${countInBatch} scripts for topic "${topic}" in JSON format.`;
+
+    try {
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini", // Fast & Cost Effective
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        temperature: 0.7,
+        response_format: { type: "json_object" },
+      });
+
+      const content = completion.choices[0]?.message?.content;
+      if (!content) throw new Error("Empty response");
+
+      const parsed = JSON.parse(content);
+      const rawScenarios = parsed.scenarios || parsed;
+
+      // Normalize scenarios from this batch
+      const normalized = Array.isArray(rawScenarios) ? rawScenarios.map((s: any, idx: number) => ({
+        id: `scenario-${Date.now()}-${batchIdx}-${idx}`,
+        project_id: "",
+        index: validScenarios.length + idx, // This index might be approximated due to parallelism, but sufficient for keys
+        title: s.title || "Untitled",
+        hook: s.hook || "",
+        body: s.body || "",
+        cta: s.cta || "",
+        asset_queries: (s.asset_queries || [s.hook]).map((q: string) =>
+          q.includes("cinematic") ? q : `${q}, cinematic, 4k, dark mode`
+        ),
+        voiceover_text: s.voiceover_text || "",
+        duration_seconds: 15,
+        keywords: [],
+        angle: s.angle || "Viral",
+        tone: "provocative" as const,
+        created_at: new Date().toISOString(),
+      })) : [];
+
+      return normalized;
+    } catch (err) {
+      console.error(`Batch ${batchIdx} failed:`, err);
+      return []; // Return empty on failure to not break Promise.all
+    }
   });
 
-  const content = completion.choices[0]?.message?.content;
-  if (!content) throw new Error("No response from AI");
+  const results = await Promise.all(promises);
+  results.forEach(batchScenarios => validScenarios.push(...batchScenarios));
 
-  const parsed = JSON.parse(content);
-  const scenarios = parsed.scenarios || parsed;
+  if (validScenarios.length === 0) {
+    throw new Error("Failed to generate any scenarios from AI.");
+  }
 
-  return scenarios.map((s: any, index: number) => ({
-    id: `scenario-${Date.now()}-${index}`,
-    project_id: "", // Added to match interface
-    index,
-    title: s.title || "Untitled",
-    hook: s.hook || "",
-    body: s.body || "",
-    cta: s.cta || "",
-    // Гарантируем, что ассеты — массив, и добавляем стиль, если ИИ забыл
-    asset_queries: (s.asset_queries || [s.hook]).map((q: string) =>
-      q.includes("cinematic") ? q : `${q}, cinematic, 4k, dark mode`
-    ),
-    voiceover_text: s.voiceover_text || "",
-    duration_seconds: 15,
-    keywords: [],
-    angle: s.angle || "Viral",
-    tone: "provocative" as const, // Fixed type
-    created_at: new Date().toISOString(),
-  }));
+  // Assign correct indices after collecting all
+  return validScenarios.map((s, i) => ({ ...s, index: i }));
 }

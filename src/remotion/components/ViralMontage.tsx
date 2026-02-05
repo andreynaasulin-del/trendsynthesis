@@ -26,7 +26,8 @@ import { CameraShake, ImpactShake } from "@/remotion/effects/CameraShake";
 import type { SubtitleSegment, MontageStyle, TransitionType, ScenarioTone } from "@/types";
 import { loadFont } from "@remotion/google-fonts/Montserrat";
 import { loadFont as loadMono } from "@remotion/google-fonts/RobotoMono";
-import { styles } from "../styles";
+
+
 
 const { fontFamily: montserrat } = loadFont();
 const { fontFamily: robotoMono } = loadMono();
