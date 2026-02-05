@@ -24,6 +24,12 @@ import {
 import { GlitchTransition } from "@/remotion/effects/GlitchTransition";
 import { CameraShake, ImpactShake } from "@/remotion/effects/CameraShake";
 import type { SubtitleSegment, MontageStyle, TransitionType, ScenarioTone } from "@/types";
+import { loadFont } from "@remotion/google-fonts/Montserrat";
+import { loadFont as loadMono } from "@remotion/google-fonts/RobotoMono";
+import { styles } from "../styles";
+
+const { fontFamily: montserrat } = loadFont();
+const { fontFamily: robotoMono } = loadMono();
 
 // --- Constants (from skills) ---
 const FPS = 30;
@@ -166,7 +172,7 @@ const IntroSlide: React.FC<{
               textTransform: "uppercase",
               letterSpacing: "0.05em",
               margin: 0,
-              fontFamily: "system-ui, -apple-system, sans-serif",
+              fontFamily: montserrat,
             }}
           >
             {title.length > 20 ? title.slice(0, 20) + "..." : title}
@@ -184,7 +190,7 @@ const IntroSlide: React.FC<{
             style={{
               fontSize: 24,
               color: "rgba(255,255,255,0.7)",
-              fontFamily: "monospace",
+              fontFamily: robotoMono,
               letterSpacing: "0.2em",
               textTransform: "uppercase",
               margin: 0,
@@ -206,7 +212,7 @@ const IntroSlide: React.FC<{
         <p
           style={{
             fontSize: 10,
-            fontFamily: "monospace",
+            fontFamily: robotoMono,
             color: "rgba(255,255,255,0.3)",
             letterSpacing: "0.3em",
           }}
@@ -333,16 +339,16 @@ const KenBurnsClip: React.FC<{
   // Blur transition (from template-prompt-to-video)
   const blurIn = blurTransition
     ? interpolate(frame, [0, 8], [15, 0], {
-        extrapolateLeft: "clamp",
-        extrapolateRight: "clamp",
-      })
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+    })
     : 0;
 
   const blurOut = blurTransition
     ? interpolate(frame, [clipDuration - 8, clipDuration], [0, 15], {
-        extrapolateLeft: "clamp",
-        extrapolateRight: "clamp",
-      })
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+    })
     : 0;
 
   const blur = Math.max(blurIn, blurOut);
@@ -376,16 +382,16 @@ const StaticClip: React.FC<{
 
   const blurIn = blurTransition
     ? interpolate(frame, [0, 8], [15, 0], {
-        extrapolateLeft: "clamp",
-        extrapolateRight: "clamp",
-      })
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+    })
     : 0;
 
   const blurOut = blurTransition
     ? interpolate(frame, [clipDuration - 8, clipDuration], [0, 15], {
-        extrapolateLeft: "clamp",
-        extrapolateRight: "clamp",
-      })
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+    })
     : 0;
 
   const blur = Math.max(blurIn, blurOut);
