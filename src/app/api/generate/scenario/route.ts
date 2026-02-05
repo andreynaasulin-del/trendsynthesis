@@ -6,13 +6,24 @@ export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
+  const requestId = `req-${Date.now()}`;
+  console.log(`[${requestId}] 🚀 POST /api/generate/scenario started`);
+
   try {
-    const { topic, videoCount = 30, language = "en" } = await request.json();
+    const body = await request.json();
+    console.log(`[${requestId}] Body received:`, JSON.stringify(body).slice(0, 100));
+
+    const { topic, videoCount = 30, language = "en" } = body;
 
     // Fetch creator settings for logged in user
     let creatorSettings = {};
     const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    console.log(`[${requestId}] Supabase client created. Fetching user...`);
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError) console.error(`[${requestId}] Auth error:`, authError);
+    if (user) console.log(`[${requestId}] User found: ${user.id}`);
+    else console.log(`[${requestId}] No user logged in (anonymous generation)`);
 
     if (user) {
       const { data: profile } = await supabase
@@ -22,7 +33,7 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (profile) {
-        console.log("🎨 Using Creator Profile for generation:", user.id);
+        console.log(`[${requestId}] 🎨 Using Creator Profile`);
         creatorSettings = {
           systemPrompt: profile.system_prompt,
           targetAudience: profile.target_audience,
@@ -33,27 +44,30 @@ export async function POST(request: NextRequest) {
     }
 
     if (!topic || typeof topic !== "string") {
+      console.warn(`[${requestId}] ❌ Missing topic`);
       return NextResponse.json(
         { success: false, error: "Topic is required" },
         { status: 400 }
       );
     }
 
+    console.log(`[${requestId}] 🧠 Starting AI generation (Count: ${videoCount}, Lang: ${language})`);
     const scenarios = await generateScenarios({
       topic,
       videoCount,
       language,
       creatorSettings
     });
+    console.log(`[${requestId}] ✅ AI Generation complete. Scenarios: ${scenarios.length}`);
 
     return NextResponse.json({
       success: true,
       data: { scenarios, count: scenarios.length },
     });
-  } catch (error) {
-    console.error("Scenario generation error:", error);
+  } catch (error: any) {
+    console.error(`[${requestId}] 💥 Scenario generation CRITICAL ERROR:`, error);
     return NextResponse.json(
-      { success: false, error: "Failed to generate scenarios" },
+      { success: false, error: error.message || "Failed to generate scenarios" },
       { status: 500 }
     );
   }
