@@ -94,7 +94,7 @@ const STRATEGY_ICONS: Record<string, React.ElementType> = {
 const Avatar = ({ role, mode }: { role: "user" | "ai"; mode: ChatMode }) => (
   <div
     className={cn(
-      "relative shrink-0 h-9 w-9 rounded-full flex items-center justify-center border transition-all",
+      "relative shrink-0 h-7 w-7 sm:h-9 sm:w-9 rounded-full flex items-center justify-center border transition-all",
       role === "ai"
         ? cn(
             "bg-zinc-900/80 backdrop-blur-sm text-zinc-400",
@@ -103,7 +103,7 @@ const Avatar = ({ role, mode }: { role: "user" | "ai"; mode: ChatMode }) => (
         : "bg-white border-white text-black shadow-lg shadow-white/10"
     )}
   >
-    {role === "ai" ? <Bot className="h-5 w-5" /> : <User className="h-5 w-5" />}
+    {role === "ai" ? <Bot className="h-4 w-4 sm:h-5 sm:w-5" /> : <User className="h-4 w-4 sm:h-5 sm:w-5" />}
   </div>
 );
 
@@ -265,11 +265,11 @@ const MessageBubble = ({
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className={cn("flex w-full gap-4 md:gap-5", isUser ? "justify-end" : "justify-start")}
+      className={cn("flex w-full gap-2 sm:gap-4 md:gap-5", isUser ? "justify-end" : "justify-start")}
     >
       {!isUser && <Avatar role="ai" mode={mode} />}
 
-      <div className={cn("max-w-[85%] md:max-w-[75%] flex flex-col gap-2", isUser && "items-end")}>
+      <div className={cn("max-w-[90%] sm:max-w-[85%] md:max-w-[75%] flex flex-col gap-1.5 sm:gap-2", isUser && "items-end")}>
         {/* Label */}
         <div className="flex items-center gap-2 px-1">
           <span
@@ -286,12 +286,12 @@ const MessageBubble = ({
         {visibleText && (
           <div
             className={cn(
-              "rounded-2xl text-base leading-relaxed break-words",
+              "rounded-2xl text-sm sm:text-base leading-relaxed break-words",
               isUser
-                ? "bg-white text-black rounded-tr-none px-5 py-4 shadow-lg shadow-white/5"
+                ? "bg-white text-black rounded-tr-none px-3 py-2.5 sm:px-5 sm:py-4 shadow-lg shadow-white/5"
                 : cn(
                     // Glassmorphism for AI messages
-                    "backdrop-blur-sm border px-5 py-4 rounded-tl-none",
+                    "backdrop-blur-sm border px-3 py-2.5 sm:px-5 sm:py-4 rounded-tl-none",
                     mode === "creator"
                       ? "bg-violet-500/5 border-violet-500/20 text-zinc-200"
                       : "bg-amber-500/5 border-amber-500/20 text-zinc-200"
@@ -316,7 +316,7 @@ const MessageBubble = ({
               <span className="text-[10px] uppercase tracking-widest text-violet-400/70">Proposed Strategies</span>
               <div className="h-px bg-violet-500/30 flex-1" />
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 w-full">
               {strategies.map((strategy, idx) => (
                 <StrategyCard
                   key={strategy.id || idx}

@@ -335,7 +335,7 @@ export default function SettingsPage() {
               <div className="space-y-1.5 sm:space-y-2">
                 <label className="text-[10px] sm:text-xs font-medium text-zinc-500">{c.fullName}</label>
                 <Input
-                  className="bg-zinc-950/50 border-zinc-800 text-zinc-200 h-8 sm:h-9 text-xs sm:text-sm"
+                  className="bg-zinc-950/50 border-zinc-800 text-zinc-200 h-10 text-sm"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                 />
@@ -344,7 +344,7 @@ export default function SettingsPage() {
                 <label className="text-[10px] sm:text-xs font-medium text-zinc-500">{c.email}</label>
                 <Input
                   disabled
-                  className="bg-zinc-950/30 border-zinc-800/50 text-zinc-500 h-8 sm:h-9 text-xs sm:text-sm cursor-not-allowed"
+                  className="bg-zinc-950/30 border-zinc-800/50 text-zinc-500 h-10 text-sm cursor-not-allowed"
                   value={profile?.email || ""}
                 />
               </div>
@@ -355,12 +355,12 @@ export default function SettingsPage() {
                 size="sm"
                 onClick={handleSave}
                 disabled={saving}
-                className="bg-white text-black hover:bg-zinc-200 min-w-[90px] sm:min-w-[100px] h-8 sm:h-9 text-xs sm:text-sm"
+                className="bg-white text-black hover:bg-zinc-200 min-w-[100px] h-10 text-sm font-medium"
               >
                 {saving ? (
-                  <Loader2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 animate-spin mr-1 sm:mr-1.5" />
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
                 ) : saved ? (
-                  <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 sm:mr-1.5" />
+                  <Check className="h-4 w-4 mr-2" />
                 ) : null}
                 {saved ? c.saved : c.saveChanges}
               </Button>

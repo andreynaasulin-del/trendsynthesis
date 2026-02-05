@@ -4,9 +4,11 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Play, Menu, X } from "lucide-react";
-import { Pricing } from "@/components/landing/Pricing";
-import { Features } from "@/components/landing/Features";
-import { HowItWorks } from "@/components/landing/HowItWorks";
+import dynamic from "next/dynamic";
+
+const Pricing = dynamic(() => import("@/components/landing/Pricing").then((mod) => mod.Pricing));
+const Features = dynamic(() => import("@/components/landing/Features").then((mod) => mod.Features));
+const HowItWorks = dynamic(() => import("@/components/landing/HowItWorks").then((mod) => mod.HowItWorks));
 
 export default function LandingPage() {
   const [lang, setLang] = useState<"en" | "ru">("ru");
@@ -192,7 +194,7 @@ export default function LandingPage() {
       </nav>
 
       {/* HERO */}
-      <section className="pt-24 sm:pt-32 lg:pt-40 pb-16 sm:pb-24 lg:pb-32 px-4 sm:px-6">
+      <section className="pt-20 sm:pt-32 lg:pt-40 pb-12 sm:pb-24 lg:pb-32 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
 
           {/* Left Content */}
@@ -302,7 +304,7 @@ export default function LandingPage() {
       </section>
 
       {/* DEMO INTERACTIVE SECTION */}
-      <section id="demo" className="py-16 sm:py-24 lg:py-32 relative overflow-hidden">
+      <section id="demo" className="py-12 sm:py-24 lg:py-32 relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] sm:w-[1000px] h-[400px] sm:h-[600px] bg-purple-600/20 blur-[100px] sm:blur-[120px] rounded-full pointer-events-none -z-10" />
 
         <div className="max-w-5xl mx-auto px-4 sm:px-6 relative z-10">

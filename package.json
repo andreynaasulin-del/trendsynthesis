@@ -6,7 +6,9 @@
         "dev": "next dev",
         "build": "next build",
         "start": "next start",
-        "lint": "eslint"
+        "lint": "eslint",
+        "remotion:studio": "remotion studio src/remotion/Root.tsx",
+        "remotion:render": "remotion render src/remotion/Root.tsx ViralMontage out/video.mp4"
     },
     "dependencies": {
         "@radix-ui/react-avatar": "^1.1.11",

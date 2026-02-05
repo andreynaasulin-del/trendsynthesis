@@ -9,11 +9,13 @@ import {
   Image,
   Download,
   Video,
+  Loader2,
 } from "lucide-react";
 import { Player, PlayerRef } from "@remotion/player";
 import { ViralMontage } from "@/remotion/components/ViralMontage";
 import { Thumbnail } from "@/remotion/components/Thumbnail";
 import { Button } from "@/components/ui/button";
+import { capturePlayerPlayback, downloadBlob, type RenderProgress } from "@/lib/client-render";
 import type { MontageComposition } from "@/types";
 
 interface VideoCarouselProps {
@@ -35,6 +37,7 @@ export function VideoCarousel({
   const [viewMode, setViewMode] = useState<ViewMode>("video");
   const [coverStyle, setCoverStyle] = useState<CoverStyle>("bold");
   const [isDownloading, setIsDownloading] = useState(false);
+  const [renderProgress, setRenderProgress] = useState<RenderProgress | null>(null);
   const playerRef = useRef<PlayerRef>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -412,14 +415,52 @@ export function VideoCarousel({
             <Button
               size="sm"
               className="text-xs bg-white text-black hover:bg-zinc-200 font-semibold"
-              onClick={() => {
-                // Simulate fake download for now
-                const fakeUrl =
-                  "https://cdn.coverr.co/videos/coverr-walking-in-a-city-at-night-vertical-4565/1080p.mp4";
-                window.open(fakeUrl, "_blank");
+              disabled={isDownloading}
+              onClick={async () => {
+                if (!playerRef.current || !containerRef.current) return;
+                setIsDownloading(true);
+                setRenderProgress({ stage: "preparing", progress: 0 });
+
+                try {
+                  const playerEl = containerRef.current.querySelector("[data-player-container]") as HTMLElement;
+                  if (!playerEl) throw new Error("Player not found");
+
+                  const result = await capturePlayerPlayback(
+                    playerRef.current,
+                    playerEl,
+                    {
+                      fps: active.fps,
+                      durationFrames: active.duration_frames,
+                      width: active.width,
+                      height: active.height,
+                      onProgress: setRenderProgress,
+                    }
+                  );
+
+                  const filename = `${active.scenario.title.replace(/[^a-z0-9]/gi, "_")}.webm`;
+                  downloadBlob(result.blob, filename);
+                } catch (error) {
+                  console.error("Render failed:", error);
+                  alert(language === "ru" ? "Ошибка рендеринга" : "Render failed");
+                } finally {
+                  setIsDownloading(false);
+                  setRenderProgress(null);
+                }
               }}
             >
-              {language === "ru" ? "Скачать Видео (Demo)" : "Download Video (Demo)"}
+              {isDownloading ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                  {renderProgress
+                    ? `${renderProgress.progress}%`
+                    : (language === "ru" ? "Рендеринг..." : "Rendering...")}
+                </>
+              ) : (
+                <>
+                  <Download className="h-3.5 w-3.5 mr-1.5" />
+                  {language === "ru" ? "Скачать Видео" : "Download Video"}
+                </>
+              )}
             </Button>
           </>
         )}
