@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Sparkles, FolderOpen, Settings } from "lucide-react";
+import { LayoutDashboard, Sparkles, FolderOpen, Settings, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
@@ -14,6 +14,7 @@ export function MobileNav() {
         { label: t("dashboard"), href: "/dashboard", icon: LayoutDashboard },
         { label: t("generate"), href: "/generate", icon: Sparkles, highlight: true },
         { label: t("projects"), href: "/projects", icon: FolderOpen },
+        { label: t("billing"), href: "/billing", icon: CreditCard },
         { label: t("settings"), href: "/settings", icon: Settings },
     ];
 
