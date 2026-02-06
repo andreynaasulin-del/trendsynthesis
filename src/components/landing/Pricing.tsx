@@ -30,6 +30,21 @@ export function Pricing({ lang }: PricingProps) {
         new: isRu ? "NEW" : "NEW",
     };
 
+    const planTranslations = {
+        creator: {
+            name: "Пакет Креатор",
+            features: ["80 Кредитов", "1080p HD", "Без водяных знаков"]
+        },
+        pro: {
+            name: "Пакет Про",
+            features: ["250 Кредитов", "Приоритетная генерация", "Коммерческие права", "+50% Бонусных кредитов"]
+        },
+        agency: {
+            name: "Агентство (God Mode)",
+            features: ["1000 Кредитов (Масштаб)", "Бизнес AI Включен (Навсегда)", "Viral DNA Stealer (Бета)", "Личная поддержка"]
+        }
+    };
+
     const { credits, business } = PRICING_CONFIG;
 
     return (
@@ -71,13 +86,15 @@ export function Pricing({ lang }: PricingProps) {
                         className="relative p-6 rounded-3xl border border-white/10 bg-zinc-900/50 backdrop-blur-md flex flex-col h-full"
                     >
                         <div className="mb-6">
-                            <h3 className="text-lg font-bold text-white mb-2">{credits.creator.name}</h3>
+                            <h3 className="text-lg font-bold text-white mb-2">
+                                {isRu ? planTranslations.creator.name : credits.creator.name}
+                            </h3>
                             <div className="flex items-baseline gap-1">
                                 <span className="text-4xl font-bold text-white">${credits.creator.amount}</span>
                             </div>
                         </div>
                         <div className="space-y-4 flex-1 mb-8">
-                            {credits.creator.features.map((f, i) => (
+                            {(isRu ? planTranslations.creator.features : credits.creator.features).map((f, i) => (
                                 <div key={i} className="flex items-center gap-3 text-sm text-zinc-400">
                                     <Check className="w-4 h-4 text-white/50" />
                                     <span>{f}</span>
@@ -105,17 +122,19 @@ export function Pricing({ lang }: PricingProps) {
 
                         <div className="mb-8">
                             <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                                {credits.pro.name}
+                                {isRu ? planTranslations.pro.name : credits.pro.name}
                                 <Sparkles className="w-4 h-4 text-violet-400" />
                             </h3>
                             <div className="flex items-baseline gap-1">
                                 <span className="text-5xl font-black text-white">${credits.pro.amount}</span>
                             </div>
-                            <p className="text-violet-200/60 text-xs mt-2">$0.19 / credit</p>
+                            <p className="text-violet-200/60 text-xs mt-2">
+                                {isRu ? "$0.19 / кредит" : "$0.19 / credit"}
+                            </p>
                         </div>
 
                         <div className="space-y-4 flex-1 mb-10">
-                            {credits.pro.features.map((f, i) => (
+                            {(isRu ? planTranslations.pro.features : credits.pro.features).map((f, i) => (
                                 <div key={i} className="flex items-center gap-3 text-sm text-zinc-200">
                                     <div className="p-1 rounded-full bg-violet-500/20">
                                         <Check className="w-3.5 h-3.5 text-violet-400" />
@@ -146,7 +165,7 @@ export function Pricing({ lang }: PricingProps) {
                             <div className="flex justify-between items-start mb-6">
                                 <div>
                                     <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                                        {credits.agency.name}
+                                        {isRu ? planTranslations.agency.name : credits.agency.name}
                                     </h3>
                                     <span className="text-[10px] text-slate-400 tracking-widest uppercase">{content.agencyMode}</span>
                                 </div>
@@ -158,7 +177,7 @@ export function Pricing({ lang }: PricingProps) {
                             </div>
 
                             <div className="space-y-4 flex-1 mb-8">
-                                {credits.agency.features.map((f, i) => (
+                                {(isRu ? planTranslations.agency.features : credits.agency.features).map((f, i) => (
                                     <div key={i} className="flex items-center gap-3 text-sm text-slate-300">
                                         <Check className="w-4 h-4 text-slate-500" />
                                         <span className={cn(f.includes("DNA") && "text-amber-400 font-bold flex items-center gap-2")}>
