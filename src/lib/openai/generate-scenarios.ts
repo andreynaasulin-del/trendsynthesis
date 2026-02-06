@@ -45,6 +45,16 @@ export async function generateScenarios({
   - Audience: ${creatorSettings?.targetAudience || "Broad"}
   `;
 
+  // Variation styles for diversity
+  const VARIATION_STYLES = [
+    { name: "aggressive", desc: "Быстрая смена кадров, контрастные цвета, шок" },
+    { name: "storytelling", desc: "Нарративная структура, эмоциональная дуга" },
+    { name: "educational", desc: "Пошаговое объяснение, польза, туториал" },
+    { name: "controversial", desc: "Провокация, против общего мнения, хейт-клик" },
+    { name: "luxury", desc: "Премиум эстетика, минимализм, статус" },
+    { name: "meme", desc: "Юмор, мемный формат, относительность" },
+  ];
+
   const systemPrompt = isRussian
     ? `ROLE: Ты — элитный Viral Architect для TikTok/Reels.
 ${contextBlock}
@@ -65,39 +75,56 @@ ${contextBlock}
 3. STRUCTURE:
    - Hook: Кликбейт (0-3 сек).
    - Body: Сжатая польза (макс 20 слов).
-   - CTA: Призыв подписаться.`
+   - CTA: Призыв подписаться.
+
+4. 🎨 DIVERSITY (КРИТИЧНО!):
+   - КАЖДЫЙ сценарий должен иметь УНИКАЛЬНЫЙ стиль и угол!
+   - НЕ ПОВТОРЯЙ одинаковые хуки и тексты на экране.
+   - Варьируй: тон, структуру, длину предложений, CTA.
+   - Используй РАЗНЫЕ эмоциональные триггеры: страх, любопытство, жадность, гордость, FOMO.`
     : `ROLE: You are an elite Viral Architect.
 ${contextBlock}
 RULES:
 - Generate high-retention scripts in English.
-- Use detailed visual descriptions for 'asset_queries' (min 3 adjectives).`;
+- Use detailed visual descriptions for 'asset_queries' (min 3 adjectives).
+- CRITICAL: Each scenario must have a UNIQUE style and angle. Do NOT repeat hooks or overlays.`;
 
   // --- Process Batches in Parallel ---
   const validScenarios: Scenario[] = [];
 
   const promises = batches.map(async (countInBatch, batchIdx) => {
+    // Assign different styles to each batch for variety
+    const batchStyles = VARIATION_STYLES.slice(batchIdx % VARIATION_STYLES.length, batchIdx % VARIATION_STYLES.length + 2);
+    const styleHint = batchStyles.map(s => `${s.name}: ${s.desc}`).join(", ");
+
     const userPrompt = isRussian
-      ? `Сгенерируй ${countInBatch} сценариев на тему: "${topic}".
-      
-      ВЫВОД JSON (Strict Structure):
-      {
-        "scenarios": [
-          {
-            "title": "Заголовок (РУ)",
-            "hook": "Текст на экране (РУ)",
-            "body": "Текст сценария (РУ)",
-            "cta": "Призыв (РУ)",
-            "angle": "Unique angle",
-            "voiceover_text": "Полный текст озвучки (РУ, только кириллица, макс 30 сек)",
-            "asset_queries": [
-              "DETAILED SCENE 1 DESCRIPTION IN ENGLISH (Cinematic)",
-              "DETAILED SCENE 2 DESCRIPTION IN ENGLISH (Cinematic)",
-              "DETAILED SCENE 3 DESCRIPTION IN ENGLISH (Cinematic)"
-            ]
-          }
-        ]
-      }`
-      : `Generate ${countInBatch} scripts for topic "${topic}" in JSON format.`;
+      ? `Сгенерируй ${countInBatch} УНИКАЛЬНЫХ сценариев на тему: "${topic}".
+
+🎯 ОБЯЗАТЕЛЬНО: Каждый сценарий должен быть РАЗНЫМ!
+- Разные хуки (не повторяй слова!)
+- Разные углы подачи
+- Разные эмоциональные триггеры
+- Рекомендуемые стили для этого батча: ${styleHint}
+
+ВЫВОД JSON (Strict Structure):
+{
+  "scenarios": [
+    {
+      "title": "Заголовок (РУ) — УНИКАЛЬНЫЙ",
+      "hook": "Текст на экране (РУ) — КОРОТКИЙ, КЛИКБЕЙТ, макс 8 слов",
+      "body": "Текст сценария (РУ)",
+      "cta": "Призыв (РУ) — УНИКАЛЬНЫЙ для каждого",
+      "angle": "aggressive/storytelling/educational/controversial/luxury/meme",
+      "voiceover_text": "Полный текст озвучки (РУ, только кириллица, макс 30 сек)",
+      "asset_queries": [
+        "DETAILED SCENE 1 DESCRIPTION IN ENGLISH (Cinematic, 4k, mood lighting)",
+        "DETAILED SCENE 2 DESCRIPTION IN ENGLISH (Different scene, action)",
+        "DETAILED SCENE 3 DESCRIPTION IN ENGLISH (Closing shot, emotional)"
+      ]
+    }
+  ]
+}`
+      : `Generate ${countInBatch} UNIQUE scripts for topic "${topic}". Each must have different hooks, angles, and tones. Suggested styles: ${styleHint}. Output JSON format.`;
 
     try {
       const completion = await openai.chat.completions.create({
@@ -117,10 +144,19 @@ RULES:
       const rawScenarios = parsed.scenarios || parsed;
 
       // Normalize scenarios from this batch
+      const toneMap: Record<string, "provocative" | "educational" | "casual" | "professional" | "emotional"> = {
+        aggressive: "provocative",
+        storytelling: "emotional",
+        educational: "educational",
+        controversial: "provocative",
+        luxury: "professional",
+        meme: "casual",
+      };
+
       const normalized = Array.isArray(rawScenarios) ? rawScenarios.map((s: any, idx: number) => ({
         id: `scenario-${Date.now()}-${batchIdx}-${idx}`,
         project_id: "",
-        index: validScenarios.length + idx, // This index might be approximated due to parallelism, but sufficient for keys
+        index: validScenarios.length + idx,
         title: s.title || "Untitled",
         hook: s.hook || "",
         body: s.body || "",
@@ -131,8 +167,8 @@ RULES:
         voiceover_text: s.voiceover_text || "",
         duration_seconds: 15,
         keywords: [],
-        angle: s.angle || "Viral",
-        tone: "provocative" as const,
+        angle: s.angle || VARIATION_STYLES[batchIdx % VARIATION_STYLES.length]?.name || "Viral",
+        tone: toneMap[s.angle?.toLowerCase()] || "provocative" as const,
         created_at: new Date().toISOString(),
       })) : [];
 

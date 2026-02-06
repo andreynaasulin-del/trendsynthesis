@@ -227,26 +227,114 @@ const StrategyCard = ({
 };
 
 // ============================================
+// CUSTOM SCRIPT CARD
+// ============================================
+interface CustomScript {
+  mode: "custom";
+  title: string;
+  scenes: { id: number; timing: string; visual: string; text_overlay: string; transition?: string }[];
+  style: string;
+  total_duration: number;
+}
+
+const CustomScriptCard = ({
+  script,
+  onSelect,
+  language,
+}: {
+  script: CustomScript;
+  onSelect: () => void;
+  language: "en" | "ru";
+}) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="w-full mt-4"
+    >
+      <div className="flex items-center gap-2 mb-3 px-1">
+        <div className="h-px bg-emerald-500/30 w-8" />
+        <span className="text-[10px] uppercase tracking-widest text-emerald-400/70">
+          {language === "ru" ? "Ваш Сценарий" : "Your Script"}
+        </span>
+        <div className="h-px bg-emerald-500/30 flex-1" />
+      </div>
+
+      <div
+        onClick={onSelect}
+        className="group cursor-pointer rounded-xl border-2 border-emerald-500/30 bg-emerald-500/5 hover:border-emerald-500/60 hover:bg-emerald-500/10 transition-all duration-200 p-4 sm:p-5"
+      >
+        <div className="flex items-start justify-between mb-3">
+          <div>
+            <h3 className="text-base font-bold text-white mb-1">{script.title}</h3>
+            <p className="text-xs text-zinc-400">
+              {script.scenes.length} {language === "ru" ? "сцен" : "scenes"} · {script.total_duration}s · {script.style}
+            </p>
+          </div>
+          <div className="px-2 py-1 bg-emerald-500/20 rounded text-emerald-400 text-[10px] font-bold">
+            CUSTOM
+          </div>
+        </div>
+
+        <div className="space-y-2 mb-4">
+          {script.scenes.slice(0, 3).map((scene) => (
+            <div key={scene.id} className="flex gap-2 text-xs">
+              <span className="text-emerald-400 font-mono shrink-0">{scene.timing}</span>
+              <span className="text-zinc-400 truncate">{scene.text_overlay || scene.visual}</span>
+            </div>
+          ))}
+          {script.scenes.length > 3 && (
+            <p className="text-[10px] text-zinc-500">+{script.scenes.length - 3} more...</p>
+          )}
+        </div>
+
+        <div className="flex items-center justify-center gap-2 py-2.5 bg-emerald-500 text-black rounded-lg font-bold text-sm group-hover:bg-emerald-400 transition-colors">
+          <Zap className="h-4 w-4" />
+          {language === "ru" ? "Сгенерировать по этому сценарию" : "Generate from this script"}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+// ============================================
 // MESSAGE BUBBLE (PREMIUM)
 // ============================================
 const MessageBubble = ({
   message,
   onStrategySelect,
+  onCustomScriptSelect,
   mode,
+  language,
 }: {
   message: Message;
   onStrategySelect?: (s: StrategyOption) => void;
+  onCustomScriptSelect?: (script: CustomScript) => void;
   mode: ChatMode;
+  language: "en" | "ru";
 }) => {
   const isUser = message.role === "user";
   const config = MODE_CONFIG[mode];
 
-  // --- SMART PARSER (only for Creator mode) ---
-  const splitIndex = message.content.indexOf("<options>");
+  // --- SMART PARSER ---
   let visibleText = message.content;
   let strategies: StrategyOption[] = [];
+  let customScript: CustomScript | null = null;
 
-  if (splitIndex !== -1 && mode === "creator") {
+  // Check for custom_script first (user's detailed script)
+  const customScriptMatch = message.content.match(/<custom_script>([\s\S]*?)<\/custom_script>/);
+  if (customScriptMatch && customScriptMatch[1] && mode === "creator") {
+    visibleText = message.content.slice(0, message.content.indexOf("<custom_script>")).trim();
+    try {
+      customScript = JSON.parse(customScriptMatch[1]);
+    } catch (e) {
+      // Wait for full stream
+    }
+  }
+
+  // Check for options (AI-generated strategies)
+  const splitIndex = message.content.indexOf("<options>");
+  if (splitIndex !== -1 && mode === "creator" && !customScript) {
     visibleText = message.content.slice(0, splitIndex).trim();
 
     const optionsContent = message.content.slice(splitIndex);
@@ -308,12 +396,27 @@ const MessageBubble = ({
           </div>
         )}
 
-        {/* Strategy Cards (Creator mode only) */}
-        {!isUser && strategies.length > 0 && mode === "creator" && (
+        {/* Custom Script Card (User's detailed script) */}
+        {!isUser && customScript && mode === "creator" && (
+          <CustomScriptCard
+            script={customScript}
+            onSelect={() => {
+              if (onCustomScriptSelect) {
+                onCustomScriptSelect(customScript);
+              }
+            }}
+            language={language}
+          />
+        )}
+
+        {/* Strategy Cards (AI-generated, only when no custom script) */}
+        {!isUser && strategies.length > 0 && !customScript && mode === "creator" && (
           <div className="w-full mt-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex items-center gap-2 mb-3 px-1">
               <div className="h-px bg-violet-500/30 w-8" />
-              <span className="text-[10px] uppercase tracking-widest text-violet-400/70">Proposed Strategies</span>
+              <span className="text-[10px] uppercase tracking-widest text-violet-400/70">
+                {language === "ru" ? "Предложенные стратегии" : "Proposed Strategies"}
+              </span>
               <div className="h-px bg-violet-500/30 flex-1" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 w-full">
@@ -771,7 +874,28 @@ export function ViralChat({ initialMessage, onStrategySelect, className }: Viral
         <div className="flex flex-col gap-8 max-w-4xl mx-auto pb-4">
           <AnimatePresence>
             {messages.map((msg) => (
-              <MessageBubble key={msg.id} message={msg} onStrategySelect={onStrategySelect} mode={mode} />
+              <MessageBubble
+                key={msg.id}
+                message={msg}
+                onStrategySelect={onStrategySelect}
+                onCustomScriptSelect={(script) => {
+                  // Convert custom script to strategy format and trigger pipeline
+                  if (onStrategySelect) {
+                    onStrategySelect({
+                      id: "custom-" + Date.now(),
+                      title: script.title,
+                      hook_text: script.scenes[0]?.text_overlay || script.title,
+                      description: `Custom script with ${script.scenes.length} scenes`,
+                      confidence: 100,
+                      estimated_views: "Custom",
+                      // Pass full script data
+                      customScript: script,
+                    } as StrategyOption & { customScript: typeof script });
+                  }
+                }}
+                mode={mode}
+                language={language}
+              />
             ))}
           </AnimatePresence>
           {isTyping && <ThinkingIndicator mode={mode} language={language} />}
