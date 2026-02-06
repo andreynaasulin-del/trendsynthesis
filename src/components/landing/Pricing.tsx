@@ -156,42 +156,57 @@ export function Pricing({ lang }: PricingProps) {
                     </div>
                 </div>
 
-                {/* Business AI Subscription */}
+                {/* Agency Plan Subscription */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    className="rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-orange-500/5 p-6 sm:p-8"
+                    className="relative rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-orange-500/5 p-6 sm:p-8 overflow-hidden"
                 >
+                    {/* Trial Badge */}
+                    <div className="absolute top-0 right-0 bg-amber-500 text-black text-[10px] font-bold px-4 py-1 rounded-bl-xl">
+                        {isRu ? "+ 7 ДНЕЙ БЕСПЛАТНО" : "+ 7 DAYS FREE TRIAL"}
+                    </div>
+
                     <div className="flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-12">
                         <div className="flex-1">
                             <div className="flex items-center gap-3 mb-4">
                                 <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-                                    <Brain className="w-6 h-6 text-amber-400" />
+                                    <Building2 className="w-6 h-6 text-amber-400" />
                                 </div>
                                 <div>
                                     <span className="text-[10px] font-mono tracking-wider text-white/40 block">{content.subscriptionTitle}</span>
-                                    <h3 className="text-xl font-bold text-white">{isRu ? businessSub.nameRu : businessSub.name}</h3>
+                                    <h3 className="text-xl font-bold text-white">{isRu ? "Тариф Агентство" : "Agency Plan"}</h3>
                                 </div>
                             </div>
                             <p className="text-white/50 text-sm mb-4">
                                 {isRu
-                                    ? "Безлимитный AI-помощник для бизнеса: стратегии, монетизация, анализ ниш, плейбуки роста."
-                                    : "Unlimited AI business assistant: strategies, monetization, niche analysis, growth playbooks."}
+                                    ? "Полное решение для масштабирования. Включает Бизнес AI Ассистента, стратегии и приоритетную поддержку."
+                                    : "Complete scaling solution. Includes Business AI Assistant, strategies, and priority support."}
                             </p>
                             <div className="grid grid-cols-2 gap-2">
-                                {(isRu ? businessSub.features.ru : businessSub.features.en).map((f, i) => (
-                                    <div key={i} className="flex items-center gap-2 text-xs text-white/60">
-                                        <Check className="w-3.5 h-3.5 text-amber-400" />
-                                        <span>{f}</span>
-                                    </div>
-                                ))}
+                                <div className="flex items-center gap-2 text-xs text-white/60">
+                                    <Check className="w-3.5 h-3.5 text-amber-400" />
+                                    <span>{isRu ? "Бизнес AI Ассистент (Вкл)" : "Business AI Assistant (Incl)"}</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-xs text-white/60">
+                                    <Check className="w-3.5 h-3.5 text-amber-400" />
+                                    <span>{isRu ? "PDF Экспорт стратегий" : "PDF Strategy Export"}</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-xs text-white/60">
+                                    <Check className="w-3.5 h-3.5 text-amber-400" />
+                                    <span>{isRu ? "Анализ ниши и трендов" : "Niche & Trend Analysis"}</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-xs text-white/60">
+                                    <Check className="w-3.5 h-3.5 text-amber-400" />
+                                    <span>{isRu ? "Приоритетная поддержка" : "Priority Support"}</span>
+                                </div>
                             </div>
                         </div>
 
                         <div className="flex flex-col items-center lg:items-end gap-4">
                             <div className="text-center lg:text-right">
-                                <span className="text-4xl sm:text-5xl font-extrabold text-white">${businessSub.price}</span>
+                                <span className="text-4xl sm:text-5xl font-extrabold text-white">$149</span>
                                 <span className="text-white/40 text-sm">{content.perMonth}</span>
                             </div>
                             <Link
