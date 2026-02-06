@@ -120,36 +120,33 @@ const ModeToggle = ({
   language: "en" | "ru";
 }) => {
   return (
-    <div className="flex items-center gap-1 p-1 bg-zinc-900/80 backdrop-blur-sm rounded-lg border border-zinc-800">
+    <div className="flex items-center gap-0.5 sm:gap-1 p-0.5 sm:p-1 bg-zinc-900/80 backdrop-blur-sm rounded-md sm:rounded-lg border border-zinc-800">
       {(["creator", "business"] as ChatMode[]).map((m) => {
         const config = MODE_CONFIG[m];
         const Icon = config.icon;
         const isActive = mode === m;
 
         return (
-          <motion.button
+          <button
             key={m}
             onClick={() => onModeChange(m)}
             className={cn(
-              "flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium transition-all relative",
+              "flex items-center gap-1 sm:gap-2 px-2 py-1.5 sm:px-3 sm:py-2 rounded-md text-[10px] sm:text-xs font-medium transition-all relative",
               isActive ? "text-white" : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
             )}
             title={config.description[language]}
-            whileTap={{ scale: 0.98 }}
           >
             {isActive && (
-              <motion.div
-                layoutId="mode-bg"
+              <div
                 className={cn(
                   "absolute inset-0 rounded-md",
                   m === "creator" ? "bg-violet-600" : "bg-amber-600"
                 )}
-                transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
               />
             )}
-            <Icon className="h-3.5 w-3.5 relative z-10" />
+            <Icon className="h-3 w-3 sm:h-3.5 sm:w-3.5 relative z-10" />
             <span className="hidden sm:inline relative z-10">{config.label[language]}</span>
-          </motion.button>
+          </button>
         );
       })}
     </div>
@@ -183,46 +180,42 @@ const StrategyCard = ({
     Icon = STRATEGY_ICONS.story;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12, scale: 0.98 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ delay: 0.1 * index, duration: 0.3, ease: "easeOut" }}
-      whileHover={{ y: -2, scale: 1.01 }}
+    <div
       onClick={() => onSelect(option)}
-      className="group cursor-pointer rounded-xl border border-violet-500/20 bg-zinc-900/60 backdrop-blur-sm hover:bg-zinc-900/80 hover:border-violet-500/40 transition-all duration-200 p-5 flex flex-col h-full"
+      className="group cursor-pointer rounded-lg sm:rounded-xl border border-violet-500/20 bg-zinc-900/60 backdrop-blur-sm hover:bg-zinc-900/80 hover:border-violet-500/40 active:scale-[0.98] transition-all duration-200 p-3 sm:p-5 flex flex-col h-full"
     >
-      <div className="flex justify-between items-start mb-4">
-        <div className="p-2 rounded-lg bg-violet-500/10 text-violet-400 group-hover:bg-violet-500/20 group-hover:text-violet-300 transition-colors">
-          <Icon className="h-4 w-4" />
+      <div className="flex justify-between items-start mb-2 sm:mb-4">
+        <div className="p-1.5 sm:p-2 rounded-md sm:rounded-lg bg-violet-500/10 text-violet-400 group-hover:bg-violet-500/20 group-hover:text-violet-300 transition-colors">
+          <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
         </div>
         {option.confidence && (
-          <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-zinc-800/50 border border-zinc-700/50">
-            <BarChart2 className="h-3 w-3 text-zinc-500" />
-            <span className="text-[10px] font-medium text-zinc-400">{option.confidence}% match</span>
+          <div className="flex items-center gap-1 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded bg-zinc-800/50 border border-zinc-700/50">
+            <BarChart2 className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-zinc-500" />
+            <span className="text-[9px] sm:text-[10px] font-medium text-zinc-400">{option.confidence}%</span>
           </div>
         )}
       </div>
 
-      <h3 className="text-base font-semibold text-zinc-100 mb-2 group-hover:text-white transition-colors">
+      <h3 className="text-sm sm:text-base font-semibold text-zinc-100 mb-1.5 sm:mb-2 group-hover:text-white transition-colors line-clamp-2">
         {option.title}
       </h3>
 
-      <p className="text-sm text-zinc-500 mb-5 line-clamp-2 leading-relaxed">
+      <p className="text-xs sm:text-sm text-zinc-500 mb-3 sm:mb-5 line-clamp-2 leading-relaxed">
         {option.description}
       </p>
 
-      <div className="mt-auto pt-4 border-t border-zinc-800/50">
-        <div className="flex items-center gap-2 text-[10px] text-violet-400/70 font-mono mb-2">
-          <span className="uppercase tracking-wider">Viral Hook</span>
+      <div className="mt-auto pt-2 sm:pt-4 border-t border-zinc-800/50">
+        <div className="flex items-center gap-2 text-[9px] sm:text-[10px] text-violet-400/70 font-mono mb-1 sm:mb-2">
+          <span className="uppercase tracking-wider">Hook</span>
         </div>
-        <p className="text-sm italic text-zinc-300 font-medium leading-relaxed">"{option.hook_text}"</p>
+        <p className="text-xs sm:text-sm italic text-zinc-300 font-medium leading-relaxed line-clamp-2">"{option.hook_text}"</p>
       </div>
 
-      <div className="mt-4 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity">
-        <span className="text-xs text-zinc-500 font-mono">{option.estimated_views || "High potential"}</span>
-        <ArrowRight className="h-4 w-4 text-violet-400" />
+      <div className="mt-2 sm:mt-4 flex items-center justify-between">
+        <span className="text-[10px] sm:text-xs text-zinc-500 font-mono">{option.estimated_views || "High"}</span>
+        <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-violet-400" />
       </div>
-    </motion.div>
+    </div>
   );
 };
 
@@ -810,43 +803,40 @@ export function ViralChat({ initialMessage, onStrategySelect, className }: Viral
         />
       </AnimatePresence>
 
-      {/* Header */}
+      {/* Header - Mobile Optimized */}
       <div
         className={cn(
-          "flex items-center justify-between border-b px-5 py-4 backdrop-blur-sm",
+          "flex items-center justify-between border-b px-3 py-2.5 sm:px-5 sm:py-4 backdrop-blur-sm shrink-0",
           mode === "creator"
             ? "border-violet-500/20 bg-violet-500/5"
             : "border-amber-500/20 bg-amber-500/5"
         )}
       >
-        <div className="flex items-center gap-3">
-          <motion.div
-            key={mode}
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div
             className={cn(
-              "h-9 w-9 rounded-lg flex items-center justify-center shadow-lg",
+              "h-7 w-7 sm:h-9 sm:w-9 rounded-lg flex items-center justify-center shadow-lg shrink-0",
               mode === "creator" ? "bg-violet-600 shadow-violet-500/20" : "bg-amber-600 shadow-amber-500/20"
             )}
           >
             {mode === "creator" ? (
-              <Clapperboard className="h-4 w-4 text-white" />
+              <Clapperboard className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
             ) : (
-              <Briefcase className="h-4 w-4 text-white" />
+              <Briefcase className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
             )}
-          </motion.div>
-          <div>
+          </div>
+          <div className="hidden sm:block">
             <h3 className="text-sm font-semibold text-white">{config.aiName}</h3>
             <p className="text-xs text-zinc-500">{config.description[language]}</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3">
           {/* Mode Toggle */}
           <ModeToggle mode={mode} onModeChange={handleModeChange} language={language} />
 
           {/* Language Toggle */}
-          <div className="flex items-center gap-1 bg-zinc-900/80 backdrop-blur-sm rounded-lg border border-zinc-800 p-1">
+          <div className="flex items-center bg-zinc-900/80 backdrop-blur-sm rounded-md sm:rounded-lg border border-zinc-800 p-0.5 sm:p-1">
             {(["en", "ru"] as const).map((lang) => (
               <button
                 key={lang}
@@ -855,7 +845,7 @@ export function ViralChat({ initialMessage, onStrategySelect, className }: Viral
                   setStoreLanguage(lang);
                 }}
                 className={cn(
-                  "px-2.5 py-1.5 text-[10px] uppercase font-bold tracking-wider rounded transition-all",
+                  "px-2 py-1 sm:px-2.5 sm:py-1.5 text-[9px] sm:text-[10px] uppercase font-bold tracking-wider rounded transition-all",
                   language === lang ? "bg-white text-black" : "text-zinc-500 hover:text-zinc-300"
                 )}
               >
@@ -866,12 +856,12 @@ export function ViralChat({ initialMessage, onStrategySelect, className }: Viral
         </div>
       </div>
 
-      {/* Messages Area */}
+      {/* Messages Area - Mobile Optimized */}
       <div
-        className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent bg-zinc-950/80"
+        className="flex-1 overflow-y-auto px-3 py-3 sm:px-6 sm:py-6 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent bg-zinc-950/80"
         ref={scrollRef}
       >
-        <div className="flex flex-col gap-8 max-w-4xl mx-auto pb-4">
+        <div className="flex flex-col gap-4 sm:gap-6 md:gap-8 max-w-4xl mx-auto pb-4">
           <AnimatePresence>
             {messages.map((msg) => (
               <MessageBubble
@@ -902,14 +892,14 @@ export function ViralChat({ initialMessage, onStrategySelect, className }: Viral
         </div>
       </div>
 
-      {/* Input Area */}
+      {/* Input Area - Mobile Optimized */}
       <div
         className={cn(
-          "p-5 border-t backdrop-blur-sm",
+          "p-3 sm:p-5 border-t backdrop-blur-sm shrink-0",
           mode === "creator" ? "bg-violet-500/5 border-violet-500/20" : "bg-amber-500/5 border-amber-500/20"
         )}
       >
-        <div className="max-w-4xl mx-auto relative flex items-center gap-3">
+        <div className="max-w-4xl mx-auto relative flex items-center gap-2 sm:gap-3">
           <input
             ref={inputRef}
             value={inputValue}
@@ -918,17 +908,17 @@ export function ViralChat({ initialMessage, onStrategySelect, className }: Viral
             placeholder={
               mode === "creator"
                 ? language === "en"
-                  ? "Describe your niche... (e.g. Real Estate in Dubai)"
-                  : "Опишите нишу... (например: Недвижимость в Дубае)"
+                  ? "Describe your niche..."
+                  : "Опишите нишу..."
                 : language === "en"
-                  ? "Ask about strategy, monetization, funnels..."
-                  : "Спросите о стратегии, монетизации, воронках..."
+                  ? "Ask about strategy..."
+                  : "Спросите о стратегии..."
             }
             className={cn(
-              "flex-1 bg-zinc-900/80 backdrop-blur-sm text-zinc-200 placeholder:text-zinc-600 rounded-xl px-4 py-3 text-base focus:outline-none transition-all font-light border",
+              "flex-1 bg-zinc-900/80 backdrop-blur-sm text-zinc-200 placeholder:text-zinc-600 rounded-lg sm:rounded-xl px-3 py-2.5 sm:px-4 sm:py-3 text-sm sm:text-base focus:outline-none transition-all font-light border",
               mode === "creator"
-                ? "border-violet-500/30 focus:border-violet-500/60 focus:ring-2 focus:ring-violet-500/20"
-                : "border-amber-500/30 focus:border-amber-500/60 focus:ring-2 focus:ring-amber-500/20"
+                ? "border-violet-500/30 focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/20"
+                : "border-amber-500/30 focus:border-amber-500/60 focus:ring-1 focus:ring-amber-500/20"
             )}
           />
           <Button
@@ -936,17 +926,17 @@ export function ViralChat({ initialMessage, onStrategySelect, className }: Viral
             onClick={handleSend}
             disabled={!inputValue.trim() || isTyping}
             className={cn(
-              "transition-all h-12 w-12 rounded-xl disabled:opacity-50 shadow-lg",
+              "transition-all h-10 w-10 sm:h-12 sm:w-12 rounded-lg sm:rounded-xl disabled:opacity-50 shadow-lg shrink-0",
               mode === "creator"
                 ? "bg-violet-600 text-white hover:bg-violet-500 shadow-violet-500/20"
                 : "bg-amber-600 text-white hover:bg-amber-500 shadow-amber-500/20"
             )}
           >
-            <ArrowRight className="h-5 w-5" />
+            <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
         </div>
-        {/* History & Mode indicator */}
-        <div className="max-w-4xl mx-auto flex items-center justify-between mt-3">
+        {/* History & Mode indicator - Hidden on small mobile */}
+        <div className="max-w-4xl mx-auto flex items-center justify-between mt-2 sm:mt-3">
           <QueryHistory
             history={queryHistory}
             onSelect={handleHistorySelect}
@@ -954,14 +944,14 @@ export function ViralChat({ initialMessage, onStrategySelect, className }: Viral
             language={language}
             mode={mode}
           />
-          <p className="text-[10px] text-zinc-600 font-mono uppercase tracking-widest">
+          <p className="hidden sm:block text-[10px] text-zinc-600 font-mono uppercase tracking-widest">
             {mode === "creator"
               ? language === "en"
-                ? "Creator Mode — Scripts & Hooks"
-                : "Режим Креатора — Скрипты и Хуки"
+                ? "Creator Mode"
+                : "Режим Креатора"
               : language === "en"
-                ? "Business Mode — Strategy & Monetization"
-                : "Бизнес Режим — Стратегия и Монетизация"}
+                ? "Business Mode"
+                : "Бизнес Режим"}
           </p>
         </div>
       </div>

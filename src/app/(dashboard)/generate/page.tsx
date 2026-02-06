@@ -50,7 +50,7 @@ const STAGE_ICONS: Record<string, React.ElementType> = {
 // --- Video Count Presets ---
 const COUNT_PRESETS = [1, 2, 3, 6, 10, 15, 30];
 
-// --- Pipeline Stage Card ---
+// --- Pipeline Stage Card (Compact for mobile) ---
 function StageCard({ stage, language }: { stage: any; language: "en" | "ru" }) {
   const Icon = STAGE_ICONS[stage.id] || Zap;
   const name = language === "ru" ? stage.nameRu : stage.name;
@@ -64,30 +64,30 @@ function StageCard({ stage, language }: { stage: any; language: "en" | "ru" }) {
 
   return (
     <div
-      className={`flex items-center gap-3 rounded-lg border p-2.5 transition-all ${statusColors[stage.status]}`}
+      className={`flex items-center gap-2 sm:gap-3 rounded-md sm:rounded-lg border p-2 sm:p-2.5 transition-all ${statusColors[stage.status]}`}
     >
       <div className="shrink-0">
         {stage.status === "active" ? (
-          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          <Loader2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 animate-spin" />
         ) : stage.status === "completed" ? (
-          <CheckCircle2 className="h-3.5 w-3.5" />
+          <CheckCircle2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
         ) : stage.status === "failed" ? (
-          <XCircle className="h-3.5 w-3.5" />
+          <XCircle className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
         ) : (
-          <Icon className="h-3.5 w-3.5" />
+          <Icon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[10px] font-mono font-medium truncate">{name}</p>
+        <p className="text-[9px] sm:text-[10px] font-mono font-medium truncate">{name}</p>
         {stage.status === "active" && (
-          <Progress value={stage.progress} className="h-0.5 mt-1" />
+          <Progress value={stage.progress} className="h-0.5 mt-0.5 sm:mt-1" />
         )}
       </div>
     </div>
   );
 }
 
-// --- Terminal Log ---
+// --- Terminal Log (Collapsible, mobile-friendly) ---
 function TerminalLog({ stages, language }: { stages: any[]; language: "en" | "ru" }) {
   const [isOpen, setIsOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -103,13 +103,13 @@ function TerminalLog({ stages, language }: { stages: any[]; language: "en" | "ru
   }, [allLogs.length, isOpen]);
 
   return (
-    <div className="w-full mt-2">
+    <div className="w-full mt-1.5 sm:mt-2">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 text-[10px] font-mono text-zinc-500 hover:text-zinc-300 transition-colors w-full px-1 py-1"
+        className="flex items-center gap-1.5 sm:gap-2 text-[9px] sm:text-[10px] font-mono text-zinc-500 hover:text-zinc-300 active:text-zinc-200 transition-colors w-full px-1 py-1.5"
       >
         <TerminalSquare className="h-3 w-3" />
-        <span>{language === "ru" ? "Лог процесса" : "Debug Console"}</span>
+        <span>{language === "ru" ? "Лог" : "Log"}</span>
         <div className="h-px bg-zinc-800 flex-1" />
         {isOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
       </button>
@@ -117,11 +117,11 @@ function TerminalLog({ stages, language }: { stages: any[]; language: "en" | "ru
       {isOpen && (
         <div
           ref={scrollRef}
-          className="w-full h-32 overflow-y-auto rounded-lg border border-zinc-800 bg-black/80 p-3 font-mono text-[10px] text-zinc-500 scrollbar-thin scrollbar-thumb-zinc-800 mt-2"
+          className="w-full h-24 sm:h-32 overflow-y-auto rounded-md sm:rounded-lg border border-zinc-800 bg-black/80 p-2 sm:p-3 font-mono text-[9px] sm:text-[10px] text-zinc-500 scrollbar-thin scrollbar-thumb-zinc-800 mt-1.5 sm:mt-2"
         >
           {allLogs.map((log, i) => (
-            <div key={i} className="leading-5 font-mono">
-              <span className="text-zinc-600 mr-2">[{log.stageId.substring(0, 4)}]</span>
+            <div key={i} className="leading-4 sm:leading-5 font-mono">
+              <span className="text-zinc-600 mr-1.5 sm:mr-2">[{log.stageId.substring(0, 3)}]</span>
               <span
                 className={
                   log.msg.startsWith("ERROR")
@@ -506,9 +506,9 @@ export default function GeneratePage() {
           "absolute inset-0 lg:static flex flex-col rounded-xl lg:border border-zinc-800 bg-black/40 backdrop-blur-sm lg:overflow-hidden transition-opacity duration-300",
           mobileTab === "results" ? "opacity-100 z-10 pointer-events-auto" : "opacity-0 z-0 pointer-events-none lg:opacity-100 lg:pointer-events-auto"
         )}>
-          {/* Tab Bar within Results Panel */}
+          {/* Tab Bar within Results Panel - Mobile optimized */}
           {!isIdle && (
-            <div className="flex border-b border-zinc-800 bg-zinc-900/30 overflow-x-auto scrollbar-none">
+            <div className="flex border-b border-zinc-800 bg-zinc-900/30 overflow-x-auto scrollbar-none shrink-0">
               {[
                 { id: "pipeline" as const, label: language === "ru" ? "Процесс" : "Pipeline", icon: Zap },
                 { id: "gallery" as const, label: language === "ru" ? "Сценарии" : "Scenarios", icon: Layers, count: scenarios.length },
@@ -518,44 +518,44 @@ export default function GeneratePage() {
                   key={tab.id}
                   onClick={() => setRightTab(tab.id)}
                   className={cn(
-                    "flex items-center gap-1.5 px-4 py-2.5 text-xs transition-all border-b-2 whitespace-nowrap min-w-[90px] justify-center",
+                    "flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 text-[10px] sm:text-xs transition-all border-b-2 whitespace-nowrap min-w-[70px] sm:min-w-[90px] justify-center",
                     rightTab === tab.id ? "border-white text-white" : "border-transparent text-zinc-500 hover:text-zinc-300"
                   )}
                 >
                   <tab.icon className="h-3 w-3" />
-                  {tab.label}
+                  <span className="hidden xs:inline">{tab.label}</span>
                   {tab.count !== undefined && tab.count > 0 && (
-                    <span className="ml-1 text-[9px] bg-zinc-800 px-1.5 py-0.5 rounded-full">{tab.count}</span>
+                    <span className="ml-0.5 sm:ml-1 text-[8px] sm:text-[9px] bg-zinc-800 px-1 sm:px-1.5 py-0.5 rounded-full">{tab.count}</span>
                   )}
                 </button>
               ))}
             </div>
           )}
 
-          <div className="flex-1 overflow-y-auto p-3 lg:p-4 scrollbar-thin scrollbar-thumb-zinc-800 pb-20 lg:pb-4">
+          <div className="flex-1 overflow-y-auto p-2.5 sm:p-3 lg:p-4 scrollbar-thin scrollbar-thumb-zinc-800 pb-16 sm:pb-20 lg:pb-4">
             <AnimatePresence mode="wait">
               {isIdle && (
-                <div className="flex flex-col items-center justify-center h-full text-center gap-4 opacity-50">
-                  <Layers className="h-10 w-10 text-zinc-700" />
-                  <p className="text-xs text-zinc-600">
+                <div className="flex flex-col items-center justify-center h-full text-center gap-3 sm:gap-4 opacity-50">
+                  <Layers className="h-8 w-8 sm:h-10 sm:w-10 text-zinc-700" />
+                  <p className="text-[10px] sm:text-xs text-zinc-600">
                     {language === "ru" ? "Результаты появятся здесь" : "Results will appear here"}
                   </p>
                 </div>
               )}
               {!isIdle && rightTab === "pipeline" && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-3">
+                <div className="flex flex-col gap-2 sm:gap-3">
                   {selectedStrategy && (
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono text-zinc-500 truncate max-w-[60%]">{selectedStrategy.title}</span>
-                      <span className="text-sm font-bold text-white">{totalProgress}%</span>
+                      <span className="text-[9px] sm:text-[10px] font-mono text-zinc-500 truncate max-w-[60%]">{selectedStrategy.title}</span>
+                      <span className="text-xs sm:text-sm font-bold text-white">{totalProgress}%</span>
                     </div>
                   )}
-                  <Progress value={totalProgress} className="h-1.5" />
-                  <div className="grid grid-cols-1 gap-2">
+                  <Progress value={totalProgress} className="h-1 sm:h-1.5" />
+                  <div className="grid grid-cols-1 gap-1.5 sm:gap-2">
                     {stages.map(s => <StageCard key={s.id} stage={s} language={language} />)}
                   </div>
                   <TerminalLog stages={stages} language={language} />
-                </motion.div>
+                </div>
               )}
               {!isIdle && rightTab === "gallery" && (
                 <ScenarioGallery
