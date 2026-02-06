@@ -114,12 +114,12 @@ export function Pricing({ lang }: PricingProps) {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.1 }}
-                        className="relative p-8 lg:p-10 rounded-3xl border-2 border-violet-500/60 bg-slate-950/60 backdrop-blur-2xl shadow-[0_0_40px_rgba(139,92,246,0.15)] md:-mt-4 md:-mb-4 z-20 flex flex-col h-full overflow-hidden"
+                        className="relative p-8 lg:p-10 rounded-3xl border-2 border-violet-500/60 bg-slate-950/60 backdrop-blur-2xl shadow-[0_0_40px_rgba(139,92,246,0.15)] md:-mt-4 md:-mb-4 z-20 flex flex-col h-full"
                     >
                         {/* Glow Behind */}
                         <div className="absolute inset-0 bg-violet-600/5 blur-[80px] -z-10 pointer-events-none" />
 
-                        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-violet-600 text-white text-[10px] sm:text-xs font-bold tracking-widest px-6 py-1.5 rounded-full uppercase shadow-[0_5px_20px_rgba(124,58,237,0.4)] border border-violet-400">
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-violet-600 text-white text-[10px] sm:text-xs font-bold tracking-widest px-6 py-1.5 rounded-full uppercase shadow-[0_5px_20px_rgba(124,58,237,0.4)] border border-violet-400 z-30 whitespace-nowrap">
                             {content.mostPopular}
                         </div>
 
