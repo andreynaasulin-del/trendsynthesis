@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getStripe, CREDIT_PACKS, BUSINESS_SUBSCRIPTION, type CreditPackId } from "@/lib/stripe/config";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
-const VALID_CREDIT_PACKS: CreditPackId[] = ["starter", "creator", "pro", "agency"];
+const VALID_CREDIT_PACKS: CreditPackId[] = ["creator", "pro", "agency"];
 
 // GET /api/checkout - Redirect to Stripe Checkout (for direct links)
 export async function GET(request: NextRequest) {

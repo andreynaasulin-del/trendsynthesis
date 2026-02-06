@@ -1,10 +1,11 @@
 "use client";
 
-import { Check, Zap, Sparkles, Building2, Crown, ArrowRight, Coins, Brain, Gift } from "lucide-react";
+import { Check, Zap, Sparkles, Building2, Crown, ArrowRight, Coins, Brain, Flame, Info } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { siteConfig } from "@/config/site";
+import { PRICING_CONFIG } from "@/config/pricing";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface PricingProps {
     lang: "en" | "ru";
@@ -13,33 +14,28 @@ interface PricingProps {
 export function Pricing({ lang }: PricingProps) {
     const isRu = lang === "ru";
 
+    // Text Content
     const content = {
-        title: isRu ? "Гибкая экономика" : "Flexible Pricing",
+        title: isRu ? "Стратегия Роста" : "Growth Strategy",
         subtitle: isRu
-            ? "Плати за то, что используешь. Без подписок на генерации."
-            : "Pay for what you use. No subscriptions for generations.",
-        creditsTitle: isRu ? "ПАКЕТЫ КРЕДИТОВ" : "CREDIT PACKS",
-        creditsDesc: isRu ? "1 кредит = 1 генерация (до 30 видео)" : "1 credit = 1 generation (up to 30 videos)",
-        subscriptionTitle: isRu ? "ПОДПИСКА" : "SUBSCRIPTION",
-        freeTitle: isRu ? "БЕСПЛАТНО" : "FREE",
-        freeDesc: isRu ? "3 генерации на старте" : "3 generations to start",
-        popular: isRu ? "ПОПУЛЯРНЫЙ" : "POPULAR",
-        bonus: isRu ? "бонус" : "bonus",
-        perCredit: isRu ? "за кредит" : "per credit",
+            ? "Инвестируй в вирусный охват. Максимальная рентабельность."
+            : "Invest in viral reach. Maximum ROI.",
+        mostPopular: isRu ? "ХИТ ПРОДАЖ" : "MOST POPULAR",
+        agencyMode: isRu ? "РЕЖИМ БОГА" : "GOD MODE",
+        subscribe: isRu ? "Активировать" : "Activate",
+        buy: isRu ? "Купить" : "Buy Pack",
         perMonth: isRu ? "/мес" : "/mo",
-        buyCredits: isRu ? "Купить кредиты" : "Buy Credits",
-        subscribe: isRu ? "Подписаться" : "Subscribe",
-        startFree: isRu ? "Начать бесплатно" : "Start Free",
+        freeTrial: isRu ? "+7 Дней Бесплатно" : "+7 Days Free",
+        activateBrain: isRu ? "Активировать Мозг" : "Activate Brain",
+        new: isRu ? "NEW" : "NEW",
     };
 
-    const creditPacks = siteConfig.creditPacks;
-    const businessSub = siteConfig.businessSubscription;
-    const freeTier = siteConfig.freeTier;
+    const { credits, business } = PRICING_CONFIG;
 
     return (
-        <section id="pricing" className="py-24 sm:py-32 px-4 sm:px-6 relative border-t border-white/5 overflow-hidden">
+        <section id="pricing" className="py-24 sm:py-32 px-4 sm:px-6 relative border-t border-white/5 overflow-hidden bg-black/40">
             {/* Background Effects */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-[600px] bg-violet-600/10 blur-[150px] rounded-full pointer-events-none -z-10" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl h-[800px] bg-violet-900/10 blur-[120px] rounded-full pointer-events-none -z-10" />
 
             <div className="max-w-7xl mx-auto relative z-10">
                 {/* Header */}
@@ -49,198 +45,199 @@ export function Pricing({ lang }: PricingProps) {
                     viewport={{ once: true }}
                     className="text-center mb-16"
                 >
-                    <div className="inline-flex items-center gap-2 border border-white/10 bg-white/5 rounded-full px-4 py-1.5 mb-6">
+                    <div className="inline-flex items-center gap-2 border border-violet-500/20 bg-violet-500/10 rounded-full px-4 py-1.5 mb-6">
                         <Crown className="w-3.5 h-3.5 text-violet-400" />
-                        <span className="text-[10px] font-mono tracking-widest text-white/60">PRICING</span>
+                        <span className="text-[10px] font-mono tracking-widest text-violet-200 uppercase">
+                            {content.title}
+                        </span>
                     </div>
-                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 tracking-tight">{content.title}</h2>
-                    <p className="text-white/40 text-base sm:text-lg max-w-xl mx-auto">{content.subtitle}</p>
+                    <h2 className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 tracking-tighter text-white">
+                        {isRu ? "ВЫБЕРИ СВОЙ УРОВЕНЬ" : "CHOOSE YOUR TIER"}
+                    </h2>
+                    <p className="text-white/40 text-lg max-w-2xl mx-auto">
+                        {content.subtitle}
+                    </p>
                 </motion.div>
 
-                {/* Free Tier Banner */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="mb-12 p-4 sm:p-6 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 flex flex-col sm:flex-row items-center justify-between gap-4"
-                >
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                            <Gift className="w-6 h-6 text-emerald-400" />
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-white">{content.freeTitle}</h3>
-                            <p className="text-sm text-white/50">{content.freeDesc}</p>
-                        </div>
-                    </div>
-                    <Link
-                        href="/signup"
-                        className="px-6 py-2.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-medium hover:bg-emerald-500/20 transition-colors"
+                {/* Pricing Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto items-center mb-20">
+
+                    {/* 1. CREATOR PACK */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0 }}
+                        className="relative p-6 rounded-3xl border border-white/10 bg-zinc-900/50 backdrop-blur-md flex flex-col h-full"
                     >
-                        {content.startFree} <ArrowRight className="w-4 h-4 inline ml-1" />
-                    </Link>
-                </motion.div>
-
-                {/* Credit Packs Section */}
-                <div className="mb-16">
-                    <div className="flex items-center gap-3 mb-6">
-                        <Coins className="w-5 h-5 text-violet-400" />
-                        <h3 className="text-lg font-bold text-white">{content.creditsTitle}</h3>
-                        <span className="text-xs text-white/40 font-mono">{content.creditsDesc}</span>
-                    </div>
-
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                        {creditPacks.map((pack, i) => (
-                            <motion.div
-                                key={pack.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: i * 0.1 }}
-                                className={cn(
-                                    "relative rounded-2xl p-4 sm:p-6 border backdrop-blur-xl flex flex-col transition-all duration-300 group",
-                                    pack.highlighted
-                                        ? "bg-black/60 border-violet-500/50 shadow-[0_0_30px_rgba(139,92,246,0.15)]"
-                                        : "bg-black/40 border-white/10 hover:border-white/20"
-                                )}
-                            >
-                                {/* Popular badge */}
-                                {pack.highlighted && (
-                                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-violet-600 text-white text-[9px] font-bold tracking-wider px-3 py-1 rounded-full flex items-center gap-1 uppercase">
-                                        <Sparkles className="w-3 h-3" />
-                                        {content.popular}
-                                    </div>
-                                )}
-
-                                {/* Bonus badge */}
-                                {pack.bonus > 0 && (
-                                    <div className="absolute top-3 right-3 bg-emerald-500/20 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                                        +{pack.bonus}% {content.bonus}
-                                    </div>
-                                )}
-
-                                <div className="mb-4">
-                                    <h4 className="text-xs font-bold tracking-wider text-white/50 mb-2">
-                                        {isRu ? pack.nameRu : pack.name}
-                                    </h4>
-                                    <div className="flex items-baseline gap-1">
-                                        <span className="text-3xl sm:text-4xl font-extrabold text-white">${pack.price}</span>
-                                    </div>
-                                    <p className="text-xs text-white/40 mt-1">
-                                        {pack.credits} {isRu ? "кредитов" : "credits"} · ${pack.pricePerCredit.toFixed(2)} {content.perCredit}
-                                    </p>
+                        <div className="mb-6">
+                            <h3 className="text-lg font-bold text-white mb-2">{credits.creator.name}</h3>
+                            <div className="flex items-baseline gap-1">
+                                <span className="text-4xl font-bold text-white">${credits.creator.amount}</span>
+                            </div>
+                        </div>
+                        <div className="space-y-4 flex-1 mb-8">
+                            {credits.creator.features.map((f, i) => (
+                                <div key={i} className="flex items-center gap-3 text-sm text-zinc-400">
+                                    <Check className="w-4 h-4 text-white/50" />
+                                    <span>{f}</span>
                                 </div>
+                            ))}
+                        </div>
+                        <Link href={`/api/checkout?type=credits&pack=creator`}>
+                            <button className="w-full py-3 rounded-xl border border-white/20 text-white font-medium hover:bg-white/5 transition-colors">
+                                {content.buy}
+                            </button>
+                        </Link>
+                    </motion.div>
 
-                                <div className="flex-1 space-y-2 mb-4">
-                                    {(isRu ? pack.features.ru : pack.features.en).map((f, j) => (
-                                        <div key={j} className="flex items-start gap-2 text-xs text-white/60">
-                                            <Check className="w-3.5 h-3.5 text-violet-400 shrink-0 mt-0.5" />
-                                            <span>{f}</span>
-                                        </div>
-                                    ))}
+                    {/* 2. PRO PACK (HERO) */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.1 }}
+                        className="relative p-8 rounded-3xl border-2 border-violet-500 bg-zinc-900/80 backdrop-blur-xl shadow-[0_0_50px_rgba(139,92,246,0.2)] md:scale-105 z-10 flex flex-col h-full"
+                    >
+                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-violet-500 text-white text-[10px] font-bold tracking-widest px-4 py-1 rounded-full uppercase shadow-lg">
+                            {content.mostPopular}
+                        </div>
+
+                        <div className="mb-8">
+                            <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                                {credits.pro.name}
+                                <Sparkles className="w-4 h-4 text-violet-400" />
+                            </h3>
+                            <div className="flex items-baseline gap-1">
+                                <span className="text-5xl font-black text-white">${credits.pro.amount}</span>
+                            </div>
+                            <p className="text-violet-200/60 text-xs mt-2">$0.19 / credit</p>
+                        </div>
+
+                        <div className="space-y-4 flex-1 mb-10">
+                            {credits.pro.features.map((f, i) => (
+                                <div key={i} className="flex items-center gap-3 text-sm text-zinc-200">
+                                    <div className="p-1 rounded-full bg-violet-500/20">
+                                        <Check className="w-3.5 h-3.5 text-violet-400" />
+                                    </div>
+                                    <span className="font-medium">{f}</span>
                                 </div>
+                            ))}
+                        </div>
 
-                                <Link
-                                    href={`/api/checkout?type=credits&pack=${pack.id}`}
-                                    className={cn(
-                                        "w-full py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2",
-                                        pack.highlighted
-                                            ? "bg-white text-black hover:bg-gray-100"
-                                            : "bg-white/5 text-white hover:bg-white/10 border border-white/10"
-                                    )}
-                                >
-                                    {content.buyCredits}
-                                </Link>
-                            </motion.div>
-                        ))}
-                    </div>
+                        <Link href={`/api/checkout?type=credits&pack=pro`}>
+                            <button className="w-full py-4 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-bold text-lg hover:shadow-[0_0_30px_rgba(139,92,246,0.4)] transition-all transform hover:scale-[1.02]">
+                                {content.buy}
+                            </button>
+                        </Link>
+                    </motion.div>
+
+                    {/* 3. AGENCY (GOD MODE) */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.2 }}
+                        className="relative p-6 rounded-3xl border border-slate-700 bg-slate-900/80 backdrop-blur-md flex flex-col h-full overflow-hidden group"
+                    >
+                        <div className="absolute inset-0 bg-gradient-to-b from-slate-800/50 to-transparent opacity-50" />
+
+                        <div className="relative z-10">
+                            <div className="flex justify-between items-start mb-6">
+                                <div>
+                                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                                        {credits.agency.name}
+                                    </h3>
+                                    <span className="text-[10px] text-slate-400 tracking-widest uppercase">{content.agencyMode}</span>
+                                </div>
+                                <Crown className="w-6 h-6 text-amber-500" />
+                            </div>
+
+                            <div className="flex items-baseline gap-1 mb-8">
+                                <span className="text-4xl font-bold text-white">${credits.agency.amount}</span>
+                            </div>
+
+                            <div className="space-y-4 flex-1 mb-8">
+                                {credits.agency.features.map((f, i) => (
+                                    <div key={i} className="flex items-center gap-3 text-sm text-slate-300">
+                                        <Check className="w-4 h-4 text-slate-500" />
+                                        <span className={cn(f.includes("DNA") && "text-amber-400 font-bold flex items-center gap-2")}>
+                                            {f}
+                                            {f.includes("DNA") && (
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger>
+                                                            <div className="bg-amber-500/20 text-amber-500 text-[9px] px-1.5 py-0.5 rounded flex items-center gap-1 cursor-help">
+                                                                <Flame className="w-3 h-3" />
+                                                                {content.new}
+                                                            </div>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent className="bg-slate-950 border-slate-800 text-slate-300">
+                                                            <p>Clone pacing & hooks from existing viral videos.</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            )}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <Link href={`/api/checkout?type=credits&pack=agency`}>
+                                <button className="w-full py-3 rounded-xl bg-slate-800 border border-slate-600 text-white font-medium hover:bg-slate-700 hover:border-slate-500 transition-all flex items-center justify-center gap-2">
+                                    {content.buy}
+                                </button>
+                            </Link>
+                        </div>
+                    </motion.div>
                 </div>
 
-                {/* Agency Plan Subscription */}
+                {/* Business AI Banner */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    className="relative rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-orange-500/5 p-6 sm:p-8 overflow-hidden"
+                    className="max-w-4xl mx-auto rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-900/40 via-black to-black p-1"
                 >
-                    {/* Trial Badge */}
-                    <div className="absolute top-0 right-0 bg-amber-500 text-black text-[10px] font-bold px-4 py-1 rounded-bl-xl">
-                        {isRu ? "+ 7 ДНЕЙ БЕСПЛАТНО" : "+ 7 DAYS FREE TRIAL"}
-                    </div>
+                    <div className="bg-zinc-950/80 rounded-xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
 
-                    <div className="flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-12">
-                        <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-                                    <Building2 className="w-6 h-6 text-amber-400" />
-                                </div>
-                                <div>
-                                    <span className="text-[10px] font-mono tracking-wider text-white/40 block">{content.subscriptionTitle}</span>
-                                    <h3 className="text-xl font-bold text-white">{isRu ? "Тариф Агентство" : "Agency Plan"}</h3>
-                                </div>
+                        {/* Glow effect */}
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-amber-600/10 blur-[80px] rounded-full pointer-events-none" />
+
+                        <div className="flex items-start gap-4 reltive z-10">
+                            <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
+                                <Brain className="w-6 h-6 text-amber-500" />
                             </div>
-                            <p className="text-white/50 text-sm mb-4">
-                                {isRu
-                                    ? "Полное решение для масштабирования. Включает Бизнес AI Ассистента, стратегии и приоритетную поддержку."
-                                    : "Complete scaling solution. Includes Business AI Assistant, strategies, and priority support."}
-                            </p>
-                            <div className="grid grid-cols-2 gap-2">
-                                <div className="flex items-center gap-2 text-xs text-white/60">
-                                    <Check className="w-3.5 h-3.5 text-amber-400" />
-                                    <span>{isRu ? "Бизнес AI Ассистент (Вкл)" : "Business AI Assistant (Incl)"}</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-xs text-white/60">
-                                    <Check className="w-3.5 h-3.5 text-amber-400" />
-                                    <span>{isRu ? "PDF Экспорт стратегий" : "PDF Strategy Export"}</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-xs text-white/60">
-                                    <Check className="w-3.5 h-3.5 text-amber-400" />
-                                    <span>{isRu ? "Анализ ниши и трендов" : "Niche & Trend Analysis"}</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-xs text-white/60">
-                                    <Check className="w-3.5 h-3.5 text-amber-400" />
-                                    <span>{isRu ? "Приоритетная поддержка" : "Priority Support"}</span>
-                                </div>
+                            <div>
+                                <h3 className="text-xl font-bold text-white mb-1 flex items-center gap-2">
+                                    Business AI Consultant
+                                    <span className="bg-amber-500/20 text-amber-400 text-[10px] px-2 py-0.5 rounded-full border border-amber-500/20">
+                                        {content.freeTrial}
+                                    </span>
+                                </h3>
+                                <p className="text-zinc-400 text-sm max-w-md">
+                                    {isRu
+                                        ? "Получи стратегии, анализ ниш и скрипты для заработка."
+                                        : "Get strategies, niche analysis, and money-making scripts."}
+                                </p>
                             </div>
                         </div>
 
-                        <div className="flex flex-col items-center lg:items-end gap-4">
-                            <div className="text-center lg:text-right">
-                                <span className="text-4xl sm:text-5xl font-extrabold text-white">$149</span>
-                                <span className="text-white/40 text-sm">{content.perMonth}</span>
+                        <div className="flex flex-col items-center md:items-end gap-3 shrink-0 relative z-10">
+                            <div className="text-right">
+                                <span className="text-2xl font-bold text-white">${business.amount}</span>
+                                <span className="text-zinc-500 text-sm">{content.perMonth}</span>
                             </div>
-                            <Link
-                                href="/api/checkout?type=subscription"
-                                className="px-8 py-3 rounded-xl bg-amber-500 text-black font-bold text-sm hover:bg-amber-400 transition-colors flex items-center gap-2"
-                            >
-                                {content.subscribe}
-                                <ArrowRight className="w-4 h-4" />
+                            <Link href={`/api/checkout?type=subscription`}>
+                                <button className="px-6 py-2.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm transition-all shadow-lg shadow-amber-900/20 flex items-center gap-2">
+                                    <Brain className="w-4 h-4" />
+                                    {content.activateBrain}
+                                </button>
                             </Link>
                         </div>
                     </div>
                 </motion.div>
 
-                {/* Trust badges */}
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.3 }}
-                    className="mt-12 flex flex-wrap justify-center gap-6 sm:gap-12 text-white/30 text-[10px] sm:text-xs font-mono tracking-wider"
-                >
-                    <div className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-emerald-500/60" />
-                        <span>{isRu ? "КРЕДИТЫ НЕ СГОРАЮТ" : "CREDITS NEVER EXPIRE"}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-emerald-500/60" />
-                        <span>{isRu ? "ОТМЕНА ПОДПИСКИ В ЛЮБОЙ МОМЕНТ" : "CANCEL SUBSCRIPTION ANYTIME"}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-emerald-500/60" />
-                        <span>{isRu ? "БЕЗОПАСНАЯ ОПЛАТА" : "SECURE PAYMENT"}</span>
-                    </div>
-                </motion.div>
             </div>
         </section>
     );
