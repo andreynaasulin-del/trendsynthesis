@@ -75,7 +75,7 @@ export function Pricing({ lang }: PricingProps) {
                 </motion.div>
 
                 {/* Pricing Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto items-center mb-20">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto items-stretch mb-20 relative z-10">
 
                     {/* 1. CREATOR PACK */}
                     <motion.div
@@ -83,10 +83,10 @@ export function Pricing({ lang }: PricingProps) {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0 }}
-                        className="relative p-6 rounded-3xl border border-white/10 bg-zinc-900/50 backdrop-blur-md flex flex-col h-full"
+                        className="relative p-6 lg:p-8 rounded-3xl border border-white/10 bg-slate-950/40 backdrop-blur-xl flex flex-col h-full shadow-lg group hover:border-white/20 transition-all duration-300"
                     >
                         <div className="mb-6">
-                            <h3 className="text-lg font-bold text-white mb-2">
+                            <h3 className="text-lg font-bold text-white/90 mb-2 tracking-wide">
                                 {isRu ? planTranslations.creator.name : credits.creator.name}
                             </h3>
                             <div className="flex items-baseline gap-1">
@@ -95,14 +95,14 @@ export function Pricing({ lang }: PricingProps) {
                         </div>
                         <div className="space-y-4 flex-1 mb-8">
                             {(isRu ? planTranslations.creator.features : credits.creator.features).map((f, i) => (
-                                <div key={i} className="flex items-center gap-3 text-sm text-zinc-400">
-                                    <Check className="w-4 h-4 text-white/50" />
+                                <div key={i} className="flex items-center gap-3 text-sm text-zinc-400 group-hover:text-zinc-300 transition-colors">
+                                    <Check className="w-4 h-4 text-white/40" />
                                     <span>{f}</span>
                                 </div>
                             ))}
                         </div>
-                        <Link href={`/api/checkout?type=credits&pack=creator`}>
-                            <button className="w-full py-3 rounded-xl border border-white/20 text-white font-medium hover:bg-white/5 transition-colors">
+                        <Link href={`/api/checkout?type=credits&pack=creator`} className="mt-auto">
+                            <button className="w-full py-3 rounded-xl border border-white/10 text-white font-medium hover:bg-white/10 transition-all">
                                 {content.buy}
                             </button>
                         </Link>
@@ -114,21 +114,24 @@ export function Pricing({ lang }: PricingProps) {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.1 }}
-                        className="relative p-8 rounded-3xl border-2 border-violet-500 bg-zinc-900/80 backdrop-blur-xl shadow-[0_0_50px_rgba(139,92,246,0.2)] md:scale-105 z-10 flex flex-col h-full"
+                        className="relative p-8 lg:p-10 rounded-3xl border-2 border-violet-500/60 bg-slate-950/60 backdrop-blur-2xl shadow-[0_0_40px_rgba(139,92,246,0.15)] md:-mt-4 md:-mb-4 z-20 flex flex-col h-full overflow-hidden"
                     >
-                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-violet-500 text-white text-[10px] font-bold tracking-widest px-4 py-1 rounded-full uppercase shadow-lg">
+                        {/* Glow Behind */}
+                        <div className="absolute inset-0 bg-violet-600/5 blur-[80px] -z-10 pointer-events-none" />
+
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-violet-600 text-white text-[10px] sm:text-xs font-bold tracking-widest px-6 py-1.5 rounded-full uppercase shadow-[0_5px_20px_rgba(124,58,237,0.4)] border border-violet-400">
                             {content.mostPopular}
                         </div>
 
-                        <div className="mb-8">
+                        <div className="mb-8 mt-2">
                             <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
                                 {isRu ? planTranslations.pro.name : credits.pro.name}
-                                <Sparkles className="w-4 h-4 text-violet-400" />
+                                <Sparkles className="w-5 h-5 text-violet-400 drop-shadow-[0_0_8px_rgba(167,139,250,0.8)]" />
                             </h3>
                             <div className="flex items-baseline gap-1">
-                                <span className="text-5xl font-black text-white">${credits.pro.amount}</span>
+                                <span className="text-6xl font-black text-white tracking-tight">${credits.pro.amount}</span>
                             </div>
-                            <p className="text-violet-200/60 text-xs mt-2">
+                            <p className="text-violet-200/60 text-xs mt-2 font-mono uppercase tracking-wide">
                                 {isRu ? "$0.19 / кредит" : "$0.19 / credit"}
                             </p>
                         </div>
@@ -136,16 +139,16 @@ export function Pricing({ lang }: PricingProps) {
                         <div className="space-y-4 flex-1 mb-10">
                             {(isRu ? planTranslations.pro.features : credits.pro.features).map((f, i) => (
                                 <div key={i} className="flex items-center gap-3 text-sm text-zinc-200">
-                                    <div className="p-1 rounded-full bg-violet-500/20">
-                                        <Check className="w-3.5 h-3.5 text-violet-400" />
+                                    <div className="p-1 rounded-full bg-violet-500/20 shadow-[0_0_10px_rgba(139,92,246,0.2)]">
+                                        <Check className="w-3.5 h-3.5 text-violet-300" />
                                     </div>
-                                    <span className="font-medium">{f}</span>
+                                    <span className="font-medium tracking-tight">{f}</span>
                                 </div>
                             ))}
                         </div>
 
-                        <Link href={`/api/checkout?type=credits&pack=pro`}>
-                            <button className="w-full py-4 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-bold text-lg hover:shadow-[0_0_30px_rgba(139,92,246,0.4)] transition-all transform hover:scale-[1.02]">
+                        <Link href={`/api/checkout?type=credits&pack=pro`} className="mt-auto">
+                            <button className="w-full py-4 rounded-xl bg-white text-black font-bold text-lg hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] hover:bg-zinc-100 transition-all transform hover:scale-[1.02] active:scale-[0.98]">
                                 {content.buy}
                             </button>
                         </Link>
@@ -157,19 +160,20 @@ export function Pricing({ lang }: PricingProps) {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.2 }}
-                        className="relative p-6 rounded-3xl border border-slate-700 bg-slate-900/80 backdrop-blur-md flex flex-col h-full overflow-hidden group"
+                        className="relative p-6 lg:p-8 rounded-3xl border border-slate-700 bg-gradient-to-b from-slate-900 via-slate-950 to-black backdrop-blur-xl flex flex-col h-full overflow-hidden group hover:border-slate-500 transition-all duration-500"
                     >
-                        <div className="absolute inset-0 bg-gradient-to-b from-slate-800/50 to-transparent opacity-50" />
+                        {/* Metallic Sheen */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
-                        <div className="relative z-10">
+                        <div className="relative z-10 flex flex-col h-full">
                             <div className="flex justify-between items-start mb-6">
                                 <div>
-                                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                                    <h3 className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-200 via-white to-gray-300 flex items-center gap-2">
                                         {isRu ? planTranslations.agency.name : credits.agency.name}
                                     </h3>
-                                    <span className="text-[10px] text-slate-400 tracking-widest uppercase">{content.agencyMode}</span>
+                                    <span className="text-[10px] text-slate-400 tracking-[0.2em] uppercase font-bold">{content.agencyMode}</span>
                                 </div>
-                                <Crown className="w-6 h-6 text-amber-500" />
+                                <Crown className="w-6 h-6 text-yellow-500 drop-shadow-[0_0_10px_rgba(234,179,8,0.5)]" />
                             </div>
 
                             <div className="flex items-baseline gap-1 mb-8">
@@ -179,19 +183,19 @@ export function Pricing({ lang }: PricingProps) {
                             <div className="space-y-4 flex-1 mb-8">
                                 {(isRu ? planTranslations.agency.features : credits.agency.features).map((f, i) => (
                                     <div key={i} className="flex items-center gap-3 text-sm text-slate-300">
-                                        <Check className="w-4 h-4 text-slate-500" />
-                                        <span className={cn(f.includes("DNA") && "text-amber-400 font-bold flex items-center gap-2")}>
+                                        <Check className="w-4 h-4 text-slate-500 group-hover:text-slate-400 transition-colors" />
+                                        <span className={cn(f.includes("DNA") ? "text-red-400 font-bold flex items-center gap-2" : "")}>
                                             {f}
                                             {f.includes("DNA") && (
                                                 <TooltipProvider>
                                                     <Tooltip>
                                                         <TooltipTrigger>
-                                                            <div className="bg-amber-500/20 text-amber-500 text-[9px] px-1.5 py-0.5 rounded flex items-center gap-1 cursor-help">
+                                                            <div className="bg-red-500/10 border border-red-500/20 text-red-500 text-[9px] px-1.5 py-0.5 rounded flex items-center gap-1 cursor-help hover:bg-red-500/20 transition-colors">
                                                                 <Flame className="w-3 h-3" />
                                                                 {content.new}
                                                             </div>
                                                         </TooltipTrigger>
-                                                        <TooltipContent className="bg-slate-950 border-slate-800 text-slate-300">
+                                                        <TooltipContent className="bg-slate-950 border-slate-800 text-slate-300 text-xs p-2">
                                                             <p>Clone pacing & hooks from existing viral videos.</p>
                                                         </TooltipContent>
                                                     </Tooltip>
@@ -202,8 +206,8 @@ export function Pricing({ lang }: PricingProps) {
                                 ))}
                             </div>
 
-                            <Link href={`/api/checkout?type=credits&pack=agency`}>
-                                <button className="w-full py-3 rounded-xl bg-slate-800 border border-slate-600 text-white font-medium hover:bg-slate-700 hover:border-slate-500 transition-all flex items-center justify-center gap-2">
+                            <Link href={`/api/checkout?type=credits&pack=agency`} className="mt-auto">
+                                <button className="w-full py-3 rounded-xl bg-slate-800 border border-slate-600 text-white font-medium hover:bg-slate-700 hover:border-slate-500 hover:text-white transition-all shadow-lg active:scale-[0.98]">
                                     {content.buy}
                                 </button>
                             </Link>
@@ -216,39 +220,39 @@ export function Pricing({ lang }: PricingProps) {
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    className="max-w-4xl mx-auto rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-900/40 via-black to-black p-1"
+                    className="max-w-5xl mx-auto relative z-10"
                 >
-                    <div className="bg-zinc-950/80 rounded-xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
+                    <div className="rounded-3xl border border-amber-500/20 bg-gradient-to-r from-amber-950/30 via-black/80 to-amber-950/30 backdrop-blur-md p-6 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden shadow-[0_0_50px_rgba(217,119,6,0.05)]">
 
-                        {/* Glow effect */}
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-amber-600/10 blur-[80px] rounded-full pointer-events-none" />
+                        {/* Shimmer line */}
+                        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
 
-                        <div className="flex items-start gap-4 reltive z-10">
-                            <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
-                                <Brain className="w-6 h-6 text-amber-500" />
+                        <div className="flex items-start gap-5 relative z-10">
+                            <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+                                <Brain className="w-7 h-7 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]" />
                             </div>
                             <div>
-                                <h3 className="text-xl font-bold text-white mb-1 flex items-center gap-2">
+                                <h3 className="text-2xl font-bold text-white mb-2 flex flex-wrap items-center gap-3">
                                     Business AI Consultant
-                                    <span className="bg-amber-500/20 text-amber-400 text-[10px] px-2 py-0.5 rounded-full border border-amber-500/20">
+                                    <span className="bg-amber-500/20 text-amber-400 text-[10px] font-bold px-3 py-1 rounded-full border border-amber-500/30 uppercase tracking-wide">
                                         {content.freeTrial}
                                     </span>
                                 </h3>
-                                <p className="text-zinc-400 text-sm max-w-md">
+                                <p className="text-zinc-400 text-sm max-w-lg leading-relaxed">
                                     {isRu
-                                        ? "Получи стратегии, анализ ниш и скрипты для заработка."
-                                        : "Get strategies, niche analysis, and money-making scripts."}
+                                        ? "Получи доступ к ИИ-стратегу без покупки кредитов. Анализ ниш, генерация сценариев и плейбуки."
+                                        : "Access the AI Strategist without buying credits. Niche analysis, script generation, and growth playbooks."}
                                 </p>
                             </div>
                         </div>
 
-                        <div className="flex flex-col items-center md:items-end gap-3 shrink-0 relative z-10">
-                            <div className="text-right">
-                                <span className="text-2xl font-bold text-white">${business.amount}</span>
-                                <span className="text-zinc-500 text-sm">{content.perMonth}</span>
+                        <div className="flex flex-col items-center md:items-end gap-2 shrink-0 relative z-10 w-full md:w-auto">
+                            <div className="text-center md:text-right mb-2">
+                                <span className="text-3xl font-bold text-white tracking-tight">${business.amount}</span>
+                                <span className="text-zinc-500 text-sm font-medium">{content.perMonth}</span>
                             </div>
-                            <Link href={`/api/checkout?type=subscription`}>
-                                <button className="px-6 py-2.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm transition-all shadow-lg shadow-amber-900/20 flex items-center gap-2">
+                            <Link href={`/api/checkout?type=subscription`} className="w-full md:w-auto">
+                                <button className="w-full md:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-sm transition-all shadow-[0_0_20px_rgba(217,119,6,0.3)] hover:shadow-[0_0_30px_rgba(217,119,6,0.5)] flex items-center justify-center gap-2 transform hover:-translate-y-0.5">
                                     <Brain className="w-4 h-4" />
                                     {content.activateBrain}
                                 </button>
