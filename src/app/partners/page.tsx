@@ -301,15 +301,34 @@ const ValueCard: React.FC<{
 );
 
 // ============================================
-// EARNINGS CALCULATOR
+// EARNINGS CALCULATOR (New Economy)
 // ============================================
-const EarningsCalculator: React.FC<{ t: typeof translations.en.calculator }> = ({ t }) => {
+const EarningsCalculator: React.FC<{ t: typeof translations.en.calculator; lang: "en" | "ru" }> = ({ t, lang }) => {
   const [users, setUsers] = useState(50);
-  const PRO_PRICE = 29;
-  const COMMISSION_RATE = 0.5;
+  const [purchaseType, setPurchaseType] = useState<"credits" | "subscription">("credits");
 
-  const monthlyEarnings = Math.round(users * PRO_PRICE * COMMISSION_RATE);
+  // New pricing model
+  const CREDIT_PACK_AVG = 27; // Average purchase ($5+$15+$39+$99)/4 ≈ $39, but most buy $15-$39
+  const BUSINESS_AI_PRICE = 19;
+  const COMMISSION_RATE = 0.5; // 50%
+
+  // Assume 70% buy credits, 30% subscribe to Business AI
+  const creditsUsers = Math.round(users * 0.7);
+  const subscriptionUsers = Math.round(users * 0.3);
+
+  const creditsEarnings = creditsUsers * CREDIT_PACK_AVG * COMMISSION_RATE;
+  const subscriptionEarnings = subscriptionUsers * BUSINESS_AI_PRICE * COMMISSION_RATE;
+
+  const monthlyEarnings = Math.round(
+    purchaseType === "credits"
+      ? creditsEarnings
+      : purchaseType === "subscription"
+        ? subscriptionEarnings
+        : creditsEarnings + subscriptionEarnings
+  );
   const yearlyEarnings = monthlyEarnings * 12;
+
+  const isRu = lang === "ru";
 
   return (
     <motion.div
@@ -329,6 +348,28 @@ const EarningsCalculator: React.FC<{ t: typeof translations.en.calculator }> = (
           <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-white">
             {t.calcTitle}
           </h3>
+        </div>
+
+        {/* Purchase Type Selector */}
+        <div className="flex justify-center gap-2 mb-6">
+          {[
+            { id: "credits", label: isRu ? "Кредиты" : "Credits", icon: "💳" },
+            { id: "subscription", label: isRu ? "Подписка" : "Subscription", icon: "🔄" },
+          ].map((type) => (
+            <button
+              key={type.id}
+              onClick={() => setPurchaseType(type.id as "credits" | "subscription")}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all",
+                purchaseType === type.id
+                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                  : "bg-zinc-800/50 text-zinc-400 border border-zinc-700/50 hover:border-zinc-600"
+              )}
+            >
+              <span>{type.icon}</span>
+              {type.label}
+            </button>
+          ))}
         </div>
 
         <div className="mb-6 sm:mb-8">
@@ -386,8 +427,18 @@ const EarningsCalculator: React.FC<{ t: typeof translations.en.calculator }> = (
         </div>
 
         <p className="text-center text-[10px] sm:text-xs text-zinc-500 mt-4 sm:mt-6 px-2">
-          {t.formula(users)}
+          {isRu
+            ? `${users} пользователей × ${purchaseType === "credits" ? `~$${CREDIT_PACK_AVG}` : `$${BUSINESS_AI_PRICE}/мес`} × 50% комиссия`
+            : `${users} users × ${purchaseType === "credits" ? `~$${CREDIT_PACK_AVG} avg pack` : `$${BUSINESS_AI_PRICE}/mo`} × 50% commission`
+          }
         </p>
+
+        {/* Breakdown */}
+        <div className="mt-4 pt-4 border-t border-zinc-800/50">
+          <p className="text-[10px] text-zinc-600 text-center">
+            {isRu ? "💡 50% с каждой покупки кредитов + 50% с каждой подписки Business AI" : "💡 50% from every credit purchase + 50% from every Business AI subscription"}
+          </p>
+        </div>
       </div>
     </motion.div>
   );
@@ -663,7 +714,7 @@ export default function PartnersPage() {
             </p>
           </div>
 
-          <EarningsCalculator t={t.calculator} />
+          <EarningsCalculator t={t.calculator} lang={lang} />
         </div>
       </section>
 

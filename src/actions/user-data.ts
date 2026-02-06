@@ -9,6 +9,8 @@ export interface UserStats {
     totalVideos: number;
     monthlyVideos: number;
     firstName: string;
+    hasBusinessAi: boolean;
+    totalSpent: number;
 }
 
 export interface Transaction {
@@ -39,7 +41,9 @@ export async function getUserStats(): Promise<UserStats> {
             plan: "free",
             totalVideos: 0,
             monthlyVideos: 0,
-            firstName: "Guest"
+            firstName: "Guest",
+            hasBusinessAi: false,
+            totalSpent: 0
         };
     }
 
@@ -68,7 +72,9 @@ export async function getUserStats(): Promise<UserStats> {
         plan: profile?.plan || "free",
         totalVideos,
         monthlyVideos,
-        firstName: profile?.full_name?.split(" ")[0] || "Creator"
+        firstName: profile?.full_name?.split(" ")[0] || "Creator",
+        hasBusinessAi: profile?.has_business_ai || false,
+        totalSpent: profile?.total_spent || 0
     };
 }
 

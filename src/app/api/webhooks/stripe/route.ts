@@ -1,9 +1,10 @@
 // ============================================
 // TRENDSYNTHESIS — Stripe Webhooks
+// Handles: Credit Pack Purchases + Business AI Subscription
 // ============================================
 
 import { NextRequest, NextResponse } from "next/server";
-import { getStripe, PLAN_CREDITS } from "@/lib/stripe/config";
+import { getStripe, CREDIT_PACKS, FREE_TIER, PARTNER_COMMISSIONS, type CreditPackId } from "@/lib/stripe/config";
 import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
 
@@ -99,21 +100,106 @@ export async function POST(request: NextRequest) {
 
 async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     const userId = session.metadata?.supabase_user_id;
-    const plan = session.metadata?.plan || "creator";
+    const productType = session.metadata?.product_type;
 
     if (!userId) {
+        // Try to find from subscription metadata
+        if (session.subscription) {
+            const subscription = await getStripe().subscriptions.retrieve(session.subscription as string);
+            const subUserId = subscription.metadata?.supabase_user_id;
+            if (subUserId) {
+                return handleSubscriptionCheckout(session, subUserId);
+            }
+        }
         console.error("[Webhook] No user ID in session metadata");
         return;
     }
 
-    console.log(`[Webhook] Checkout complete for user ${userId}, plan: ${plan}`);
+    console.log(`[Webhook] Checkout complete for user ${userId}, type: ${productType}`);
 
-    // Update user plan and credits
-    const { error } = await getSupabaseAdmin()
+    // Handle Credit Pack Purchase (one-time payment)
+    if (productType === "credits") {
+        const packId = session.metadata?.pack_id as CreditPackId;
+        const creditsAmount = parseInt(session.metadata?.credits_amount || "0", 10);
+
+        if (!packId || !creditsAmount) {
+            console.error("[Webhook] Missing credit pack info");
+            return;
+        }
+
+        const pack = CREDIT_PACKS[packId];
+        const amountPaid = (session.amount_total || 0) / 100; // cents to dollars
+
+        // Add credits to user
+        const supabase = getSupabaseAdmin();
+        const { data: profile } = await supabase
+            .from("profiles")
+            .select("credits_remaining, total_spent")
+            .eq("id", userId)
+            .single();
+
+        const currentCredits = profile?.credits_remaining || 0;
+        const currentSpent = profile?.total_spent || 0;
+
+        await supabase
+            .from("profiles")
+            .update({
+                credits_remaining: currentCredits + pack.credits,
+                total_spent: currentSpent + amountPaid,
+                updated_at: new Date().toISOString(),
+            })
+            .eq("id", userId);
+
+        console.log(`[Webhook] Added ${pack.credits} credits to user ${userId}`);
+
+        // Log the purchase
+        await supabase.from("usage_logs").insert({
+            user_id: userId,
+            action: "credits_purchased",
+            credits_used: -pack.credits, // negative = added
+            metadata: {
+                pack_id: packId,
+                pack_name: pack.name,
+                amount_paid: amountPaid,
+                session_id: session.id,
+            },
+        });
+
+        // Handle affiliate commission (50%)
+        await handleAffiliateCommission(userId, amountPaid, "credits", supabase);
+        return;
+    }
+
+    // Handle Business AI Subscription
+    if (productType === "business_ai") {
+        await handleSubscriptionCheckout(session, userId);
+        return;
+    }
+
+    // Legacy: old subscription flow
+    const plan = session.metadata?.plan;
+    if (plan) {
+        await getSupabaseAdmin()
+            .from("profiles")
+            .update({
+                plan: "business",
+                has_business_ai: true,
+                stripe_subscription_id: session.subscription as string,
+                updated_at: new Date().toISOString(),
+            })
+            .eq("id", userId);
+    }
+}
+
+async function handleSubscriptionCheckout(session: Stripe.Checkout.Session, userId: string) {
+    const amountPaid = (session.amount_total || 0) / 100;
+    const supabase = getSupabaseAdmin();
+
+    // Update user with Business AI subscription
+    const { error } = await supabase
         .from("profiles")
         .update({
-            plan,
-            credits_remaining: PLAN_CREDITS[plan] || 20,
+            has_business_ai: true,
             stripe_subscription_id: session.subscription as string,
             updated_at: new Date().toISOString(),
         })
@@ -124,19 +210,28 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
         throw error;
     }
 
+    console.log(`[Webhook] Business AI subscription activated for user ${userId}`);
+
     // Log the event
-    await getSupabaseAdmin().from("usage_logs").insert({
+    await supabase.from("usage_logs").insert({
         user_id: userId,
-        action: "subscription_started",
-        metadata: { plan, session_id: session.id },
+        action: "business_ai_subscribed",
+        metadata: {
+            amount_paid: amountPaid,
+            session_id: session.id,
+            subscription_id: session.subscription,
+        },
     });
+
+    // Handle affiliate commission (50%)
+    await handleAffiliateCommission(userId, amountPaid, "subscription", supabase);
 }
 
 async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
     const userId = subscription.metadata?.supabase_user_id;
 
     if (!userId) {
-        // Try to find user by customer ID
+        // Try to find user by subscription ID
         const { data: profile } = await getSupabaseAdmin()
             .from("profiles")
             .select("id")
@@ -164,27 +259,28 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     console.log(`[Webhook] Subscription deleted: ${subscription.id}`);
 
-    // Find user and downgrade to free
-    const { data: profile } = await getSupabaseAdmin()
+    const supabase = getSupabaseAdmin();
+
+    // Find user and remove Business AI access
+    const { data: profile } = await supabase
         .from("profiles")
         .select("id")
         .eq("stripe_subscription_id", subscription.id)
         .single();
 
     if (profile) {
-        await getSupabaseAdmin()
+        await supabase
             .from("profiles")
             .update({
-                plan: "free",
-                credits_remaining: 1,
+                has_business_ai: false,
                 stripe_subscription_id: null,
                 updated_at: new Date().toISOString(),
             })
             .eq("id", profile.id);
 
-        await getSupabaseAdmin().from("usage_logs").insert({
+        await supabase.from("usage_logs").insert({
             user_id: profile.id,
-            action: "subscription_canceled",
+            action: "business_ai_canceled",
             metadata: { subscription_id: subscription.id },
         });
     }
@@ -200,32 +296,28 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
         ? inv.subscription
         : inv.subscription?.id;
 
-    // Find user and refresh credits
-    const { data: profile } = await getSupabaseAdmin()
+    const supabase = getSupabaseAdmin();
+
+    // Find user by subscription
+    const { data: profile } = await supabase
         .from("profiles")
-        .select("id, plan")
+        .select("id")
         .eq("stripe_subscription_id", subscriptionId)
         .single();
 
     if (profile) {
-        const credits = PLAN_CREDITS[profile.plan] || 20;
+        const amountPaid = (invoice.amount_paid || 0) / 100;
 
-        await getSupabaseAdmin()
-            .from("profiles")
-            .update({
-                credits_remaining: credits,
-                updated_at: new Date().toISOString(),
-            })
-            .eq("id", profile.id);
+        console.log(`[Webhook] Recurring payment of $${amountPaid} for user ${profile.id}`);
 
-        console.log(`[Webhook] Refreshed ${credits} credits for user ${profile.id}`);
-
-        await getSupabaseAdmin().from("usage_logs").insert({
+        await supabase.from("usage_logs").insert({
             user_id: profile.id,
-            action: "credits_refreshed",
-            credits_used: -credits,
-            metadata: { invoice_id: invoice.id },
+            action: "subscription_renewed",
+            metadata: { invoice_id: invoice.id, amount: amountPaid },
         });
+
+        // Handle recurring affiliate commission (50%)
+        await handleAffiliateCommission(profile.id, amountPaid, "subscription", supabase);
     }
 }
 
@@ -234,7 +326,6 @@ async function handleInvoiceFailed(invoice: Stripe.Invoice) {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const inv = invoice as any;
-    // Optionally notify user or take action
     const subscriptionId = typeof inv.subscription === 'string'
         ? inv.subscription
         : inv.subscription?.id;
@@ -251,5 +342,59 @@ async function handleInvoiceFailed(invoice: Stripe.Invoice) {
             action: "payment_failed",
             metadata: { invoice_id: invoice.id },
         });
+    }
+}
+
+// ============================================
+// AFFILIATE COMMISSION HANDLER (50/50)
+// ============================================
+
+async function handleAffiliateCommission(
+    userId: string,
+    amountPaid: number,
+    type: "credits" | "subscription",
+    supabase: ReturnType<typeof getSupabaseAdmin>
+) {
+    // Check if user was referred
+    const { data: referral } = await supabase
+        .from("referrals")
+        .select("affiliate_id, id")
+        .eq("referred_user_id", userId)
+        .single();
+
+    if (!referral) return;
+
+    // Calculate commission (50% for both types)
+    const commissionRate = PARTNER_COMMISSIONS[type]; // 0.50
+    const commission = amountPaid * commissionRate;
+
+    // Update affiliate earnings
+    const { data: affiliate } = await supabase
+        .from("affiliates")
+        .select("total_earnings, pending_payout")
+        .eq("id", referral.affiliate_id)
+        .single();
+
+    if (affiliate) {
+        await supabase
+            .from("affiliates")
+            .update({
+                total_earnings: (affiliate.total_earnings || 0) + commission,
+                pending_payout: (affiliate.pending_payout || 0) + commission,
+                updated_at: new Date().toISOString(),
+            })
+            .eq("id", referral.affiliate_id);
+
+        // Log commission
+        await supabase.from("commission_logs").insert({
+            affiliate_id: referral.affiliate_id,
+            referral_id: referral.id,
+            amount: commission,
+            type: type,
+            original_amount: amountPaid,
+            commission_rate: commissionRate,
+        });
+
+        console.log(`[Webhook] Credited $${commission} commission to affiliate ${referral.affiliate_id}`);
     }
 }
