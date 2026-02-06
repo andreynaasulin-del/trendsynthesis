@@ -305,26 +305,21 @@ const ValueCard: React.FC<{
 // ============================================
 const EarningsCalculator: React.FC<{ t: typeof translations.en.calculator; lang: "en" | "ru" }> = ({ t, lang }) => {
   const [users, setUsers] = useState(50);
-  const [purchaseType, setPurchaseType] = useState<"credits" | "subscription">("credits");
+  const [purchaseType, setPurchaseType] = useState<"credits" | "subscription">("subscription");
 
-  // New pricing model
-  const CREDIT_PACK_AVG = 27; // Average purchase ($5+$15+$39+$99)/4 ≈ $39, but most buy $15-$39
-  const BUSINESS_AI_PRICE = 19;
+  // Updated pricing & margins
+  const CREDIT_PACK_AVG = 65; // High-tier users buy more
+  const AGENCY_PLAN_PRICE = 149; // New Agency Plan
   const COMMISSION_RATE = 0.5; // 50%
 
-  // Assume 70% buy credits, 30% subscribe to Business AI
-  const creditsUsers = Math.round(users * 0.7);
-  const subscriptionUsers = Math.round(users * 0.3);
-
-  const creditsEarnings = creditsUsers * CREDIT_PACK_AVG * COMMISSION_RATE;
-  const subscriptionEarnings = subscriptionUsers * BUSINESS_AI_PRICE * COMMISSION_RATE;
+  // Assume conversion rates
+  const creditsEarnings = users * CREDIT_PACK_AVG * COMMISSION_RATE;
+  const subscriptionEarnings = users * AGENCY_PLAN_PRICE * COMMISSION_RATE;
 
   const monthlyEarnings = Math.round(
     purchaseType === "credits"
       ? creditsEarnings
-      : purchaseType === "subscription"
-        ? subscriptionEarnings
-        : creditsEarnings + subscriptionEarnings
+      : subscriptionEarnings
   );
   const yearlyEarnings = monthlyEarnings * 12;
 
@@ -353,8 +348,8 @@ const EarningsCalculator: React.FC<{ t: typeof translations.en.calculator; lang:
         {/* Purchase Type Selector */}
         <div className="flex justify-center gap-2 mb-6">
           {[
-            { id: "credits", label: isRu ? "Кредиты" : "Credits", icon: "💳" },
-            { id: "subscription", label: isRu ? "Подписка" : "Subscription", icon: "🔄" },
+            { id: "credits", label: isRu ? "Кредиты (Ср. чек)" : "Credits (Avg)", icon: "💳" },
+            { id: "subscription", label: isRu ? "Agency Plan ($149)" : "Agency Plan ($149)", icon: "👑" },
           ].map((type) => (
             <button
               key={type.id}
@@ -381,9 +376,9 @@ const EarningsCalculator: React.FC<{ t: typeof translations.en.calculator; lang:
           </div>
           <input
             type="range"
-            min="10"
-            max="1000"
-            step="10"
+            min="5"
+            max="500"
+            step="5"
             value={users}
             onChange={(e) => setUsers(parseInt(e.target.value))}
             className="w-full h-2 bg-zinc-800 rounded-full appearance-none cursor-pointer
@@ -405,9 +400,9 @@ const EarningsCalculator: React.FC<{ t: typeof translations.en.calculator; lang:
               [&::-moz-range-thumb]:cursor-pointer"
           />
           <div className="flex justify-between text-xs text-zinc-500 mt-2">
-            <span>10</span>
+            <span>5</span>
+            <span>250</span>
             <span>500</span>
-            <span>1000</span>
           </div>
         </div>
 
@@ -428,15 +423,15 @@ const EarningsCalculator: React.FC<{ t: typeof translations.en.calculator; lang:
 
         <p className="text-center text-[10px] sm:text-xs text-zinc-500 mt-4 sm:mt-6 px-2">
           {isRu
-            ? `${users} пользователей × ${purchaseType === "credits" ? `~$${CREDIT_PACK_AVG}` : `$${BUSINESS_AI_PRICE}/мес`} × 50% комиссия`
-            : `${users} users × ${purchaseType === "credits" ? `~$${CREDIT_PACK_AVG} avg pack` : `$${BUSINESS_AI_PRICE}/mo`} × 50% commission`
+            ? `${users} партнёров × ${purchaseType === "credits" ? `~$${CREDIT_PACK_AVG} (ср. чек)` : `$${AGENCY_PLAN_PRICE}/мес (Agency)`} × 50% комиссия`
+            : `${users} partners × ${purchaseType === "credits" ? `~$${CREDIT_PACK_AVG} (avg)` : `$${AGENCY_PLAN_PRICE}/mo (Agency)`} × 50% commission`
           }
         </p>
 
         {/* Breakdown */}
         <div className="mt-4 pt-4 border-t border-zinc-800/50">
           <p className="text-[10px] text-zinc-600 text-center">
-            {isRu ? "💡 50% с каждой покупки кредитов + 50% с каждой подписки Business AI" : "💡 50% from every credit purchase + 50% from every Business AI subscription"}
+            {isRu ? "💡 50% с каждой оплаты Agency Plan (включая Business Assistant) навсегда" : "💡 50% from every Agency Plan (includes Business Assistant) forever"}
           </p>
         </div>
       </div>
