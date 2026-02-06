@@ -24,13 +24,9 @@ import {
 import { GlitchTransition } from "@/remotion/effects/GlitchTransition";
 import { CameraShake, ImpactShake } from "@/remotion/effects/CameraShake";
 import type { SubtitleSegment, MontageStyle, TransitionType, ScenarioTone } from "@/types";
-import { loadFont } from "@remotion/google-fonts/Montserrat";
-import { loadFont as loadMono } from "@remotion/google-fonts/RobotoMono";
+import { styles } from "../styles";
 
-
-
-const { fontFamily: montserrat } = loadFont();
-const { fontFamily: robotoMono } = loadMono();
+const { heading: headingFont, body: bodyFont } = styles.fonts;
 
 // --- Constants (from skills) ---
 const FPS = 30;
@@ -145,6 +141,7 @@ const IntroSlide: React.FC<{
       />
 
       {/* Main title box (like template-prompt-to-video) */}
+      {/* Main title box (like template-prompt-to-video) */}
       <div
         style={{
           display: "flex",
@@ -173,7 +170,7 @@ const IntroSlide: React.FC<{
               textTransform: "uppercase",
               letterSpacing: "0.05em",
               margin: 0,
-              fontFamily: montserrat,
+              fontFamily: headingFont,
             }}
           >
             {title.length > 20 ? title.slice(0, 20) + "..." : title}
@@ -191,7 +188,7 @@ const IntroSlide: React.FC<{
             style={{
               fontSize: 24,
               color: "rgba(255,255,255,0.7)",
-              fontFamily: robotoMono,
+              fontFamily: bodyFont,
               letterSpacing: "0.2em",
               textTransform: "uppercase",
               margin: 0,
@@ -213,7 +210,7 @@ const IntroSlide: React.FC<{
         <p
           style={{
             fontSize: 10,
-            fontFamily: robotoMono,
+            fontFamily: bodyFont,
             color: "rgba(255,255,255,0.3)",
             letterSpacing: "0.3em",
           }}

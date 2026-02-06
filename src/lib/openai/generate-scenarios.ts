@@ -47,84 +47,64 @@ export async function generateScenarios({
 
   // Variation styles for diversity
   const VARIATION_STYLES = [
-    { name: "aggressive", desc: "Быстрая смена кадров, контрастные цвета, шок" },
-    { name: "storytelling", desc: "Нарративная структура, эмоциональная дуга" },
-    { name: "educational", desc: "Пошаговое объяснение, польза, туториал" },
-    { name: "controversial", desc: "Провокация, против общего мнения, хейт-клик" },
-    { name: "luxury", desc: "Премиум эстетика, минимализм, статус" },
-    { name: "meme", desc: "Юмор, мемный формат, относительность" },
+    { name: "aggressive", desc: "Fast cuts, high contrast, shock value" },
+    { name: "storytelling", desc: "Narrative arc, emotional connection" },
+    { name: "educational", desc: "Step-by-step, value-driven, tutorial" },
+    { name: "controversial", desc: "Provocative, contrarian, hate-click" },
+    { name: "luxury", desc: "Premium aesthetic, minimalist, status" },
+    { name: "meme", desc: "Humor, relatable, meme format" },
   ];
-
-  const systemPrompt = isRussian
-    ? `ROLE: Ты — элитный Viral Architect для TikTok/Reels.
+  const systemPrompt = `ROLE: You are an elite Viral Architect for Short-Form Video (TikTok/Reels).
 ${contextBlock}
 
-🛑 CRITICAL RULES (MANDATORY):
-1. LANGUAGE (ЯЗЫК):
-   - ВЕСЬ ТЕКСТ (Voiceover, Hook, Body, CTA) должен быть СТРОГО НА РУССКОМ.
-   - ЗАПРЕЩЕНО использовать английский в сценарии.
-   - Если ты напишешь "Why..." вместо "Почему...", генерация будет отклонена.
+OBJ: Generate viral scripts based on the user's topic/prompt.
+
+🛑 CRITICAL RULES:
+1. LANGUAGE ADAPTATION:
+   - DETECT the language of the User's Topic.
+   - GENERATE the script (Hook, Body, CTA) in the SAME language.
+   - If topic is English -> English script.
+   - If topic is Russian -> Russian script.
+   - Do NOT mix languages.
 
 2. VISUAL DIRECTOR (ASSETS):
-   - Поле 'asset_queries' — это запросы для поиска видео (Pexels). Они должны быть на АНГЛИЙСКОМ.
-   - ЗАПРЕЩЕНО: Односложные запросы ("Money", "Office"). Это дает мусорные видео.
-   - ОБЯЗАТЕЛЬНО: Минимум 3 прилагательных + описание света/стиля.
-   - ФОРМАТ: "noun + action + lighting/style".
-   - ПРИМЕР: "stressed businessman pulling hair dark cinematic lighting 4k".
+   - 'asset_queries' MUST be English keywords for stock footage (Pexels).
+   - DIVERSITY RULE: Each scenario must use RADICALLY DIFFERENT visual themes.
+   - NO REPETITION: Do not use the same keywords across different scenarios.
+   - FORMAT: "subject + action + atmosphere".
+   - BAD: "computer", "typing", "coding" (Too generic, will repeat).
+   - GOOD: "cyberpunk hacker neon rain", "bright minimalist office sunlight", "macro mechanical keyboard rgb".
 
 3. STRUCTURE:
-   - Hook: Кликбейт (0-3 сек).
-   - Body: Сжатая польза (макс 20 слов).
-   - CTA: Призыв подписаться.
-
-4. 🎨 DIVERSITY (КРИТИЧНО!):
-   - КАЖДЫЙ сценарий должен иметь УНИКАЛЬНЫЙ стиль и угол!
-   - НЕ ПОВТОРЯЙ одинаковые хуки и тексты на экране.
-   - Варьируй: тон, структуру, длину предложений, CTA.
-   - Используй РАЗНЫЕ эмоциональные триггеры: страх, любопытство, жадность, гордость, FOMO.`
-    : `ROLE: You are an elite Viral Architect.
-${contextBlock}
-RULES:
-- Generate high-retention scripts in English.
-- Use detailed visual descriptions for 'asset_queries' (min 3 adjectives).
-- CRITICAL: Each scenario must have a UNIQUE style and angle. Do NOT repeat hooks or overlays.`;
+   - Hook: Visual or Audio grabber (0-3s).
+   - Body: High value/gratification (max 20 words).
+   - CTA: Clear instruction.`;
 
   // --- Process Batches in Parallel ---
   const validScenarios: Scenario[] = [];
 
+  // --- ЗАПРОС ПОЛЬЗОВАТЕЛЯ ---
   const promises = batches.map(async (countInBatch, batchIdx) => {
-    // Assign different styles to each batch for variety
-    const batchStyles = VARIATION_STYLES.slice(batchIdx % VARIATION_STYLES.length, batchIdx % VARIATION_STYLES.length + 2);
-    const styleHint = batchStyles.map(s => `${s.name}: ${s.desc}`).join(", ");
-
-    const userPrompt = isRussian
-      ? `Сгенерируй ${countInBatch} УНИКАЛЬНЫХ сценариев на тему: "${topic}".
-
-🎯 ОБЯЗАТЕЛЬНО: Каждый сценарий должен быть РАЗНЫМ!
-- Разные хуки (не повторяй слова!)
-- Разные углы подачи
-- Разные эмоциональные триггеры
-- Рекомендуемые стили для этого батча: ${styleHint}
-
-ВЫВОД JSON (Strict Structure):
-{
-  "scenarios": [
+    const userPrompt = `Generate ${countInBatch} UNIQUE scenarios for topic: "${topic}".
+    
+    OUTPUT JSON (Strict):
     {
-      "title": "Заголовок (РУ) — УНИКАЛЬНЫЙ",
-      "hook": "Текст на экране (РУ) — КОРОТКИЙ, КЛИКБЕЙТ, макс 8 слов",
-      "body": "Текст сценария (РУ)",
-      "cta": "Призыв (РУ) — УНИКАЛЬНЫЙ для каждого",
-      "angle": "aggressive/storytelling/educational/controversial/luxury/meme",
-      "voiceover_text": "Полный текст озвучки (РУ, только кириллица, макс 30 сек)",
-      "asset_queries": [
-        "DETAILED SCENE 1 DESCRIPTION IN ENGLISH (Cinematic, 4k, mood lighting)",
-        "DETAILED SCENE 2 DESCRIPTION IN ENGLISH (Different scene, action)",
-        "DETAILED SCENE 3 DESCRIPTION IN ENGLISH (Closing shot, emotional)"
+      "scenarios": [
+        {
+          "title": "Short Title",
+          "hook": "Overlay Text (On Screen, < 8 words)",
+          "body": "Spoken Script (Voiceover)",
+          "cta": "Call to Action",
+          "angle": "Unique angle (Fear/Desire/Curiosity)",
+          "voiceover_text": "Full spoken text (max 30s)",
+          "asset_queries": [
+            "Distinct Visual 1 (English, Cinematic, 4k)",
+            "Distinct Visual 2 (English, Different scene)",
+            "Distinct Visual 3 (English, Closing shot)"
+          ]
+        }
       ]
-    }
-  ]
-}`
-      : `Generate ${countInBatch} UNIQUE scripts for topic "${topic}". Each must have different hooks, angles, and tones. Suggested styles: ${styleHint}. Output JSON format.`;
+    }`;
 
     try {
       const completion = await openai.chat.completions.create({
