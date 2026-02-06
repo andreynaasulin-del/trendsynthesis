@@ -91,6 +91,7 @@ export function Pricing({ lang }: PricingProps) {
                             </h3>
                             <div className="flex items-baseline gap-1">
                                 <span className="text-4xl font-bold text-white">${credits.creator.amount}</span>
+                                <span className="text-sm font-medium text-white/50">/{isRu ? "мес" : "mo"}</span>
                             </div>
                         </div>
                         <div className="space-y-4 flex-1 mb-8">
@@ -130,10 +131,8 @@ export function Pricing({ lang }: PricingProps) {
                             </h3>
                             <div className="flex items-baseline gap-1">
                                 <span className="text-6xl font-black text-white tracking-tight">${credits.pro.amount}</span>
+                                <span className="text-lg font-medium text-white/50">/{isRu ? "мес" : "mo"}</span>
                             </div>
-                            <p className="text-violet-200/60 text-xs mt-2 font-mono uppercase tracking-wide">
-                                {isRu ? "$0.19 / кредит" : "$0.19 / credit"}
-                            </p>
                         </div>
 
                         <div className="space-y-4 flex-1 mb-10">
@@ -178,6 +177,7 @@ export function Pricing({ lang }: PricingProps) {
 
                             <div className="flex items-baseline gap-1 mb-8">
                                 <span className="text-4xl font-bold text-white">${credits.agency.amount}</span>
+                                <span className="text-sm font-medium text-white/50">/{isRu ? "мес" : "mo"}</span>
                             </div>
 
                             <div className="space-y-4 flex-1 mb-8">
