@@ -68,12 +68,13 @@ OBJ: Generate viral scripts based on the user's topic/prompt.
    - Do NOT mix languages.
 
 2. VISUAL DIRECTOR (ASSETS):
-   - 'asset_queries' MUST be English keywords for stock footage (Pexels).
+   - 'asset_queries' MUST be English DETAILED VISUAL DESCRIPTIONS for stock footage (Pexels).
+   - DO NOT USE SINGLE KEYWORDS like "money" or "office".
+   - PAINT A PICTURE: Describe the scene, lighting, and mood.
+   - FORMAT: "Scene description + atmosphere + camera angle".
+   - BAD: "money", "business", "office", "typing".
+   - GOOD: "stacks of 100 dollar bills lighting up in dark room, cinematic lighting", "futuristic neon city rain night, cyberpunk atmosphere, drone shot", "man in suit looking at city skyline from skyscraper window, success mood".
    - DIVERSITY RULE: Each scenario must use RADICALLY DIFFERENT visual themes.
-   - NO REPETITION: Do not use the same keywords across different scenarios.
-   - FORMAT: "subject + action + atmosphere".
-   - BAD: "computer", "typing", "coding" (Too generic, will repeat).
-   - GOOD: "cyberpunk hacker neon rain", "bright minimalist office sunlight", "macro mechanical keyboard rgb".
 
 3. STRUCTURE:
    - Hook: Visual or Audio grabber (0-3s).

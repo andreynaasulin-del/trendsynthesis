@@ -1,12 +1,12 @@
-import { loadFont } from "@remotion/google-fonts/Unbounded";
+import { loadFont } from "@remotion/google-fonts/Montserrat";
 import { loadFont as loadMono } from "@remotion/google-fonts/RobotoMono";
 
-const { fontFamily: unbounded } = loadFont();
+const { fontFamily: montserrat } = loadFont();
 const { fontFamily: robotoMono } = loadMono();
 
 export const styles = {
     fonts: {
-        heading: unbounded,
+        heading: montserrat,
         body: robotoMono,
     },
     colors: {
@@ -15,7 +15,7 @@ export const styles = {
         accent: "#6366f1", // Indigo
     },
     heading: {
-        fontFamily: unbounded,
+        fontFamily: montserrat,
         fontWeight: 900,
         textTransform: 'uppercase' as const,
     },

@@ -489,7 +489,34 @@ const ColorGradeFilter: React.FC<{
   const style = overlays[grade];
   if (!style) return null;
 
-  return <AbsoluteFill style={style} />;
+  return (
+    <AbsoluteFill style={{ pointerEvents: "none" }}>
+      {/* 1. Global Cinema Correction (Backdrop) */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          backdropFilter: "contrast(1.1) saturate(1.2) brightness(0.95)",
+          zIndex: 1,
+        }}
+      />
+
+      {/* 2. Color Grade Gradient (Overlay) */}
+      <div style={{ ...style, position: "absolute", inset: 0, zIndex: 2 }} />
+
+      {/* 3. Film Grain (Noise) */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          opacity: 0.08,
+          zIndex: 3,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+          mixBlendMode: "overlay",
+        }}
+      />
+    </AbsoluteFill>
+  );
 };
 
 // ============================================

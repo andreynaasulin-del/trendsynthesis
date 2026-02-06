@@ -27,9 +27,12 @@ interface OverlayControllerProps {
   textPosition?: "center" | "bottom" | "top";
 }
 
+import { styles } from "../styles";
+
 // --- TikTok Style Constants ---
-const HIGHLIGHT_COLOR = "#39E508"; // Bright green like template-tiktok
-const WORD_DURATION_MS = 400; // How long each word stays highlighted
+const HIGHLIGHT_COLOR = "#39E508"; // Bright green for ACTIVE word
+const TRIGGER_COLOR = "#FACC15";   // Yellow for TRIGGER words
+const TRIGGER_WORDS = ["MONEY", "AI", "SECRET", "CRYPTO", "VIRAL", "WEALTH", "SYSTEM", "FREE", "GOD", "MODE", "CASH", "DOLLAR"];
 
 // ============================================
 // TIKTOK-STYLE ANIMATED WORD (from template-tiktok)
@@ -56,11 +59,16 @@ const TikTokSubtitle: React.FC<{
   const words = useMemo(() => {
     const wordList = text.split(" ").filter(Boolean);
     const wordDuration = durationMs / wordList.length;
-    return wordList.map((word, idx) => ({
-      text: word,
-      startMs: idx * wordDuration,
-      endMs: (idx + 1) * wordDuration,
-    }));
+    return wordList.map((word, idx) => {
+      const cleanWord = word.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+      const isTrigger = TRIGGER_WORDS.some(t => cleanWord.includes(t));
+      return {
+        text: word,
+        startMs: idx * wordDuration,
+        endMs: (idx + 1) * wordDuration,
+        isTrigger
+      };
+    });
   }, [text, durationMs]);
 
   // Spring entrance animation
@@ -91,14 +99,14 @@ const TikTokSubtitle: React.FC<{
   const positionStyles: Record<string, React.CSSProperties> = {
     top: { top: "8%", bottom: undefined },
     center: { top: "45%", transform: `translateY(-50%)` },
-    bottom: { bottom: "8%", top: undefined }, // Lower position to avoid cut-off
+    bottom: { bottom: "15%", top: undefined }, // Raised slightly for better visibility
   };
 
   // Style variants - reduced font sizes for better fit
   const fontSizes: Record<string, number> = {
-    default: 36,
-    highlight: 42,
-    impact: 48, // Reduced from 56 to prevent text cut-off
+    default: 48,
+    highlight: 56,
+    impact: 64,
   };
 
   const fontSize = fontSizes[style] || fontSizes.default;
@@ -111,7 +119,7 @@ const TikTokSubtitle: React.FC<{
         alignItems: "center",
         paddingLeft: 24,
         paddingRight: 24,
-        paddingBottom: position === "bottom" ? 40 : 0, // Extra safe area at bottom
+        paddingBottom: position === "bottom" ? 40 : 0,
         opacity: exitOpacity,
       }}
     >
@@ -119,7 +127,7 @@ const TikTokSubtitle: React.FC<{
         style={{
           transform: `scale(${scaleValue}) translateY(${translateY}px)`,
           textAlign: "center",
-          maxWidth: "95%",
+          maxWidth: "90%",
           wordWrap: "break-word",
           overflowWrap: "break-word",
         }}
@@ -130,15 +138,16 @@ const TikTokSubtitle: React.FC<{
             position: "absolute",
             fontSize,
             fontWeight: 900,
-            fontFamily: "system-ui, -apple-system, sans-serif",
+            fontFamily: styles.fonts.heading, // Use Montserrat Black
             textTransform: "uppercase",
-            color: "white",
-            WebkitTextStroke: "6px black", // Reduced stroke for cleaner look
+            color: "transparent",
+            WebkitTextStroke: "8px black", // Thicker stroke for "Vibe" look
             paintOrder: "stroke",
             margin: 0,
-            lineHeight: 1.1, // Tighter line height
-            letterSpacing: "0.01em",
+            lineHeight: 1.1,
+            letterSpacing: "0.02em",
             wordBreak: "break-word",
+            zIndex: 0,
           }}
         >
           {words.map((word, idx) => (
@@ -154,17 +163,32 @@ const TikTokSubtitle: React.FC<{
             position: "relative",
             fontSize,
             fontWeight: 900,
-            fontFamily: "system-ui, -apple-system, sans-serif",
+            fontFamily: styles.fonts.heading, // Use Montserrat Black
             textTransform: "uppercase",
             margin: 0,
-            lineHeight: 1.15, // Tighter line height
-            letterSpacing: "0.01em",
+            lineHeight: 1.15,
+            letterSpacing: "0.02em",
             wordBreak: "break-word",
+            zIndex: 1,
           }}
         >
           {words.map((word, idx) => {
-            const isActive =
-              localTimeMs >= word.startMs && localTimeMs < word.endMs;
+            const isActive = localTimeMs >= word.startMs && localTimeMs < word.endMs;
+
+            // Color Logic: Active -> Green, Trigger -> Yellow, Normal -> White
+            let color = "white";
+            if (isActive) color = HIGHLIGHT_COLOR;
+            else if (word.isTrigger) color = TRIGGER_COLOR;
+
+            // Shadow Logic
+            const textShadow = isActive
+              ? `0 0 20px ${HIGHLIGHT_COLOR}, 0 0 40px ${HIGHLIGHT_COLOR}50`
+              : word.isTrigger
+                ? `0 0 15px ${TRIGGER_COLOR}40`
+                : "none";
+
+            // Scale active word slightly
+            const wordScale = isActive ? 1.1 : 1.0;
 
             return (
               <span
@@ -172,11 +196,10 @@ const TikTokSubtitle: React.FC<{
                 style={{
                   display: "inline-block",
                   whiteSpace: "pre-wrap",
-                  color: isActive ? HIGHLIGHT_COLOR : "white",
-                  transition: "color 0.05s ease-out",
-                  textShadow: isActive
-                    ? `0 0 20px ${HIGHLIGHT_COLOR}, 0 0 40px ${HIGHLIGHT_COLOR}50`
-                    : "none",
+                  color,
+                  transition: "color 0.1s ease-out, transform 0.1s ease-out",
+                  textShadow,
+                  transform: `scale(${wordScale})`,
                 }}
               >
                 {word.text}{" "}
