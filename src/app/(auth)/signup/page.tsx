@@ -76,17 +76,6 @@ export default function SignupPage() {
     setLoading(true);
     setError(null);
     try {
-      // MVP BYPASS: Skip Supabase, go straight to dashboard
-      if (email.trim() && password.length >= 1) {
-        console.log("🔓 MVP SIGNUP - bypassing auth");
-        document.cookie = "demo-user=true; path=/; max-age=86400";
-        localStorage.setItem("demo-user-email", email.trim());
-        localStorage.setItem("demo-user-name", fullName || "Demo User");
-        window.location.assign("/dashboard");
-        return;
-      }
-
-      // Fallback to Supabase
       const supabase = createClient();
       const { error } = await supabase.auth.signUp({
         email,
@@ -99,11 +88,15 @@ export default function SignupPage() {
       if (error) throw error;
       setSuccess(true);
     } catch (err: any) {
-      // MVP: Still allow in on error
-      console.log("🔓 MVP SIGNUP FALLBACK");
-      document.cookie = "demo-user=true; path=/; max-age=86400";
-      localStorage.setItem("demo-user-email", email.trim() || "demo@trendsynthesis.app");
-      window.location.assign("/dashboard");
+      console.error("Signup error:", err);
+      // Translate common errors
+      let msg = err.message;
+      if (msg.includes("already registered")) {
+        msg = lang === 'ru' ? "Этот email уже зарегистрирован" : "Email already registered";
+      } else if (msg.includes("Password should be")) {
+        msg = lang === 'ru' ? "Пароль слишком слабый" : "Password too weak";
+      }
+      setError(msg);
     } finally {
       setLoading(false);
     }

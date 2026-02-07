@@ -8,10 +8,17 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 // TEST MODE flag — set to false to re-enable auth protection
-const TEST_MODE = true;
+const TEST_MODE = false;
 
 // Routes that require authentication (disabled in TEST_MODE)
-const PROTECTED_ROUTES = ["/partner", "/generate", "/settings"];
+const PROTECTED_ROUTES = [
+  "/dashboard",
+  "/projects",
+  "/partner",
+  "/generate",
+  "/settings",
+  "/api/generate"
+];
 
 // Routes that redirect to dashboard if already logged in
 const AUTH_ROUTES = ["/login", "/signup"];
@@ -27,47 +34,13 @@ export async function updateSession(request: NextRequest) {
   });
 
   // ========================================
-  // TEST MODE — let everyone through
-  // ========================================
-  if (TEST_MODE) {
-    // Still refresh Supabase session if configured (for users who are logged in)
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (supabaseUrl && supabaseKey) {
-      const supabase = createServerClient(supabaseUrl, supabaseKey, {
-        cookies: {
-          getAll() {
-            return request.cookies.getAll();
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value }) =>
-              request.cookies.set(name, value)
-            );
-            response = NextResponse.next({
-              request,
-            });
-            cookiesToSet.forEach(({ name, value, options }) =>
-              response.cookies.set(name, value, options)
-            );
-          },
-        },
-      });
-
-      // Refresh session silently (don't block on failure)
-      await supabase.auth.getUser().catch(() => {});
-    }
-
-    return response;
-  }
-
-  // ========================================
-  // PRODUCTION MODE (when TEST_MODE = false)
+  // PRODUCTION MODE (Real Supabase Auth)
   // ========================================
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
+    console.warn("Middleware: Missing Supabase Env Vars");
     return response;
   }
 
@@ -90,12 +63,12 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
+  // Refresh session
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isDemoUser = request.cookies.get("demo-user")?.value === "true";
-  const isAuthenticated = !!user || isDemoUser;
+  const isAuthenticated = !!user;
 
   const isProtectedRoute = PROTECTED_ROUTES.some(
     (route) => pathname === route || pathname.startsWith(`${route}/`)
