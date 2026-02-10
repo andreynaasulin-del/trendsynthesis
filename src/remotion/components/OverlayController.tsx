@@ -1,7 +1,7 @@
 // ============================================
-// TRENDSYNTHESIS — Overlay Controller V3
-// TikTok-style captions with word highlighting
-// Skills Integration: template-tiktok
+// TRENDSYNTHESIS — Overlay Controller V4
+// Kinetic Typography with word-by-word POP effects
+// High-impact viral video captions
 // ============================================
 
 import {
@@ -13,6 +13,14 @@ import {
 } from "remotion";
 import React, { useMemo } from "react";
 import type { SubtitleSegment } from "@/types";
+import {
+  KineticTypography,
+  subtitlesToWordTimings,
+  textToWordTimings,
+  type WordTiming,
+} from "./KineticTypography";
+
+import { styles } from "../styles";
 
 // --- Types ---
 export interface OverlayConfig {
@@ -25,17 +33,17 @@ interface OverlayControllerProps {
   config: OverlayConfig;
   subtitles?: SubtitleSegment[];
   textPosition?: "center" | "bottom" | "top";
+  /** Use new Kinetic Typography mode (default: true) */
+  useKinetic?: boolean;
 }
 
-import { styles } from "../styles";
-
 // --- TikTok Style Constants ---
-const HIGHLIGHT_COLOR = "#39E508"; // Bright green for ACTIVE word
-const TRIGGER_COLOR = "#FACC15";   // Yellow for TRIGGER words
+const HIGHLIGHT_COLOR = "#00D4FF"; // Electric Cyan for ACTIVE word (modern, TikTok-style)
+const TRIGGER_COLOR = "#FF6B35";   // Vibrant Orange for TRIGGER words
 const TRIGGER_WORDS = ["MONEY", "AI", "SECRET", "CRYPTO", "VIRAL", "WEALTH", "SYSTEM", "FREE", "GOD", "MODE", "CASH", "DOLLAR"];
 
 // ============================================
-// TIKTOK-STYLE ANIMATED WORD (from template-tiktok)
+// TIKTOK-STYLE ANIMATED WORD (Legacy - kept for fallback)
 // ============================================
 const TikTokSubtitle: React.FC<{
   text: string;
@@ -254,105 +262,70 @@ const PhaseIndicator: React.FC = () => {
 };
 
 // ============================================
-// SIMPLE ANIMATED SUBTITLE (fallback for non-TikTok mode)
-// ============================================
-const AnimatedSubtitle: React.FC<{
-  text: string;
-  startFrame: number;
-  endFrame: number;
-  style?: "default" | "highlight" | "impact";
-  position: "center" | "bottom" | "top";
-}> = ({ text, startFrame, endFrame, style = "default", position }) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-
-  if (frame < startFrame || frame > endFrame) return null;
-
-  const localFrame = frame - startFrame;
-  const duration = endFrame - startFrame;
-
-  const entrance = spring({
-    fps,
-    frame: localFrame,
-    config: { damping: 14, stiffness: 180, mass: 0.6 },
-  });
-
-  const exitStart = duration - 8;
-  const exitOpacity = interpolate(
-    localFrame,
-    [exitStart, duration],
-    [1, 0],
-    { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
-  );
-
-  const translateY = interpolate(entrance, [0, 1], [25, 0]);
-  const scale = style === "impact" ? interpolate(entrance, [0, 1], [0.85, 1]) : 1;
-
-  const positionStyles: Record<string, React.CSSProperties> = {
-    top: { position: "absolute", top: "15%", left: 0, right: 0, paddingLeft: 32, paddingRight: 32 },
-    center: { position: "absolute", top: "50%", left: 0, right: 0, paddingLeft: 32, paddingRight: 32 },
-    bottom: { position: "absolute", bottom: "12%", left: 0, right: 0, paddingLeft: 32, paddingRight: 32 },
-  };
-
-  const styleClasses: Record<string, React.CSSProperties> = {
-    default: { backgroundColor: "rgba(0,0,0,0.5)", padding: "12px 24px", borderRadius: 8 },
-    highlight: { backgroundColor: "rgba(0,0,0,0.6)", padding: "12px 24px", borderRadius: 8, borderLeft: "4px solid white" },
-    impact: { backgroundColor: "rgba(0,0,0,0.7)", padding: "16px 32px", borderRadius: 12, border: "1px solid rgba(255,255,255,0.2)" },
-  };
-
-  const fontSizes: Record<string, number> = {
-    default: 20,
-    highlight: 24,
-    impact: 36,
-  };
-
-  return (
-    <div
-      style={{
-        ...positionStyles[position],
-        transform: `translateY(${translateY}px) scale(${scale})`,
-        opacity: exitOpacity,
-        display: "flex",
-        justifyContent: "center",
-        zIndex: 40,
-      }}
-    >
-      <div style={{ ...styleClasses[style], backdropFilter: "blur(8px)" }}>
-        <p
-          style={{
-            fontSize: fontSizes[style],
-            fontWeight: style === "impact" ? 900 : 600,
-            color: "white",
-            textTransform: "uppercase",
-            textAlign: "center",
-            fontFamily: "system-ui, sans-serif",
-            letterSpacing: "0.05em",
-            margin: 0,
-          }}
-        >
-          {text}
-        </p>
-      </div>
-    </div>
-  );
-};
-
-// ============================================
-// MAIN OVERLAY CONTROLLER V3
+// MAIN OVERLAY CONTROLLER V4
 // ============================================
 export const OverlayController: React.FC<OverlayControllerProps> = ({
   config,
   subtitles,
   textPosition = "bottom",
+  useKinetic = true,
 }) => {
   const frame = useCurrentFrame();
-  const { durationInFrames } = useVideoConfig();
+  const { durationInFrames, fps } = useVideoConfig();
 
   const hasSubtitles = subtitles && subtitles.length > 0;
 
-  // --- V2/V3: Subtitle-driven mode with TikTok highlighting ---
+  // === KINETIC MODE: Word-by-word POP animations ===
+  if (useKinetic) {
+    // Convert subtitles to word timings for kinetic display
+    const wordTimings: WordTiming[] = useMemo(() => {
+      if (hasSubtitles) {
+        return subtitlesToWordTimings(subtitles!, fps);
+      }
+
+      // Build word timings from config (hook, points, cta)
+      const hookDuration = Math.floor(durationInFrames * 0.2);
+      const bodyDuration = Math.floor(durationInFrames * 0.6);
+      const ctaDuration = durationInFrames - hookDuration - bodyDuration;
+
+      const timings: WordTiming[] = [];
+
+      // Hook phase
+      timings.push(...textToWordTimings(config.hook, 0, hookDuration));
+
+      // Body points
+      const pointDuration = Math.floor(bodyDuration / config.points.length);
+      config.points.forEach((point, idx) => {
+        const startFrame = hookDuration + idx * pointDuration;
+        const endFrame = hookDuration + (idx + 1) * pointDuration;
+        timings.push(...textToWordTimings(point, startFrame, endFrame));
+      });
+
+      // CTA phase
+      timings.push(...textToWordTimings(config.cta, hookDuration + bodyDuration, durationInFrames));
+
+      return timings;
+    }, [hasSubtitles, subtitles, config, durationInFrames, fps]);
+
+    return (
+      <AbsoluteFill>
+        <PhaseIndicator />
+        <KineticTypography
+          words={wordTimings}
+          maxVisibleWords={2} // Faster pace for retention
+          position={textPosition}
+          activeColor="#FFE800" // Toxic Yellow
+          enableRotation={true}
+          fontSize={85}
+          strokeWidth={12}
+        />
+      </AbsoluteFill>
+    );
+  }
+
+  // === LEGACY MODE: TikTok-style with sentence highlighting ===
   if (hasSubtitles) {
-    const activeSub = subtitles.find(
+    const activeSub = subtitles!.find(
       (s) => frame >= s.startFrame && frame <= s.endFrame
     );
 
@@ -373,7 +346,7 @@ export const OverlayController: React.FC<OverlayControllerProps> = ({
     );
   }
 
-  // --- V1 Legacy mode (backward compatible) ---
+  // === V1 Legacy mode (backward compatible) ===
   const hookDuration = Math.floor(durationInFrames * 0.2);
   const bodyDuration = Math.floor(durationInFrames * 0.6);
 

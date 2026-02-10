@@ -370,6 +370,9 @@ export default function GeneratePage() {
         store.completeStage("fetching_assets");
 
         store.advanceStage("composing");
+        // Get user plan for watermark logic
+        const userPlan = (profile?.plan as "free" | "creator" | "pro" | "agency") || "free";
+
         generatedScenarios.forEach((scenario, idx) => {
           const queryStartIdx = idx * 2;
           const scenarioClips = []; // Simplified matching logic for brevity here
@@ -390,7 +393,8 @@ export default function GeneratePage() {
           }));
 
           store.setClipsForScenario(scenario.id, clipObjects);
-          const comp = buildComposition(scenario, clipObjects, montageStyle);
+          // Pass userPlan to buildComposition for watermark control
+          const comp = buildComposition(scenario, clipObjects, montageStyle, 30, userPlan);
           store.addComposition(comp);
           store.updateStageProgress("composing", Math.round(((idx + 1) / generatedScenarios.length) * 100));
         });
@@ -411,7 +415,7 @@ export default function GeneratePage() {
   const handleStrategySelect = useCallback((s: StrategyOption) => runPipeline(s), [runPipeline]);
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-80px)] md:h-full gap-3 p-1 md:p-4 lg:p-5 overflow-hidden">
+    <div className="flex flex-col h-[calc(100dvh-80px)] md:h-[calc(100vh-64px)] gap-3 p-1 md:p-0 lg:p-0 overflow-hidden">
       {/* Onboarding Dialog */}
       <Dialog open={showOnboarding} onOpenChange={setShowOnboarding}>
         <DialogContent className="sm:max-w-md bg-zinc-950 border-zinc-800 text-white w-[95%] rounded-xl">
@@ -484,27 +488,33 @@ export default function GeneratePage() {
         </div>
       </div>
 
-      {/* Main Content Area - Responsive Switcher */}
-      <div className="flex-1 min-h-0 relative">
+      {/* Main Content Area - Two Column on Desktop */}
+      <div className="flex-1 min-h-0 flex flex-col lg:flex-row lg:gap-4">
 
-        {/* LEFT: Chat (Visible if tab=chat OR desktop) */}
+        {/* LEFT: Chat Panel */}
         <div className={cn(
-          "absolute inset-0 lg:static flex flex-col gap-3 transition-opacity duration-300",
-          mobileTab === "chat" ? "opacity-100 z-10 pointer-events-auto" : "opacity-0 z-0 pointer-events-none lg:opacity-100 lg:pointer-events-auto"
+          "flex flex-col gap-3 min-h-0 transition-all",
+          // Mobile: Show/hide based on tab
+          mobileTab === "chat" ? "flex-1" : "hidden",
+          // Desktop: Always visible, fixed width
+          "lg:flex lg:w-[420px] lg:shrink-0"
         )}>
           {(isIdle || isFailed) && (
             <VideoCountSelector count={videoCount} onChange={store.setVideoCount} language={language} disabled={isRunning} />
           )}
           <ViralChat
             onStrategySelect={handleStrategySelect}
-            className="h-full border-0 lg:border bg-zinc-950/50"
+            className="flex-1 min-h-0 border-0 lg:border bg-zinc-950/50 lg:rounded-xl"
           />
         </div>
 
-        {/* RIGHT: Results (Visible if tab=results OR desktop) */}
+        {/* RIGHT: Results Panel */}
         <div className={cn(
-          "absolute inset-0 lg:static flex flex-col rounded-xl lg:border border-zinc-800 bg-black/40 backdrop-blur-sm lg:overflow-hidden transition-opacity duration-300",
-          mobileTab === "results" ? "opacity-100 z-10 pointer-events-auto" : "opacity-0 z-0 pointer-events-none lg:opacity-100 lg:pointer-events-auto"
+          "flex flex-col rounded-xl border border-zinc-800 bg-black/40 backdrop-blur-sm min-h-0 transition-all",
+          // Mobile: Show/hide based on tab
+          mobileTab === "results" ? "flex-1" : "hidden",
+          // Desktop: Always visible, takes remaining space
+          "lg:flex lg:flex-1"
         )}>
           {/* Tab Bar within Results Panel - Mobile optimized */}
           {!isIdle && (

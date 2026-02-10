@@ -1,6 +1,6 @@
 // ============================================
-// TRENDSYNTHESIS — Client-Side Video Renderer
-// Uses Remotion Player canvas capture + MediaRecorder
+// TRENDSYNTHESIS — Client-Side Video Renderer V2
+// Enhanced quality capture using multiple fallback strategies
 // Works in browser without server-side dependencies
 // ============================================
 
@@ -9,68 +9,225 @@ export interface RenderProgress {
   progress: number; // 0-100
   currentFrame?: number;
   totalFrames?: number;
+  message?: string;
 }
 
 export interface RenderResult {
   blob: Blob;
   url: string;
   duration: number;
+  format: string;
+}
+
+// Quality presets
+const QUALITY_PRESETS = {
+  high: {
+    videoBitsPerSecond: 12_000_000, // 12 Mbps
+    audioBitsPerSecond: 192_000,
+  },
+  medium: {
+    videoBitsPerSecond: 8_000_000, // 8 Mbps
+    audioBitsPerSecond: 128_000,
+  },
+  low: {
+    videoBitsPerSecond: 4_000_000, // 4 Mbps
+    audioBitsPerSecond: 96_000,
+  },
+};
+
+/**
+ * Get the best supported video codec
+ */
+function getBestCodec(): { mimeType: string; extension: string } {
+  const codecs = [
+    { mime: "video/webm;codecs=vp9,opus", ext: "webm" },
+    { mime: "video/webm;codecs=vp9", ext: "webm" },
+    { mime: "video/webm;codecs=vp8,opus", ext: "webm" },
+    { mime: "video/webm;codecs=vp8", ext: "webm" },
+    { mime: "video/webm", ext: "webm" },
+  ];
+
+  for (const codec of codecs) {
+    if (MediaRecorder.isTypeSupported(codec.mime)) {
+      return { mimeType: codec.mime, extension: codec.ext };
+    }
+  }
+
+  return { mimeType: "video/webm", extension: "webm" };
 }
 
 /**
- * Renders a video by recording the Remotion Player's canvas output
- * using MediaRecorder API.
- *
- * How it works:
- * 1. Finds the canvas/video elements inside the Player container
- * 2. Creates a composite canvas at the target resolution
- * 3. Plays the composition from start to end
- * 4. Records the canvas output using MediaRecorder
- * 5. Returns the recorded blob as a downloadable MP4/WebM
+ * Find all drawable elements inside the Remotion player container
  */
-export async function renderVideoFromPlayer(
-  playerContainer: HTMLElement,
+function findDrawableElements(container: HTMLElement): (HTMLVideoElement | HTMLCanvasElement | HTMLImageElement)[] {
+  const elements: (HTMLVideoElement | HTMLCanvasElement | HTMLImageElement)[] = [];
+
+  // Remotion renders videos as <video> elements
+  const videos = container.querySelectorAll("video");
+  videos.forEach(v => elements.push(v));
+
+  // Canvas elements (for effects, overlays)
+  const canvases = container.querySelectorAll("canvas");
+  canvases.forEach(c => elements.push(c));
+
+  // Images (for static backgrounds)
+  const images = container.querySelectorAll("img");
+  images.forEach(img => {
+    if (img.complete && img.naturalWidth > 0) {
+      elements.push(img);
+    }
+  });
+
+  return elements;
+}
+
+/**
+ * Enhanced frame capture that composites all layers
+ */
+function captureFrame(
+  ctx: CanvasRenderingContext2D,
+  container: HTMLElement,
+  width: number,
+  height: number
+): void {
+  // Clear with black background
+  ctx.fillStyle = "#000000";
+  ctx.fillRect(0, 0, width, height);
+
+  // Get container bounds for positioning calculations
+  const containerRect = container.getBoundingClientRect();
+
+  // Find and draw all drawable elements in order
+  const elements = findDrawableElements(container);
+
+  for (const el of elements) {
+    try {
+      const elRect = el.getBoundingClientRect();
+
+      // Calculate relative position within container
+      const relX = elRect.left - containerRect.left;
+      const relY = elRect.top - containerRect.top;
+
+      // Scale factors from container to canvas
+      const scaleX = width / containerRect.width;
+      const scaleY = height / containerRect.height;
+
+      // Destination position and size on canvas
+      const dx = relX * scaleX;
+      const dy = relY * scaleY;
+      const dw = elRect.width * scaleX;
+      const dh = elRect.height * scaleY;
+
+      // Draw element to canvas
+      if (el instanceof HTMLVideoElement) {
+        if (el.readyState >= 2) {
+          ctx.drawImage(el, dx, dy, dw, dh);
+        }
+      } else if (el instanceof HTMLCanvasElement || el instanceof HTMLImageElement) {
+        ctx.drawImage(el, dx, dy, dw, dh);
+      }
+    } catch {
+      // Skip elements that can't be drawn (CORS, etc.)
+    }
+  }
+
+  // Try to capture text overlays using html2canvas-like approach
+  // Draw any absolutely positioned text/div overlays
+  const textOverlays = container.querySelectorAll('[style*="position: absolute"], [style*="position:absolute"]');
+
+  for (const overlay of textOverlays) {
+    if (overlay instanceof HTMLElement && overlay.textContent) {
+      const style = window.getComputedStyle(overlay);
+      const rect = overlay.getBoundingClientRect();
+
+      const relX = rect.left - containerRect.left;
+      const relY = rect.top - containerRect.top;
+      const scaleX = width / containerRect.width;
+      const scaleY = height / containerRect.height;
+
+      // Set text styles
+      const fontSize = parseFloat(style.fontSize) * scaleX;
+      ctx.font = `${style.fontWeight} ${fontSize}px ${style.fontFamily}`;
+      ctx.fillStyle = style.color;
+      ctx.textAlign = style.textAlign as CanvasTextAlign || "left";
+
+      const x = relX * scaleX;
+      const y = (relY * scaleY) + fontSize;
+
+      // Handle text stroke if present
+      if (style.webkitTextStroke) {
+        const strokeMatch = style.webkitTextStroke.match(/(\d+)px\s+(.+)/);
+        if (strokeMatch) {
+          ctx.strokeStyle = strokeMatch[2];
+          ctx.lineWidth = parseFloat(strokeMatch[1]) * scaleX;
+          ctx.strokeText(overlay.textContent, x, y);
+        }
+      }
+
+      ctx.fillText(overlay.textContent, x, y);
+    }
+  }
+}
+
+/**
+ * High-quality playback capture using real-time recording
+ * Records the player as it plays naturally
+ */
+export async function capturePlayerPlayback(
+  playerRef: {
+    play: () => void;
+    seekTo: (frame: number) => void;
+    pause: () => void;
+    getCurrentFrame?: () => number;
+  },
+  containerEl: HTMLElement,
   options: {
     fps: number;
     durationFrames: number;
     width: number;
     height: number;
+    quality?: "high" | "medium" | "low";
     onProgress?: (progress: RenderProgress) => void;
   }
 ): Promise<RenderResult> {
   const { fps, durationFrames, width, height, onProgress } = options;
-  const durationSeconds = durationFrames / fps;
+  const quality = options.quality || "high";
+  const durationMs = (durationFrames / fps) * 1000;
 
-  onProgress?.({ stage: "preparing", progress: 0 });
+  onProgress?.({
+    stage: "preparing",
+    progress: 0,
+    message: "Initializing renderer..."
+  });
 
-  // Find the player's internal container
-  const playerEl = playerContainer.querySelector("video, canvas") as
-    | HTMLVideoElement
-    | HTMLCanvasElement
-    | null;
+  // Create high-quality recording canvas
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d", {
+    alpha: false,
+    desynchronized: true, // Better performance for real-time capture
+  })!;
 
-  if (!playerEl) {
-    throw new Error("Could not find video/canvas element in player");
-  }
+  // Enable image smoothing for better quality
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
 
-  // Create a recording canvas at target resolution
-  const recordCanvas = document.createElement("canvas");
-  recordCanvas.width = width;
-  recordCanvas.height = height;
-  const ctx = recordCanvas.getContext("2d")!;
+  // Get best codec
+  const { mimeType, extension } = getBestCodec();
+  const qualitySettings = QUALITY_PRESETS[quality];
 
-  // Determine MIME type - prefer webm (broader MediaRecorder support)
-  const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
-    ? "video/webm;codecs=vp9"
-    : MediaRecorder.isTypeSupported("video/webm;codecs=vp8")
-    ? "video/webm;codecs=vp8"
-    : "video/webm";
+  onProgress?.({
+    stage: "preparing",
+    progress: 10,
+    message: `Using codec: ${mimeType}`
+  });
 
-  // Set up MediaRecorder on the canvas stream
-  const stream = recordCanvas.captureStream(fps);
+  // Create MediaRecorder with optimal settings
+  const stream = canvas.captureStream(fps);
   const recorder = new MediaRecorder(stream, {
     mimeType,
-    videoBitsPerSecond: 8_000_000, // 8 Mbps for good quality
+    videoBitsPerSecond: qualitySettings.videoBitsPerSecond,
   });
 
   const chunks: Blob[] = [];
@@ -78,78 +235,111 @@ export async function renderVideoFromPlayer(
     if (e.data.size > 0) chunks.push(e.data);
   };
 
-  return new Promise<RenderResult>((resolve, reject) => {
-    recorder.onerror = (e) => reject(new Error("Recording failed"));
-
-    recorder.onstop = () => {
-      const blob = new Blob(chunks, { type: mimeType });
-      const url = URL.createObjectURL(blob);
-      onProgress?.({ stage: "done", progress: 100 });
-      resolve({ blob, url, duration: durationSeconds });
+  return new Promise((resolve, reject) => {
+    recorder.onerror = (e) => {
+      console.error("MediaRecorder error:", e);
+      reject(new Error("Recording failed"));
     };
 
-    recorder.start(100); // Collect data every 100ms
-    onProgress?.({ stage: "rendering", progress: 0 });
+    recorder.onstop = () => {
+      onProgress?.({
+        stage: "encoding",
+        progress: 95,
+        message: "Finalizing video..."
+      });
 
-    // Capture frames by drawing the player content to our canvas
-    let frameCount = 0;
-    const totalFrames = durationFrames;
-    const frameInterval = 1000 / fps;
+      const blob = new Blob(chunks, { type: mimeType });
+      const url = URL.createObjectURL(blob);
 
-    const captureFrame = () => {
-      if (frameCount >= totalFrames) {
-        recorder.stop();
-        stream.getTracks().forEach((t) => t.stop());
-        return;
-      }
+      onProgress?.({
+        stage: "done",
+        progress: 100,
+        message: "Complete!"
+      });
 
-      try {
-        // Draw the current player frame to our recording canvas
-        const sourceEl = playerContainer.querySelector(
-          "video, canvas, iframe"
-        ) as HTMLElement | null;
+      resolve({
+        blob,
+        url,
+        duration: durationMs / 1000,
+        format: extension
+      });
+    };
 
-        if (sourceEl) {
-          if (sourceEl instanceof HTMLVideoElement) {
-            ctx.drawImage(sourceEl, 0, 0, width, height);
-          } else if (sourceEl instanceof HTMLCanvasElement) {
-            ctx.drawImage(sourceEl, 0, 0, width, height);
-          } else {
-            // Fallback: try to draw the container itself
-            // Draw a black frame
-            ctx.fillStyle = "black";
-            ctx.fillRect(0, 0, width, height);
-          }
-        }
-      } catch {
-        // CORS or other issue - draw black frame
-        ctx.fillStyle = "black";
-        ctx.fillRect(0, 0, width, height);
-      }
+    // Seek to beginning
+    playerRef.seekTo(0);
 
-      frameCount++;
-      const progress = Math.round((frameCount / totalFrames) * 100);
+    // Start recording with frequent data collection for smoother encoding
+    recorder.start(50); // Collect every 50ms
+
+    onProgress?.({
+      stage: "rendering",
+      progress: 0,
+      message: "Starting capture...",
+      currentFrame: 0,
+      totalFrames: durationFrames
+    });
+
+    // Give player time to seek, then start playback
+    setTimeout(() => {
+      playerRef.play();
+    }, 150);
+
+    // Main capture loop - synced with requestAnimationFrame
+    let startTime: number | null = null;
+    let framesCaptured = 0;
+
+    const captureLoop = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+
+      // Capture current frame
+      captureFrame(ctx, containerEl, width, height);
+      framesCaptured++;
+
+      // Calculate progress
+      const progress = Math.min(90, Math.round((elapsed / durationMs) * 90));
+      const currentFrame = Math.floor((elapsed / 1000) * fps);
+
       onProgress?.({
         stage: "rendering",
         progress,
-        currentFrame: frameCount,
-        totalFrames,
+        currentFrame,
+        totalFrames: durationFrames,
+        message: `Frame ${currentFrame}/${durationFrames}`
       });
 
-      requestAnimationFrame(captureFrame);
+      // Continue until we've captured the full duration (+ small buffer)
+      if (elapsed < durationMs + 200) {
+        requestAnimationFrame(captureLoop);
+      } else {
+        // Stop recording
+        playerRef.pause();
+
+        onProgress?.({
+          stage: "encoding",
+          progress: 92,
+          message: "Encoding video..."
+        });
+
+        recorder.stop();
+        stream.getTracks().forEach((t) => t.stop());
+      }
     };
 
-    // Start capture
-    requestAnimationFrame(captureFrame);
+    // Start the capture loop
+    requestAnimationFrame(captureLoop);
   });
 }
 
 /**
- * Simpler approach: Capture the player by playing it and recording the screen region.
- * This uses the player's own playback to capture the output.
+ * Alternative: Frame-by-frame capture for maximum quality
+ * Slower but captures every frame precisely
  */
-export async function capturePlayerPlayback(
-  playerRef: { play: () => void; seekTo: (frame: number) => void; pause: () => void },
+export async function captureFrameByFrame(
+  playerRef: {
+    seekTo: (frame: number) => void;
+    pause: () => void;
+  },
   containerEl: HTMLElement,
   options: {
     fps: number;
@@ -160,37 +350,25 @@ export async function capturePlayerPlayback(
   }
 ): Promise<RenderResult> {
   const { fps, durationFrames, width, height, onProgress } = options;
-  const durationMs = (durationFrames / fps) * 1000;
 
-  onProgress?.({ stage: "preparing", progress: 0 });
+  onProgress?.({
+    stage: "preparing",
+    progress: 0,
+    message: "Setting up frame-by-frame capture..."
+  });
 
-  // Create a canvas to capture from
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
-  const ctx = canvas.getContext("2d")!;
+  const ctx = canvas.getContext("2d", { alpha: false })!;
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
 
-  // Try to find the actual rendering surface
-  const findRenderSurface = (): HTMLVideoElement | HTMLCanvasElement | null => {
-    // The Remotion Player renders into a container div
-    // Look for video elements (OffthreadVideo renders as <video>)
-    const videos = containerEl.querySelectorAll("video");
-    if (videos.length > 0) return videos[0];
-
-    const canvases = containerEl.querySelectorAll("canvas");
-    if (canvases.length > 0) return canvases[0];
-
-    return null;
-  };
-
-  const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
-    ? "video/webm;codecs=vp9"
-    : "video/webm";
-
+  const { mimeType, extension } = getBestCodec();
   const stream = canvas.captureStream(fps);
   const recorder = new MediaRecorder(stream, {
     mimeType,
-    videoBitsPerSecond: 8_000_000,
+    videoBitsPerSecond: QUALITY_PRESETS.high.videoBitsPerSecond,
   });
 
   const chunks: Blob[] = [];
@@ -205,54 +383,47 @@ export async function capturePlayerPlayback(
       const blob = new Blob(chunks, { type: mimeType });
       const url = URL.createObjectURL(blob);
       onProgress?.({ stage: "done", progress: 100 });
-      resolve({ blob, url, duration: durationMs / 1000 });
+      resolve({ blob, url, duration: durationFrames / fps, format: extension });
     };
 
-    // Seek to beginning and start
-    playerRef.seekTo(0);
     recorder.start(100);
-    onProgress?.({ stage: "rendering", progress: 0 });
 
-    // Start playback
-    setTimeout(() => playerRef.play(), 100);
+    // Capture each frame by seeking
+    let currentFrame = 0;
+    const frameDelay = 1000 / fps; // Time per frame in ms
 
-    // Capture loop
-    let startTime: number | null = null;
-    const captureLoop = (timestamp: number) => {
-      if (!startTime) startTime = timestamp;
-      const elapsed = timestamp - startTime;
-
-      // Draw the current state of all visible elements
-      ctx.fillStyle = "black";
-      ctx.fillRect(0, 0, width, height);
-
-      const surface = findRenderSurface();
-      if (surface) {
-        try {
-          ctx.drawImage(surface, 0, 0, width, height);
-        } catch {
-          // CORS issue — skip frame
-        }
-      }
-
-      const progress = Math.min(100, Math.round((elapsed / durationMs) * 100));
-      onProgress?.({
-        stage: "rendering",
-        progress,
-        currentFrame: Math.floor((elapsed / 1000) * fps),
-        totalFrames: durationFrames,
-      });
-
-      if (elapsed < durationMs + 500) {
-        requestAnimationFrame(captureLoop);
-      } else {
+    const captureNextFrame = () => {
+      if (currentFrame >= durationFrames) {
         playerRef.pause();
         recorder.stop();
-        stream.getTracks().forEach((t) => t.stop());
+        stream.getTracks().forEach(t => t.stop());
+        return;
       }
+
+      playerRef.seekTo(currentFrame);
+
+      // Wait for seek to complete, then capture
+      setTimeout(() => {
+        captureFrame(ctx, containerEl, width, height);
+
+        const progress = Math.round((currentFrame / durationFrames) * 100);
+        onProgress?.({
+          stage: "rendering",
+          progress,
+          currentFrame,
+          totalFrames: durationFrames,
+          message: `Capturing frame ${currentFrame}/${durationFrames}`
+        });
+
+        currentFrame++;
+
+        // Use requestAnimationFrame for smooth processing
+        requestAnimationFrame(captureNextFrame);
+      }, frameDelay);
     };
 
-    requestAnimationFrame(captureLoop);
+    onProgress?.({ stage: "rendering", progress: 0 });
+    captureNextFrame();
   });
 }
 
@@ -268,4 +439,13 @@ export function downloadBlob(blob: Blob, filename: string) {
   a.click();
   document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/**
+ * Format file size for display
+ */
+export function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+  return (bytes / (1024 * 1024)).toFixed(1) + " MB";
 }

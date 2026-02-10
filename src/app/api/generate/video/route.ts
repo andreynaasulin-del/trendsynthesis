@@ -93,6 +93,7 @@ export async function POST(request: NextRequest) {
                 videoCount: Math.min(video_count, 30),
                 style,
                 language,
+                userPlan: profile.plan || "free", // Pass user plan for watermark logic
             });
 
             if (!result.success) throw new Error(result.error || "Pipeline failed");

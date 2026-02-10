@@ -154,20 +154,28 @@ export function buildComposition(
   scenario: Scenario,
   clips: VideoClip[],
   style: MontageStyle,
-  fps: number = 30
+  fps: number = 30,
+  userPlan: "free" | "creator" | "pro" | "agency" = "free"
 ): MontageComposition {
   const durationFrames = scenario.duration_seconds * fps;
+
+  // Force watermark for free users
+  const finalStyle = { ...style };
+  if (userPlan === "free") {
+    finalStyle.watermark = true;
+  }
 
   return {
     id: `comp-${scenario.id}`,
     scenario,
     clips,
     subtitles: buildSubtitles(scenario, durationFrames, fps),
-    style,
+    style: finalStyle,
     duration_frames: durationFrames,
     fps,
     width: 1080,
     height: 1920,
+    userPlan,
   };
 }
 

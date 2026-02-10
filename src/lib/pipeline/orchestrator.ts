@@ -37,6 +37,7 @@ export async function runGenerationPipeline(params: {
     videoCount?: number;
     style?: VideoStyle;
     language?: string;
+    userPlan?: string; // "free" | "creator" | "pro" | "agency"
     onProgress?: ProgressCallback;
 }): Promise<PipelineResult> {
     const {
@@ -44,6 +45,7 @@ export async function runGenerationPipeline(params: {
         videoCount = 6,
         style = "cinematic",
         language = "en",
+        userPlan = "free",
         onProgress,
     } = params;
 
@@ -120,7 +122,7 @@ export async function runGenerationPipeline(params: {
         // Process with progress updates
         compositions = [];
         for (const scenario of scenarios) {
-            const composition = await (await import("./composition-builder")).buildComposition(scenario, style);
+            const composition = await (await import("./composition-builder")).buildComposition(scenario, style, userPlan);
             compositions.push(composition);
             processedCount++;
 

@@ -54,67 +54,69 @@ export async function generateScenarios({
     { name: "luxury", desc: "Premium aesthetic, minimalist, status" },
     { name: "meme", desc: "Humor, relatable, meme format" },
   ];
-  const systemPrompt = `ROLE: You are an elite Viral Architect for Short-Form Video (TikTok/Reels).
-${contextBlock}
-
-OBJ: Generate viral scripts based on the user's topic/prompt.
-
-🛑 CRITICAL RULES:
-1. LANGUAGE ADAPTATION:
-   - DETECT the language of the User's Topic.
-   - GENERATE the script (Hook, Body, CTA) in the SAME language.
-   - If topic is English -> English script.
-   - If topic is Russian -> Russian script.
-   - Do NOT mix languages.
-
-2. VISUAL DIRECTOR (ASSETS):
-   - 'asset_queries' MUST be English DETAILED VISUAL DESCRIPTIONS for stock footage (Pexels).
-   - DO NOT USE SINGLE KEYWORDS like "money" or "office".
-   - PAINT A PICTURE: Describe the scene, lighting, and mood.
-   - FORMAT: "Scene description + atmosphere + camera angle".
-   - BAD: "money", "business", "office", "typing".
-   - GOOD: "stacks of 100 dollar bills lighting up in dark room, cinematic lighting", "futuristic neon city rain night, cyberpunk atmosphere, drone shot", "man in suit looking at city skyline from skyscraper window, success mood".
-   - DIVERSITY RULE: Each scenario must use RADICALLY DIFFERENT visual themes.
-
-3. STRUCTURE:
-   - Hook: Visual or Audio grabber (0-3s).
-   - Body: High value/gratification (max 20 words).
-   - CTA: Clear instruction.`;
+  // Detect language hint (optional, but good for context)
+  const isCyrillic = /[а-яА-ЯёЁ]/.test(topic);
+  console.log(`🌐 Topic analysis: "${topic}" (Cyrillic: ${isCyrillic}, User Lang: ${language})`);
 
   // --- Process Batches in Parallel ---
   const validScenarios: Scenario[] = [];
 
-  // --- ЗАПРОС ПОЛЬЗОВАТЕЛЯ ---
   const promises = batches.map(async (countInBatch, batchIdx) => {
-    const userPrompt = `Generate ${countInBatch} UNIQUE scenarios for topic: "${topic}".
+
+    // Improved System Prompt for GPT-4o
+    const systemPrompt = `ROLE: You are an elite Viral Architect for Short-Form Video (TikTok/Reels).
+${contextBlock}
+
+OBJ: Generate ${countInBatch} VIRAL SCRIPTS for the topic: "${topic}".
+
+🛑 LANGUAGE RULE (CRITICAL) 🛑
+- DETECT the language of the topic "${topic}".
+- GENERATE ALL TEXT (title, hook, body, cta, voiceover) IN THAT SAME LANGUAGE.
+- Example: Topic "Как заработать" -> Output RUSSIAN.
+- Example: Topic "How to make money" -> Output ENGLISH.
+- IGNORE the "language" param from user if it conflicts with the topic language.
+- EXCEPTION: 'asset_queries' MUST be in ENGLISH (for stock footage search).
+
+📝 STRUCTURE (Viral Arc):
+1. **Hook (0-2s)**: Shocking statement, question, or "Stop scrolling!" moment. Max 7 words.
+2. **Body (2-10s)**: High-speed value delivery. No fluff. Max 20 words.
+3. **CTA (10-15s)**: Direct command. Max 5 words.
+
+🎬 VISUAL DIRECTOR (Asset Queries):
+- Describe the scene VISUALLY (lighting, action, camera angle).
+- KEYWORDS: Cinematic, 4k, hyper-realistic.
+- NO abstract concepts. Concrete imagery only.
+- Example: "Close up of money counting machine, dark room, neon green light, cinematic 4k"`;
+
+    const userPrompt = `Generate ${countInBatch} UNIQUE scenarios.
     
-    OUTPUT JSON (Strict):
+OUTPUT JSON (Strict):
+{
+  "scenarios": [
     {
-      "scenarios": [
-        {
-          "title": "Short Title",
-          "hook": "Overlay Text (On Screen, < 8 words)",
-          "body": "Spoken Script (Voiceover)",
-          "cta": "Call to Action",
-          "angle": "Unique angle (Fear/Desire/Curiosity)",
-          "voiceover_text": "Full spoken text (max 30s)",
-          "asset_queries": [
-            "Distinct Visual 1 (English, Cinematic, 4k)",
-            "Distinct Visual 2 (English, Different scene)",
-            "Distinct Visual 3 (English, Closing shot)"
-          ]
-        }
+      "title": "Short Attention-Grabbing Title (in Topic Language)",
+      "hook": "Aggressive Hook (in Topic Language)",
+      "body": "Value Proposition (in Topic Language)",
+      "cta": "Call to Action (in Topic Language)",
+      "angle": "Psychological Angle (e.g., Fear, Greed, Curiosity)",
+      "voiceover_text": "Full spoken script for TTS (in Topic Language, max 30s)",
+      "asset_queries": [
+        "Visual Description 1 (ENGLISH, Cinematic)",
+        "Visual Description 2 (ENGLISH, High Action)",
+        "Visual Description 3 (ENGLISH, Closing Shot)"
       ]
-    }`;
+    }
+  ]
+}`;
 
     try {
       const completion = await openai.chat.completions.create({
-        model: "gpt-4o-mini", // Fast & Cost Effective
+        model: "gpt-4o", // Upgraded from gpt-4o-mini for better reasoning
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
-        temperature: 0.7,
+        temperature: 0.8, // Slightly higher for creativity
         response_format: { type: "json_object" },
       });
 
@@ -132,6 +134,9 @@ OBJ: Generate viral scripts based on the user's topic/prompt.
         controversial: "provocative",
         luxury: "professional",
         meme: "casual",
+        fear: "provocative",
+        greed: "provocative",
+        curiosity: "educational",
       };
 
       const normalized = Array.isArray(rawScenarios) ? rawScenarios.map((s: any, idx: number) => ({
@@ -143,10 +148,10 @@ OBJ: Generate viral scripts based on the user's topic/prompt.
         body: s.body || "",
         cta: s.cta || "",
         asset_queries: (s.asset_queries || [s.hook]).map((q: string) =>
-          q.includes("cinematic") ? q : `${q}, cinematic, 4k, dark mode`
+          q.includes("cinematic") ? q : `${q}, cinematic, 4k, high quality`
         ),
         voiceover_text: s.voiceover_text || "",
-        duration_seconds: 15,
+        duration_seconds: 15, // Fixed duration for now, manageable
         keywords: [],
         angle: s.angle || VARIATION_STYLES[batchIdx % VARIATION_STYLES.length]?.name || "Viral",
         tone: toneMap[s.angle?.toLowerCase()] || "provocative" as const,

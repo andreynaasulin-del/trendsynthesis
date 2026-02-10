@@ -179,14 +179,48 @@ const StrategyCard = ({
   else if (lowerTitle.includes("story") || lowerTitle.includes("journey") || lowerTitle.includes("истори"))
     Icon = STRATEGY_ICONS.story;
 
+  const [isHovered, setIsHovered] = useState(false);
+
   return (
     <div
       onClick={() => onSelect(option)}
-      className="group cursor-pointer rounded-lg sm:rounded-xl border border-violet-500/20 bg-zinc-900/60 backdrop-blur-sm hover:bg-zinc-900/80 hover:border-violet-500/40 active:scale-[0.98] transition-all duration-200 p-3 sm:p-5 flex flex-col h-full"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="group relative cursor-pointer rounded-xl border border-violet-500/20 bg-zinc-900/60 backdrop-blur-sm hover:bg-zinc-900/80 hover:border-violet-500/40 active:scale-[0.98] transition-all duration-200 p-4 sm:p-5 flex flex-col h-full min-h-[180px] sm:min-h-[200px] overflow-hidden"
     >
-      <div className="flex justify-between items-start mb-2 sm:mb-4">
-        <div className="p-1.5 sm:p-2 rounded-md sm:rounded-lg bg-violet-500/10 text-violet-400 group-hover:bg-violet-500/20 group-hover:text-violet-300 transition-colors">
-          <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+      {/* Sparkle particles on hover */}
+      {isHovered && (
+        <div className="pointer-events-none absolute inset-0 z-10">
+          {[...Array(6)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute animate-sparkle"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${i * 0.15}s`,
+              }}
+            >
+              <Sparkles className="h-3 w-3 text-yellow-400/80" />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Glow effect on hover */}
+      <div
+        className={cn(
+          "absolute inset-0 rounded-xl transition-opacity duration-300",
+          isHovered ? "opacity-100" : "opacity-0"
+        )}
+        style={{
+          background: "radial-gradient(circle at 50% 50%, rgba(139,92,246,0.15) 0%, transparent 70%)",
+        }}
+      />
+
+      <div className="relative z-[1] flex justify-between items-start mb-3 sm:mb-4">
+        <div className="p-2.5 sm:p-3 rounded-lg bg-violet-500/10 text-violet-400 group-hover:bg-violet-500/20 group-hover:text-violet-300 transition-colors">
+          <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
         </div>
         {option.confidence && (
           <div className="flex items-center gap-1 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded bg-zinc-800/50 border border-zinc-700/50">
@@ -196,24 +230,29 @@ const StrategyCard = ({
         )}
       </div>
 
-      <h3 className="text-sm sm:text-base font-semibold text-zinc-100 mb-1.5 sm:mb-2 group-hover:text-white transition-colors line-clamp-2">
+      <h3 className="relative z-[1] text-sm sm:text-base font-semibold text-zinc-100 mb-1.5 sm:mb-2 group-hover:text-white transition-colors line-clamp-2">
         {option.title}
       </h3>
 
-      <p className="text-xs sm:text-sm text-zinc-500 mb-3 sm:mb-5 line-clamp-2 leading-relaxed">
+      <p className="relative z-[1] text-xs sm:text-sm text-zinc-500 mb-3 sm:mb-5 line-clamp-2 leading-relaxed">
         {option.description}
       </p>
 
-      <div className="mt-auto pt-2 sm:pt-4 border-t border-zinc-800/50">
+      <div className="relative z-[1] mt-auto pt-2 sm:pt-4 border-t border-zinc-800/50">
         <div className="flex items-center gap-2 text-[9px] sm:text-[10px] text-violet-400/70 font-mono mb-1 sm:mb-2">
           <span className="uppercase tracking-wider">Hook</span>
         </div>
         <p className="text-xs sm:text-sm italic text-zinc-300 font-medium leading-relaxed line-clamp-2">"{option.hook_text}"</p>
       </div>
 
-      <div className="mt-2 sm:mt-4 flex items-center justify-between">
+      <div className="relative z-[1] mt-2 sm:mt-4 flex items-center justify-between">
         <span className="text-[10px] sm:text-xs text-zinc-500 font-mono">{option.estimated_views || "High"}</span>
-        <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-violet-400" />
+        <div className="flex items-center gap-1 text-violet-400 group-hover:text-violet-300 transition-colors">
+          <span className="text-[10px] sm:text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+            Generate
+          </span>
+          <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 group-hover:translate-x-1 transition-transform" />
+        </div>
       </div>
     </div>
   );
@@ -346,11 +385,11 @@ const MessageBubble = ({
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className={cn("flex w-full gap-2 sm:gap-4 md:gap-5", isUser ? "justify-end" : "justify-start")}
+      className={cn("flex w-full gap-2 sm:gap-3 md:gap-4 min-w-0", isUser ? "justify-end" : "justify-start")}
     >
       {!isUser && <Avatar role="ai" mode={mode} />}
 
-      <div className={cn("max-w-[90%] sm:max-w-[85%] md:max-w-[75%] flex flex-col gap-1.5 sm:gap-2", isUser && "items-end")}>
+      <div className={cn("max-w-[calc(100%-44px)] sm:max-w-[85%] md:max-w-[75%] flex flex-col gap-1.5 sm:gap-2 min-w-0", isUser && "items-end")}>
         {/* Label */}
         <div className="flex items-center gap-2 px-1">
           <span

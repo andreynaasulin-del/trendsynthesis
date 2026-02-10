@@ -9,14 +9,19 @@ export interface User {
   email: string;
   full_name: string | null;
   avatar_url: string | null;
-  plan: "free" | "pro" | "agency";
+  plan: "free" | "creator" | "pro" | "agency";
   credits_remaining: number;
 
   // Creator Settings
+  niche?: string;
+  goal?: string;
   system_prompt?: string;
   target_audience?: string;
   video_examples?: string[];
   traffic_source?: "tiktok" | "instagram" | "youtube" | "telegram";
+
+  stripe_customer_id?: string;
+  stripe_subscription_id?: string;
 
   created_at: string;
   updated_at: string;
@@ -92,6 +97,8 @@ export interface MontageComposition {
   fps: number;
   width: number;
   height: number;
+  // User plan for watermark control
+  userPlan?: "free" | "creator" | "pro" | "agency";
 }
 
 export interface SubtitleSegment {
@@ -139,7 +146,7 @@ export type VideoRenderStatus =
   | "completed"
   | "failed";
 
-export type VideoStyle = "cinematic" | "dynamic" | "minimal";
+export type VideoStyle = "cinematic" | "dynamic" | "minimal" | "raw";
 
 // --- Pexels Asset ---
 export interface PexelsAsset {
@@ -202,7 +209,7 @@ export interface ApiResponse<T> {
 
 // --- Pricing ---
 export interface PricingPlan {
-  id: "free" | "pro" | "agency";
+  id: "free" | "creator" | "pro" | "agency";
   name: string;
   price: number;
   currency: string;

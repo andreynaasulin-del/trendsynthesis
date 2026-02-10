@@ -143,20 +143,27 @@ async function fetchClipsForScenario(scenario: Scenario): Promise<VideoClip[]> {
 // --- Main Builder Function ---
 export async function buildComposition(
   scenario: Scenario,
-  style: VideoStyle = "cinematic"
+  style: VideoStyle = "cinematic",
+  userPlan: string = "free"
 ): Promise<MontageComposition> {
   const durationSeconds = scenario.duration_seconds || DEFAULT_DURATION_SECONDS;
   const durationFrames = durationSeconds * FPS;
-  
+
   // 1. Fetch video clips
   const clips = await fetchClipsForScenario(scenario);
-  
+
   // 2. Generate subtitles
   const subtitles = generateSubtitles(scenario, durationFrames);
-  
+
   // 3. Get style preset
-  const montageStyle = STYLE_PRESETS[style] || STYLE_PRESETS.cinematic;
-  
+  const montageStyle = { ...STYLE_PRESETS[style] } || { ...STYLE_PRESETS.cinematic };
+
+  // 4. FORCE WATERMARK for free users (cannot be disabled)
+  const isFreeUser = userPlan === "free";
+  if (isFreeUser) {
+    montageStyle.watermark = true;
+  }
+
   return {
     id: uuid(),
     scenario,
@@ -167,6 +174,8 @@ export async function buildComposition(
     fps: FPS,
     width: 1080,
     height: 1920,
+    // Add userPlan for watermark control in Remotion
+    userPlan: userPlan as MontageComposition["userPlan"],
   };
 }
 

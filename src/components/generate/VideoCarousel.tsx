@@ -15,7 +15,7 @@ import { Player, PlayerRef } from "@remotion/player";
 import { ViralMontage } from "@/remotion/components/ViralMontage";
 import { Thumbnail } from "@/remotion/components/Thumbnail";
 import { Button } from "@/components/ui/button";
-import { capturePlayerPlayback, downloadBlob, type RenderProgress } from "@/lib/client-render";
+import { capturePlayerPlayback, downloadBlob, formatFileSize, type RenderProgress } from "@/lib/client-render";
 import type { MontageComposition } from "@/types";
 
 interface VideoCarouselProps {
@@ -36,6 +36,9 @@ const VideoPlayer = memo(function VideoPlayer({
   active: MontageComposition;
   playerRef: React.RefObject<PlayerRef>;
 }) {
+  // Determine if free user for watermark
+  const isFreeUser = !active.userPlan || active.userPlan === "free";
+
   return (
     <Player
       ref={playerRef}
@@ -49,6 +52,8 @@ const VideoPlayer = memo(function VideoPlayer({
         },
         subtitles: active.subtitles,
         montageStyle: active.style,
+        // Pass isFreeUser for watermark control
+        isFreeUser,
       }}
       durationInFrames={active.duration_frames}
       fps={active.fps}
@@ -277,23 +282,23 @@ export function VideoCarousel({
           </div>
         </AnimatePresence>
 
-        {/* Navigation Arrows - Touch friendly */}
+        {/* Navigation Arrows - Touch friendly, positioned outside video on desktop */}
         {viewMode === "video" && (
           <>
             {canPrev && (
               <button
                 onClick={() => onChangeIndex(activeIndex - 1)}
-                className="absolute left-1 sm:left-[-16px] top-1/2 -translate-y-1/2 h-10 w-10 sm:h-8 sm:w-8 rounded-full bg-zinc-900/90 border border-zinc-700 flex items-center justify-center hover:bg-zinc-800 active:scale-95 transition-all z-20"
+                className="absolute -left-2 sm:-left-12 lg:-left-14 top-1/2 -translate-y-1/2 h-11 w-11 sm:h-10 sm:w-10 rounded-full bg-zinc-900/95 border border-zinc-700 flex items-center justify-center hover:bg-zinc-800 active:scale-95 transition-all z-20 shadow-lg"
               >
-                <ChevronLeft className="h-5 w-5 sm:h-4 sm:w-4 text-zinc-300" />
+                <ChevronLeft className="h-5 w-5 text-zinc-300" />
               </button>
             )}
             {canNext && (
               <button
                 onClick={() => onChangeIndex(activeIndex + 1)}
-                className="absolute right-1 sm:right-[-16px] top-1/2 -translate-y-1/2 h-10 w-10 sm:h-8 sm:w-8 rounded-full bg-zinc-900/90 border border-zinc-700 flex items-center justify-center hover:bg-zinc-800 active:scale-95 transition-all z-20"
+                className="absolute -right-2 sm:-right-12 lg:-right-14 top-1/2 -translate-y-1/2 h-11 w-11 sm:h-10 sm:w-10 rounded-full bg-zinc-900/95 border border-zinc-700 flex items-center justify-center hover:bg-zinc-800 active:scale-95 transition-all z-20 shadow-lg"
               >
-                <ChevronRight className="h-5 w-5 sm:h-4 sm:w-4 text-zinc-300" />
+                <ChevronRight className="h-5 w-5 text-zinc-300" />
               </button>
             )}
           </>
@@ -342,7 +347,7 @@ export function VideoCarousel({
             </Button>
             <Button
               size="sm"
-              className="text-[11px] sm:text-xs h-9 sm:h-10 bg-white text-black hover:bg-zinc-200 font-semibold"
+              className="text-[11px] sm:text-xs h-9 sm:h-10 bg-white text-black hover:bg-zinc-200 font-semibold min-w-[100px]"
               disabled={isDownloading}
               onClick={async () => {
                 if (!playerRef.current || !containerRef.current) return;
@@ -361,15 +366,19 @@ export function VideoCarousel({
                       durationFrames: active.duration_frames,
                       width: active.width,
                       height: active.height,
+                      quality: "high",
                       onProgress: setRenderProgress,
                     }
                   );
 
-                  const filename = `${active.scenario.title.replace(/[^a-z0-9]/gi, "_")}.webm`;
+                  const filename = `${active.scenario.title.replace(/[^a-z0-9]/gi, "_")}.${result.format}`;
                   downloadBlob(result.blob, filename);
+
+                  // Show success with file size
+                  console.log(`Video exported: ${formatFileSize(result.blob.size)}`);
                 } catch (error) {
                   console.error("Render failed:", error);
-                  alert(language === "ru" ? "Ошибка" : "Error");
+                  alert(language === "ru" ? "Ошибка рендера" : "Render failed");
                 } finally {
                   setIsDownloading(false);
                   setRenderProgress(null);
@@ -377,10 +386,10 @@ export function VideoCarousel({
               }}
             >
               {isDownloading ? (
-                <>
-                  <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-                  {renderProgress?.progress || 0}%
-                </>
+                <span className="flex items-center gap-1.5">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <span className="tabular-nums">{renderProgress?.progress || 0}%</span>
+                </span>
               ) : (
                 <>
                   <Download className="h-3.5 w-3.5 mr-1.5" />

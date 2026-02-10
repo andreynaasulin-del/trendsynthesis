@@ -109,6 +109,25 @@ BEGIN
 END;
 $$;
 
+-- Atomic Credit Decrement
+CREATE OR REPLACE FUNCTION decrement_credits(user_id UUID)
+RETURNS INTEGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  new_balance INTEGER;
+BEGIN
+  UPDATE public.profiles
+  SET credits_remaining = GREATEST(0, credits_remaining - 1),
+      updated_at = NOW()
+  WHERE id = user_id
+  RETURNING credits_remaining INTO new_balance;
+  
+  RETURN new_balance;
+END;
+$$;
+
 -- ============================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
 -- ============================================
@@ -154,3 +173,30 @@ CREATE POLICY "Users can view videos of own projects" ON public.videos FOR SELEC
 -- Usage Logs
 DROP POLICY IF EXISTS "Users can view own usage" ON public.usage_logs;
 CREATE POLICY "Users can view own usage" ON public.usage_logs FOR SELECT USING (auth.uid() = user_id);
+
+-- INSERT/UPDATE POLICIES (Required for App Functionality)
+-- Profiles
+DROP POLICY IF EXISTS "Users can insert own profile" ON public.profiles;
+CREATE POLICY "Users can insert own profile" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
+
+-- Scenarios
+DROP POLICY IF EXISTS "Users can create scenarios" ON public.scenarios;
+CREATE POLICY "Users can create scenarios" ON public.scenarios FOR INSERT WITH CHECK (
+    EXISTS (SELECT 1 FROM public.projects WHERE id = project_id AND user_id = auth.uid())
+);
+
+DROP POLICY IF EXISTS "Users can update scenarios" ON public.scenarios;
+CREATE POLICY "Users can update scenarios" ON public.scenarios FOR UPDATE USING (
+    EXISTS (SELECT 1 FROM public.projects WHERE id = project_id AND user_id = auth.uid())
+);
+
+-- Videos
+DROP POLICY IF EXISTS "Users can create videos" ON public.videos;
+CREATE POLICY "Users can create videos" ON public.videos FOR INSERT WITH CHECK (
+    EXISTS (SELECT 1 FROM public.projects WHERE id = project_id AND user_id = auth.uid())
+);
+
+DROP POLICY IF EXISTS "Users can update videos" ON public.videos;
+CREATE POLICY "Users can update videos" ON public.videos FOR UPDATE USING (
+    EXISTS (SELECT 1 FROM public.projects WHERE id = project_id AND user_id = auth.uid())
+);

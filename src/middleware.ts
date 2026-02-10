@@ -10,6 +10,11 @@ import { isRateLimitConfigured, getRateLimiterForPath } from "@/lib/ratelimit";
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // --- SKIP AUTH CALLBACK (let it handle its own cookies) ---
+  if (pathname === "/auth/callback" || pathname === "/callback") {
+    return NextResponse.next();
+  }
+
   // --- RATE LIMITING (API routes only) ---
   if (pathname.startsWith("/api/") && isRateLimitConfigured()) {
     try {

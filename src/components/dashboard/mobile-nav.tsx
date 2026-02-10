@@ -19,7 +19,7 @@ export function MobileNav() {
     ];
 
     return (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-[65px] sm:h-[72px] items-center justify-around border-t border-white/5 bg-[#050505]/95 backdrop-blur-xl px-2 sm:px-4 md:hidden safe-area-inset-bottom">
+        <nav className="fixed bottom-0 left-0 right-0 z-[100] flex items-center justify-around border-t border-white/5 bg-[#050505]/98 backdrop-blur-md px-2 sm:px-4 md:hidden h-[calc(65px+env(safe-area-inset-bottom))] sm:h-[calc(72px+env(safe-area-inset-bottom))] pb-[env(safe-area-inset-bottom)]">
             {/* Top Glow Line */}
             <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-violet-500/20 to-transparent" />
 

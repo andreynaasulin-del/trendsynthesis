@@ -1,6 +1,7 @@
 // ============================================
 // TRENDSYNTHESIS — Auth Callback Route
 // Handles OAuth Code Exchange with proper cookie persistence for Vercel
+// Path: /auth/callback (matches Supabase redirect URL)
 // ============================================
 
 import { createServerClient } from "@supabase/ssr";
@@ -36,7 +37,10 @@ export async function GET(request: NextRequest) {
   // Get cookie store (Next.js 15 async)
   const cookieStore = await cookies();
 
-  // Create Supabase client with proper cookie handling
+  // Create response to set cookies on
+  const response = NextResponse.redirect(new URL(next, origin));
+
+  // Create Supabase client with proper cookie handling for Vercel
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -47,9 +51,10 @@ export async function GET(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) => {
-            cookieStore.set(name, value, {
+            // Set on response for the redirect
+            response.cookies.set(name, value, {
               ...options,
-              // Ensure cookies work on Vercel
+              // Critical for Vercel production
               secure: process.env.NODE_ENV === "production",
               sameSite: "lax",
               httpOnly: true,
@@ -101,9 +106,8 @@ export async function GET(request: NextRequest) {
       console.log("[Auth Callback] Created profile for new user:", data.user.email);
     }
 
-    // Successful login - redirect to destination
-    const redirectUrl = new URL(next, origin);
-    return NextResponse.redirect(redirectUrl);
+    // Return the response with cookies set
+    return response;
 
   } catch (err: any) {
     console.error("[Auth Callback] Unexpected error:", err);

@@ -25,6 +25,7 @@ import { GlitchTransition } from "@/remotion/effects/GlitchTransition";
 import { CameraShake, ImpactShake } from "@/remotion/effects/CameraShake";
 import type { SubtitleSegment, MontageStyle, TransitionType, ScenarioTone } from "@/types";
 import { styles } from "../styles";
+import { RetentionPulse } from "./RetentionPulse";
 
 const { heading: headingFont, body: bodyFont } = styles.fonts;
 
@@ -50,6 +51,8 @@ export interface ViralMontageProps {
   tone?: ScenarioTone;
   enableGlitch?: boolean;
   enableShake?: boolean;
+  // Watermark control
+  isFreeUser?: boolean;
 }
 
 // --- Default style fallback ---
@@ -570,6 +573,8 @@ export const ViralMontage: React.FC<ViralMontageProps> = ({
   tone,
   enableGlitch = false,
   enableShake = false,
+  // Watermark
+  isFreeUser = false,
 }) => {
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
@@ -590,21 +595,6 @@ export const ViralMontage: React.FC<ViralMontageProps> = ({
   // Auto-enable effects based on tone
   const shouldGlitch = enableGlitch || tone === "provocative";
   const shouldShake = enableShake || tone === "provocative" || tone === "emotional";
-
-  // Determine if we're at a clip transition (for glitch effect)
-  const isAtClipTransition = useMemo(() => {
-    if (!shouldGlitch) return false;
-    const relativeFrame = frame - introFrames;
-    if (relativeFrame < 0 || relativeFrame >= contentFrames) return false;
-
-    for (let i = 1; i < clipCount; i++) {
-      const transitionFrame = i * CLIP_DURATION;
-      if (relativeFrame >= transitionFrame - 4 && relativeFrame <= transitionFrame + 4) {
-        return true;
-      }
-    }
-    return false;
-  }, [frame, introFrames, contentFrames, clipCount, CLIP_DURATION, shouldGlitch]);
 
   // No assets fallback
   if (!assets || assets.length === 0) {
@@ -668,71 +658,73 @@ export const ViralMontage: React.FC<ViralMontageProps> = ({
       )}
 
       {/* ===== MAIN CONTENT: VIDEO CLIPS ===== */}
-      {assets.map((src, index) => {
-        const clipStartFrame = introFrames + index * CLIP_DURATION;
-        const isFirstFrameOfClip = frame >= clipStartFrame && frame < clipStartFrame + 8;
+      <RetentionPulse>
+        {assets.map((src, index) => {
+          const clipStartFrame = introFrames + index * CLIP_DURATION;
+          const isFirstFrameOfClip = frame >= clipStartFrame && frame < clipStartFrame + 8;
 
-        return (
-          <Sequence
-            key={`clip-${index}`}
-            from={clipStartFrame}
-            durationInFrames={CLIP_DURATION}
-          >
-            {/* Glitch transition at clip boundaries */}
-            {shouldGlitch && index > 0 ? (
-              <GlitchTransition
-                startFrame={0}
-                duration={8}
-                intensity={0.6}
-                seed={`clip-${index}`}
-              >
-                {/* Video with Ken Burns or static */}
-                {style.kenBurns ? (
-                  <KenBurnsClip
-                    src={src}
-                    clipIndex={index}
-                    clipDuration={CLIP_DURATION}
-                    blurTransition={style.transition !== "cut"}
-                  />
-                ) : (
-                  <StaticClip
-                    src={src}
-                    clipDuration={CLIP_DURATION}
-                    blurTransition={style.transition !== "cut"}
-                  />
-                )}
-              </GlitchTransition>
-            ) : (
-              <>
-                {/* Video with Ken Burns or static (no glitch) */}
-                {style.kenBurns ? (
-                  <KenBurnsClip
-                    src={src}
-                    clipIndex={index}
-                    clipDuration={CLIP_DURATION}
-                    blurTransition={style.transition !== "cut"}
-                  />
-                ) : (
-                  <StaticClip
-                    src={src}
-                    clipDuration={CLIP_DURATION}
-                    blurTransition={style.transition !== "cut"}
-                  />
-                )}
-              </>
-            )}
+          return (
+            <Sequence
+              key={`clip-${index}`}
+              from={clipStartFrame}
+              durationInFrames={CLIP_DURATION}
+            >
+              {/* Glitch transition at clip boundaries */}
+              {shouldGlitch && index > 0 ? (
+                <GlitchTransition
+                  startFrame={0}
+                  duration={8}
+                  intensity={0.6}
+                  seed={`clip-${index}`}
+                >
+                  {/* Video with Ken Burns or static */}
+                  {style.kenBurns ? (
+                    <KenBurnsClip
+                      src={src}
+                      clipIndex={index}
+                      clipDuration={CLIP_DURATION}
+                      blurTransition={style.transition !== "cut"}
+                    />
+                  ) : (
+                    <StaticClip
+                      src={src}
+                      clipDuration={CLIP_DURATION}
+                      blurTransition={style.transition !== "cut"}
+                    />
+                  )}
+                </GlitchTransition>
+              ) : (
+                <>
+                  {/* Video with Ken Burns or static (no glitch) */}
+                  {style.kenBurns ? (
+                    <KenBurnsClip
+                      src={src}
+                      clipIndex={index}
+                      clipDuration={CLIP_DURATION}
+                      blurTransition={style.transition !== "cut"}
+                    />
+                  ) : (
+                    <StaticClip
+                      src={src}
+                      clipDuration={CLIP_DURATION}
+                      blurTransition={style.transition !== "cut"}
+                    />
+                  )}
+                </>
+              )}
 
-            {/* Transition overlay */}
-            {index > 0 && !shouldGlitch && (
-              <TransitionOverlay
-                type={style.transition}
-                clipDuration={CLIP_DURATION}
-                transitionFrames={TRANSITION_FRAMES}
-              />
-            )}
-          </Sequence>
-        );
-      })}
+              {/* Transition overlay */}
+              {index > 0 && !shouldGlitch && (
+                <TransitionOverlay
+                  type={style.transition}
+                  clipDuration={CLIP_DURATION}
+                  transitionFrames={TRANSITION_FRAMES}
+                />
+              )}
+            </Sequence>
+          );
+        })}
+      </RetentionPulse>
 
       {/* ===== OUTRO SLIDE ===== */}
       {showOutro && (
@@ -782,6 +774,35 @@ export const ViralMontage: React.FC<ViralMontageProps> = ({
       {/* ===== WATERMARK ===== */}
       {style.watermark && (
         <Sequence from={introFrames} durationInFrames={contentFrames}>
+          {/* FREE USER: Prominent center watermark */}
+          {isFreeUser && (
+            <div
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%) rotate(-25deg)",
+                zIndex: 100,
+                pointerEvents: "none",
+              }}
+            >
+              <p
+                style={{
+                  fontSize: 72,
+                  fontWeight: 900,
+                  fontFamily: "system-ui, sans-serif",
+                  color: "rgba(255,255,255,0.12)",
+                  letterSpacing: "0.15em",
+                  textTransform: "uppercase",
+                  textShadow: "0 0 30px rgba(0,0,0,0.5)",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                TRENDSYNTHESIS
+              </p>
+            </div>
+          )}
+          {/* PRO/PAID: Subtle corner watermark */}
           <div
             style={{
               position: "absolute",
@@ -792,9 +813,9 @@ export const ViralMontage: React.FC<ViralMontageProps> = ({
           >
             <p
               style={{
-                fontSize: 9,
+                fontSize: isFreeUser ? 11 : 9,
                 fontFamily: "monospace",
-                color: "rgba(255,255,255,0.2)",
+                color: isFreeUser ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.2)",
                 letterSpacing: "0.3em",
               }}
             >

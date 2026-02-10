@@ -56,11 +56,14 @@ async function searchPexels(query: string, count: number = 4): Promise<string[]>
     if (!data.videos?.length) return [];
 
     return data.videos.map((video: any) => {
-      // Prefer 1080x1920, then any HD, then first available
+      const allFiles = video.video_files.map((f: any) => ({
+        ...f,
+        res: f.width * f.height
+      })).sort((a: any, b: any) => b.res - a.res);
+
       const best =
-        video.video_files.find((f: any) => f.height === 1920 && f.width === 1080) ||
-        video.video_files.find((f: any) => f.height >= 1080) ||
-        video.video_files[0];
+        allFiles.find((f: any) => f.height === 1920 && f.width === 1080) ||
+        allFiles[0];
       return best.link;
     });
   } catch (e: any) {

@@ -3,13 +3,15 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Video, TrendingUp, Coins, Crown, Zap, ArrowRight, Play, Loader2, Clock, CheckCircle, XCircle } from "lucide-react";
+import { Video, TrendingUp, Coins, Crown, Zap, ArrowRight, Play, Loader2, Clock, CheckCircle, XCircle, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 import { getUserStats, getRecentActivity, type UserStats, type RecentActivity } from "@/actions/user-data";
 import { cn } from "@/lib/utils";
+import { BentoGrid, BentoCard } from "@/components/ui/bento-grid";
+import { GlowingBorder } from "@/components/ui/background-beams";
 
 // Elegant, subtle animations
 const container = {
@@ -178,38 +180,41 @@ export default function DashboardPage() {
         <p className="text-sm text-white/40">{c.subtitle}</p>
       </motion.div>
 
-      {/* Stats Grid */}
+      {/* Stats Bento Grid */}
       <motion.div
         variants={container}
         initial="hidden"
         animate="show"
-        className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4"
       >
-        {statsData.map((stat, i) => (
-          <motion.div key={stat.title} variants={item}>
-            <Card className="group relative border border-white/5 bg-slate-900/40 hover:bg-slate-900/60 backdrop-blur-md transition-all duration-300 overflow-hidden">
-              {/* Hover spotlight */}
-              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+        <BentoGrid className="grid-cols-2 md:grid-cols-4">
+          {statsData.map((stat, i) => (
+            <motion.div key={stat.title} variants={item}>
+              <GlowingBorder className="h-full" glowColor={stat.warning ? "rgba(245, 158, 11, 0.3)" : i === 1 && isGodMode ? "rgba(245, 158, 11, 0.4)" : "rgba(139, 92, 246, 0.2)"}>
+                <div className="group relative h-full border border-white/5 bg-slate-900/60 backdrop-blur-md transition-all duration-300 overflow-hidden rounded-xl p-4 sm:p-5 md:p-6">
+                  {/* Hover spotlight */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
-              <CardContent className="p-5 sm:p-6 relative z-10">
-                <div className="flex items-center justify-between mb-4">
-                  <div className={cn("p-2 rounded-lg bg-white/5 group-hover:bg-white/10 transition-colors", stat.warning && "bg-amber-500/10")}>
-                    <stat.icon className={cn("h-4 w-4", stat.warning ? "text-amber-500" : "text-zinc-400 group-hover:text-zinc-200")} />
+                  <div className="relative z-10">
+                    <div className="flex items-center justify-between mb-3 sm:mb-4">
+                      <div className={cn("p-2 rounded-lg bg-white/5 group-hover:bg-white/10 transition-colors", stat.warning && "bg-amber-500/10")}>
+                        <stat.icon className={cn("h-4 w-4", stat.warning ? "text-amber-500" : "text-zinc-400 group-hover:text-zinc-200")} />
+                      </div>
+                      {stat.title === c.plan && stats?.plan === "free" && (
+                        <Link href="/billing" className="text-[9px] font-bold text-violet-300 hover:text-white bg-violet-600/20 px-2 py-1 rounded border border-violet-500/30 transition-colors uppercase tracking-wide">
+                          {c.upgrade}
+                        </Link>
+                      )}
+                    </div>
+                    <div className="space-y-1">
+                      <p className={cn("text-2xl sm:text-3xl md:text-4xl tracking-tight leading-none", stat.color)}>{stat.value}</p>
+                      <p className="text-[9px] sm:text-[10px] text-zinc-500 font-medium uppercase tracking-widest">{stat.title}</p>
+                    </div>
                   </div>
-                  {stat.title === c.plan && stats?.plan === "free" && (
-                    <Link href="/billing" className="text-[9px] font-bold text-violet-300 hover:text-white bg-violet-600/20 px-2 py-1 rounded border border-violet-500/30 transition-colors uppercase tracking-wide">
-                      {c.upgrade}
-                    </Link>
-                  )}
                 </div>
-                <div className="space-y-1">
-                  <p className={cn("text-3xl sm:text-4xl tracking-tight leading-none", stat.color)}>{stat.value}</p>
-                  <p className="text-[10px] text-zinc-500 font-medium uppercase tracking-widest">{stat.title}</p>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
+              </GlowingBorder>
+            </motion.div>
+          ))}
+        </BentoGrid>
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
@@ -230,43 +235,63 @@ export default function DashboardPage() {
               </Link>
             </div>
 
-            <div className="grid gap-3">
+            <BentoGrid className="grid-cols-1 sm:grid-cols-2">
               {recentActivity.length > 0 ? (
                 recentActivity.map((activity, i) => (
-                  <Link href={`/projects`} key={activity.id}>
-                    <motion.div
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.3 + (i * 0.1) }}
-                      className="group flex items-center gap-4 p-4 rounded-xl border border-white/5 bg-slate-900/40 hover:bg-white/5 backdrop-blur-sm transition-all cursor-pointer"
-                    >
-                      <div className="h-10 w-10 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center flex-shrink-0 group-hover:border-white/10 transition-colors">
-                        {activity.status === 'completed' ? <CheckCircle className="w-5 h-5 text-emerald-500 drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]" /> :
-                          activity.status === 'failed' ? <XCircle className="w-5 h-5 text-red-500" /> :
-                            <Loader2 className="w-5 h-5 text-amber-500 animate-spin" />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-medium text-zinc-200 group-hover:text-white transition-colors truncate">{activity.topic}</h3>
-                        <div className="flex items-center gap-3 mt-1">
-                          <span className="text-[10px] text-zinc-600 font-mono">{new Date(activity.created_at).toLocaleDateString()}</span>
-                          <span className="w-1 h-1 rounded-full bg-zinc-800" />
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-zinc-400 border border-white/5">
-                            {activity.video_count} videos
-                          </span>
+                  <motion.div
+                    key={activity.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 + (i * 0.1) }}
+                  >
+                    <Link href={`/projects`}>
+                      <BentoCard
+                        size={i === 0 ? "2x1" : "1x1"}
+                        className="group cursor-pointer"
+                        glowOnHover
+                      >
+                        <div className="flex items-start gap-4 h-full">
+                          <div className={cn(
+                            "h-12 w-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-all",
+                            activity.status === 'completed' ? "bg-emerald-500/10 border border-emerald-500/20" :
+                            activity.status === 'failed' ? "bg-red-500/10 border border-red-500/20" :
+                            "bg-amber-500/10 border border-amber-500/20"
+                          )}>
+                            {activity.status === 'completed' ? <CheckCircle className="w-6 h-6 text-emerald-500 drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]" /> :
+                              activity.status === 'failed' ? <XCircle className="w-6 h-6 text-red-500" /> :
+                                <Loader2 className="w-6 h-6 text-amber-500 animate-spin" />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-sm font-medium text-zinc-200 group-hover:text-white transition-colors line-clamp-2">{activity.topic}</h3>
+                            <div className="flex items-center gap-3 mt-2">
+                              <span className="text-[10px] text-zinc-600 font-mono">{new Date(activity.created_at).toLocaleDateString()}</span>
+                              <span className="w-1 h-1 rounded-full bg-zinc-700" />
+                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20 font-medium">
+                                {activity.video_count} videos
+                              </span>
+                            </div>
+                          </div>
+                          <div className="w-8 h-8 rounded-full flex items-center justify-center group-hover:bg-white/10 transition-colors self-center">
+                            <ArrowRight className="w-4 h-4 text-zinc-600 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
+                          </div>
                         </div>
-                      </div>
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center group-hover:bg-white/10 transition-colors">
-                        <ArrowRight className="w-4 h-4 text-zinc-600 group-hover:text-white transition-colors" />
-                      </div>
-                    </motion.div>
-                  </Link>
+                      </BentoCard>
+                    </Link>
+                  </motion.div>
                 ))
               ) : (
-                <div className="p-8 rounded-xl border border-dashed border-white/10 text-center text-zinc-500 bg-white/5 backdrop-blur-sm">
-                  <p className="text-sm">{c.emptyDesc}</p>
-                </div>
+                <BentoCard size="2x1" className="flex items-center justify-center">
+                  <div className="text-center">
+                    <Video className="w-10 h-10 text-zinc-700 mx-auto mb-3" />
+                    <p className="text-sm text-zinc-500">{c.emptyDesc}</p>
+                    <Link href="/generate" className="inline-flex items-center gap-2 mt-4 text-xs text-violet-400 hover:text-violet-300 transition-colors">
+                      <Zap className="w-3 h-3" />
+                      {c.startBtn}
+                    </Link>
+                  </div>
+                </BentoCard>
               )}
-            </div>
+            </BentoGrid>
           </motion.div>
         </div>
 
@@ -282,13 +307,33 @@ export default function DashboardPage() {
 
             <Link href="/generate">
               <button className="w-full group relative overflow-hidden p-0.5 rounded-2xl transition-transform active:scale-[0.98]">
-                <div className="absolute inset-0 bg-gradient-to-r from-violet-600 to-indigo-600 opacity-100 group-hover:opacity-100 transition-opacity" />
-                <div className="relative flex items-center gap-4 p-5 rounded-[14px] bg-slate-950/90 group-hover:bg-slate-950/80 transition-colors backdrop-blur-xl">
-                  <div className="p-3 rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/20 shadow-[0_0_15px_rgba(139,92,246,0.15)] group-hover:scale-110 transition-transform">
+                {/* Animated gradient border */}
+                <div className="absolute inset-0 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 animate-gradient-shift bg-[length:200%_100%]" />
+
+                {/* Sparkle particles on hover */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                  {[...Array(6)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="absolute w-1 h-1 bg-white rounded-full animate-sparkle"
+                      style={{
+                        left: `${15 + i * 15}%`,
+                        top: `${20 + (i % 3) * 25}%`,
+                        animationDelay: `${i * 0.15}s`,
+                      }}
+                    />
+                  ))}
+                </div>
+
+                <div className="relative flex items-center gap-4 p-5 rounded-[14px] bg-slate-950/90 group-hover:bg-slate-950/70 transition-colors backdrop-blur-xl">
+                  <div className="p-3 rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/20 shadow-[0_0_15px_rgba(139,92,246,0.15)] group-hover:scale-110 group-hover:shadow-[0_0_25px_rgba(139,92,246,0.35)] transition-all">
                     <Zap className="w-6 h-6" fill="currentColor" />
                   </div>
-                  <div className="text-left">
-                    <p className="font-bold text-white text-base tracking-tight">{c.newGen}</p>
+                  <div className="text-left flex-1">
+                    <p className="font-bold text-white text-base tracking-tight flex items-center gap-2">
+                      {c.newGen}
+                      <Sparkles className="w-4 h-4 text-violet-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </p>
                     <p className="text-xs text-zinc-400 mt-0.5">AI → 30 Viral Videos</p>
                   </div>
                 </div>

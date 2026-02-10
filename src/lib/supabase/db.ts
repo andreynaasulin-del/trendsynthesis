@@ -317,8 +317,8 @@ export async function getUserStats(): Promise<{
     // Get total videos count
     const { count: totalVideos } = await supabase
         .from("videos")
-        .select("*", { count: "exact", head: true })
-        .eq("project_id", user.id);
+        .select("*, projects!inner(user_id)", { count: "exact", head: true })
+        .eq("projects.user_id", user.id);
 
     // Get this month's videos
     const startOfMonth = new Date();
