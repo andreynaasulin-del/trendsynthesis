@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Sparkles, FolderOpen, Settings, LogOut, Zap, Crown, CreditCard } from "lucide-react";
+import { LayoutDashboard, Sparkles, FolderOpen, Settings, LogOut, Zap, Crown, CreditCard, Film } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ export function Sidebar({ className }: { className?: string }) {
   const navItems = [
     { label: t("dashboard"), href: "/dashboard", icon: LayoutDashboard },
     { label: t("generate"), href: "/generate", icon: Sparkles, highlight: true },
+    { label: t("raw_source"), href: "/raw-layouts", icon: Film },
     { label: t("projects"), href: "/projects", icon: FolderOpen },
     { label: t("billing"), href: "/billing", icon: CreditCard },
     { label: t("settings"), href: "/settings", icon: Settings },

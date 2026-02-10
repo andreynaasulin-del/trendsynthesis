@@ -19,6 +19,7 @@ export const translations = {
         projects: "Projects",
         billing: "Billing",
         settings: "Settings",
+        raw_source: "Raw Source",
         signOut: "Sign Out",
     },
     ru: {
@@ -27,6 +28,7 @@ export const translations = {
         projects: "Проекты",
         billing: "Тариф",
         settings: "Настройки",
+        raw_source: "Исходники",
         signOut: "Выйти",
     },
 };
